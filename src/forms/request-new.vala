@@ -3,16 +3,18 @@ using Soup;
 namespace Pakiki {
     
     [GtkTemplate (ui = "/com/forensant/pakiki/request-new.ui")]
-    class RequestNew : Gtk.Paned, MainApplicationPane {
+    class RequestNew : Gtk.Box, MainApplicationPane {
 
         [GtkChild]
-        private unowned Gtk.ComboBox combobox_protocol;
+        private unowned Gtk.DropDown dropdown_protocol;
         [GtkChild]
         private unowned Gtk.Entry entry_hostname;
         [GtkChild]
         private unowned Gtk.Label label_error;
         [GtkChild]
         private unowned Gtk.Label label_request;
+        [GtkChild]
+        private unowned Gtk.Paned pane;
         [GtkChild]
         private unowned Gtk.ScrolledWindow scrolled_window_hex_editor;
         [GtkChild]
@@ -27,17 +29,14 @@ namespace Pakiki {
 
         public RequestNew (ApplicationWindow application_window) {
             this.application_window = application_window;
-            var renderer_text = new Gtk.CellRendererText();
-            combobox_protocol.pack_start (renderer_text, true);
-            combobox_protocol.add_attribute (renderer_text, "text", 0);
-            combobox_protocol.set_active (0);
+            dropdown_protocol.selected = 0;
 
             hex_editor = new HexEditor (application_window);
             hex_editor.show ();
-            scrolled_window_hex_editor.add (hex_editor);
+            scrolled_window_hex_editor.set_child (hex_editor);
 
             request_text_editor = new RequestTextEditor (application_window);
-            scrolled_window_text_view_request.add (request_text_editor);
+            scrolled_window_text_view_request.set_child (request_text_editor);
             request_text_editor.long_running_task.connect ( (running) => {
                 if (running) {
                     spinner.start ();
@@ -50,17 +49,8 @@ namespace Pakiki {
             label_request.mnemonic_widget = request_text_editor;
 
             request_details = new RequestDetails (application_window);
-            this.add2 (request_details);
+            pane.set_end_child (request_details);
 
-            var accel_group = new Gtk.AccelGroup ();
-            accel_group.connect ('s', Gdk.ModifierType.CONTROL_MASK, 0, (group, accel, keyval, modifier) => {
-                if (application_window.selected_pane_name () != "NewRequest" || this.visible == false) {
-                    return false;
-                }
-                on_send_clicked ();
-                return true;
-            });
-            application_window.add_accel_group (accel_group);
             reset_state ();
         }
 
@@ -88,7 +78,7 @@ namespace Pakiki {
         [GtkCallback]
         public void on_send_clicked () {
             spinner.start ();
-            label_error.visible = false;
+            label_error.label = "";
             var message = new Soup.Message ("POST", "http://" + application_window.core_address + "/requests/make");
 
             Json.Builder builder = new Json.Builder ();
@@ -96,7 +86,7 @@ namespace Pakiki {
             builder.set_member_name ("host");
             builder.add_string_value (entry_hostname.get_text ());
             builder.set_member_name ("ssl");
-            builder.add_boolean_value (combobox_protocol.get_active() == 0);
+            builder.add_boolean_value (dropdown_protocol.selected == 0);
             builder.set_member_name ("request");
             if (scrolled_window_hex_editor.visible) {
                 var buffer = (HexStaticBuffer) hex_editor.buffer;
@@ -120,7 +110,6 @@ namespace Pakiki {
                     var response = application_window.http_session.send_and_read_async.end (res);
                     var str_resp = (string) response.get_data ();
                     if (message.status_code != 200) {
-                        label_error.visible = true;
                         label_error.label = str_resp;
                         spinner.stop();
                         return;
@@ -135,7 +124,6 @@ namespace Pakiki {
                 }
                 catch (Error err) {
                     stdout.printf ("Error sending request: %s\n", err.message);
-                    label_error.visible = true;
                     label_error.label = "Error sending request: " + err.message;
                 }
 
@@ -153,7 +141,6 @@ namespace Pakiki {
                     var response = application_window.http_session.send_and_read_async.end (res);
                     var str_resp = (string) response.get_data () ;
                     if (message.status_code != 200) {
-                        label_error.visible = true;
                         label_error.label = str_resp;
                         spinner.stop();
                         return;
@@ -182,25 +169,25 @@ namespace Pakiki {
                     }
 
                     entry_hostname.set_text (rootObj.get_string_member ("Hostname"));
-                    combobox_protocol.set_active (rootObj.get_string_member ("Protocol") == "https://" ? 0 : 1);
-                    
+                    dropdown_protocol.selected = rootObj.get_string_member ("Protocol") == "https://" ? 0 : 1;
+
                     request_details.reset_state ();
                     
                 } catch (Error err) {
                     stdout.printf ("Error retrieving/populating request: %s\n", err.message);
-                    label_error.visible = true;
                     label_error.label = "Error retrieving request: " + err.message;
                 }
             });
         }
 
         public void reset_state () {
-            combobox_protocol.set_active (0);
+            dropdown_protocol.selected = 0;
             entry_hostname.set_text ("livefirerange.pakikiproxy.com");
             spinner.stop ();
+            stdout.printf("Reset state called\n");
             request_text_editor.buffer.set_text ("GET / HTTP/1.1\nHost: livefirerange.pakikiproxy.com\n\n");
             request_text_editor.on_text_changed (true);
-            label_error.visible = false;
+            label_error.label = "";
             request_details.reset_state ();
             hex_editor.buffer = new HexStaticBuffer.from_bytes (new uint8[0]);
             scrolled_window_hex_editor.visible = false;

@@ -646,13 +646,9 @@ namespace Pakiki {
 
         private void reset_state (bool launch_successful) {
             if (launch_successful) {
-                stack.@foreach ( (widget) => {
-                    var pane = (MainApplicationPane) widget;
+                foreach (var pane in child_panes) {
                     pane.reset_state ();
-                });
-
-                new_request.reset_state ();
-                intercept.reset_state ();
+                }
             }
             else {
                 var msgbox = new Gtk.MessageDialog (this, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "Error: Could not open the file.");
