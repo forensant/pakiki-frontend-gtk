@@ -1,9 +1,9 @@
 namespace Pakiki {   
-    class RequestTextEditor : Gtk.SourceView {
+    class RequestTextEditor : GtkSource.View {
         public signal void long_running_task (bool running);
 
         private ApplicationWindow application_window;
-        private Gtk.SourceBuffer source_buffer = new Gtk.SourceBuffer (null);
+        private GtkSource.Buffer source_buffer = new GtkSource.Buffer (null);
         private SyntaxHighlighter syntax_highlighter = new SyntaxHighlighter ();
         public string direction = "request";
         private string guid = "";
@@ -18,14 +18,63 @@ namespace Pakiki {
             wrap_mode = Gtk.WrapMode.CHAR;
             visible = true;
             syntax_highlighter.set_tags (buffer);
-            this.populate_popup.connect (on_populate_popup);
+            this.extra_menu = get_request_popup_menu ();
             this.buffer.changed.connect (() => {
                 on_text_changed (false);
             });
+
+            this.install_action ("request-editor.send-to-cyberchef", null, on_send_to_cyberchef);
+            this.install_action ("request-editor.insert-oob-domain", null, insert_oob_domain);
+            this.install_action ("request-editor.url_encode", null, (widget) => {
+                var editor = (RequestTextEditor)widget;
+                var buffer = editor.buffer;
+
+                Gtk.TextIter start, end;
+            
+                var selection = buffer.get_selection_bounds (out start, out end);
+                if (selection && start != end) {
+                    var selected_text = buffer.get_slice (start, end, true);
+                    var encoded_text = GLib.Uri.escape_string (selected_text, "&+");
+                    editor.replace_selected_text (encoded_text);
+                }
+            });
+
+            this.install_action ("request-editor.url_decode", null, (widget) => {
+                var editor = (RequestTextEditor)widget;
+                var buffer = editor.buffer;
+
+                Gtk.TextIter start, end;
+
+                var selection = buffer.get_selection_bounds (out start, out end);
+                if (selection && start != end) {
+                    var selected_text = buffer.get_slice (start, end, true);
+                    var decoded_text = GLib.Uri.unescape_string (selected_text);
+                    editor.replace_selected_text (decoded_text);
+                }
+            });
         }
 
-        private void insert_oob_domain () {
-            long_running_task (true);
+        private GLib.MenuModel get_request_popup_menu () {
+            var cs_menu = new GLib.Menu ();
+            cs_menu.append ("Insert out-of-band domain", "request-editor.insert-oob-domain");
+            cs_menu.append ("Send to CyberChef", "request-editor.send-to-cyberchef");
+            cs_menu.append ("URL Encode", "request-editor.url_encode");
+            cs_menu.append ("URL Decode", "request-editor.url_decode");
+
+            var root_menu = new GLib.Menu ();
+            root_menu.append_section (null, cs_menu);
+            if (guid != "" && protocol != "" && url != "") {
+                root_menu.append_section (null, RequestDetails.populate_send_to_menu (application_window, guid, protocol, url));
+            }
+            return root_menu;
+        }
+
+        private static void insert_oob_domain (Gtk.Widget widget, string action_name, Variant? parameter) {
+            var editor = (RequestTextEditor)widget;
+            var buffer = editor.buffer;
+            var application_window = editor.application_window;
+
+            editor.long_running_task (true);
             
             var url = "http://" + application_window.core_address + "/out_of_band/url";
 
@@ -45,7 +94,7 @@ namespace Pakiki {
                         stdout.printf ("Could not insert out-of-band domain: %s\n", err.message);
                     }
                 }
-                long_running_task (false);
+                editor.long_running_task (false);
             });
         }
 
@@ -92,65 +141,27 @@ namespace Pakiki {
             });
         }
 
-        private void on_populate_popup (Gtk.Menu menu) {
-            var separator = new Gtk.SeparatorMenuItem ();
-            separator.show ();
-            menu.append (separator);
+        private static void on_send_to_cyberchef (Gtk.Widget widget, string action_name, Variant? parameter) {
+            var editor = (RequestTextEditor)widget;
+            var buffer = editor.buffer;
+            var application_window = editor.application_window;
 
-            var menu_item_oob = new Gtk.MenuItem.with_label ("Insert out-of-band domain");
-            menu_item_oob.activate.connect ( () => {
-                insert_oob_domain ();
-            });
-            menu_item_oob.show ();
-            menu.append (menu_item_oob);
-            
             Gtk.TextIter selection_start, selection_end;
             var text_selected = buffer.get_selection_bounds (out selection_start, out selection_end);
 
-            var title = "Send selection to CyberChef";
-            var selected_text = "";
+            var text_to_encode = "";
             if (text_selected) {
-                selected_text = buffer.get_slice (selection_start, selection_end, true);
+                text_to_encode = buffer.get_slice (selection_start, selection_end, true);
             } else {
-                title = "Send " + direction + " to CyberChef";
-                selected_text = buffer.text;
+                text_to_encode = buffer.text;
             }
-            
-            var menu_item_cyberchef = new Gtk.MenuItem.with_label (title);
-            menu_item_cyberchef.activate.connect ( () => {
-                var uri = "http://" + application_window.core_address + "/cyberchef/#input=" + GLib.Uri.escape_string (Base64.encode (selected_text.data));
 
-                try {
-                    AppInfo.launch_default_for_uri (uri, null);
-                } catch (Error err) {
-                    stdout.printf ("Could not launch CyberChef: %s\n", err.message);
-                }
-            });
-            menu_item_cyberchef.show ();
-            menu.append (menu_item_cyberchef);
+            var uri = "http://" + application_window.core_address + "/cyberchef/#input=" + GLib.Uri.escape_string (Base64.encode (text_to_encode.data));
 
-            var menu_item_encode = new Gtk.MenuItem.with_label ("URL Encode");
-            menu_item_encode.activate.connect ( () => {
-                var encoded_text = GLib.Uri.escape_string (selected_text, "&+");
-                this.replace_selected_text (encoded_text);
-            });
-            menu_item_encode.show ();
-            menu.append (menu_item_encode);
-
-            var menu_item_decode = new Gtk.MenuItem.with_label ("URL Decode");
-            menu_item_decode.activate.connect ( () => {
-                var decoded_text = GLib.Uri.unescape_string (selected_text);
-                this.replace_selected_text (decoded_text);
-            });
-            menu_item_decode.show ();
-            menu.append (menu_item_decode);
-
-            if (guid != "" && protocol != "" && url != "") {
-                separator = new Gtk.SeparatorMenuItem ();
-                separator.show ();
-                menu.append (separator);
-    
-                RequestDetails.populate_send_to_menu (application_window, menu, guid, protocol, url);
+            try {
+                AppInfo.launch_default_for_uri (uri, null);
+            } catch (Error err) {
+                stdout.printf ("Could not launch CyberChef: %s\n", err.message);
             }
         }
 
@@ -158,6 +169,8 @@ namespace Pakiki {
             this.guid = guid;
             this.protocol = protocol;
             this.url = url;
+
+            this.extra_menu = get_request_popup_menu ();
         }
 
         private void replace_selected_text (string new_text) {            
