@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Proximity
+Icon=src/resources/Logo.svg
+StartupNotify=true
+Exec=builddir/proximity

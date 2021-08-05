@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+    <schema path="/com/forensant/proximity/" id="com.forensant.proximity">
+        <key name="request-double-click" type="s">
+            <choices>
+                <choice value="inject"/>
+                <choice value="new-request"/>
+            </choices>
+            <default>'inject'</default>
+            <summary>Request Double-click</summary>
+            <description>The action to take when a request is double-clicked.</description>
+        </key>
+    </schema>
+</schemalist>
