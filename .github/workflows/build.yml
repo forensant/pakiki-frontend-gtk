@@ -23,3 +23,9 @@ jobs:
           manifest-path: com.forensant.proximity.yml
           cache-key: flatpak-builder-${{ github.sha }}  
   
+      - name: Upload build
+        uses: actions/upload-artifact@v2.2.3
+        with:
+          name: Proximity.flatpak
+          # A file, directory or wildcard pattern that describes what to upload
+          path: Proximity.flatpak
