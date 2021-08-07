@@ -27,6 +27,7 @@ modules:
     buildsystem: simple
     build-commands:
       - cp -r * /app/bin/
+      - chmod +x /app/bin/*
     sources:
       - type: archive
         url: https://github.com/pipeline/proximity-core/releases/download/v0.1-alpha/ProximityCore-Linux.zip
