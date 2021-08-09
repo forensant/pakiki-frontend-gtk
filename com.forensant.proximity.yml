@@ -28,6 +28,7 @@ modules:
     build-commands:
       - cp -r * /app/bin/
       - chmod +x /app/bin/*
+      - mv /app/bin/*.so* /usr/lib/x86_64-linux-gnu/
     sources:
       - type: archive
         url: https://github.com/pipeline/proximity-core/releases/download/v0.1-alpha/ProximityCore-Linux.zip
