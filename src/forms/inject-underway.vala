@@ -112,7 +112,7 @@ namespace Proximity {
                 parameters += ("&archive=" + archive);
             }
             message.set_request ("application/x-www-form-urlencoded", Soup.MemoryUse.COPY, parameters.data);
-            session.send_async (message);
+            session.send_async.begin (message);
         }
 
         public void on_search (string query, bool exclude_resources) {
@@ -139,8 +139,8 @@ namespace Proximity {
             generator.set_root (root);
             string parameters = generator.to_data (null);
 
-            message.set_request("application/json", Soup.MemoryUse.COPY, parameters.data);
-            session.send_async(message);
+            message.set_request ("application/json", Soup.MemoryUse.COPY, parameters.data);
+            session.send_async.begin (message);
         }
     }
 }
