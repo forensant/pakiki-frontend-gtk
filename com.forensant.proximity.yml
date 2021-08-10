@@ -26,8 +26,9 @@ modules:
   - name: proximitycore
     buildsystem: simple
     build-commands:
-      - cp -r . /app/bin/
-      - chmod +x /app/bin/*
+      - chmod +x *
+      - install -D * /app/bin/
+      - install -D python39/lib/python39.zip /app/bin/python39/lib/python39.zip
       - mv /app/bin/*.so* /app/lib/
     sources:
       - type: archive
