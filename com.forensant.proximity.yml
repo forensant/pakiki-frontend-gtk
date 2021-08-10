@@ -26,6 +26,7 @@ modules:
   - name: proximitycore
     buildsystem: simple
     build-commands:
+      - find .
       - chmod +x *
       - install -D proximitycore /app/bin/
       - install -D pythoninterpreter /app/bin/
