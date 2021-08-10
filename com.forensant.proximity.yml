@@ -26,11 +26,11 @@ modules:
   - name: proximitycore
     buildsystem: simple
     build-commands:
-      - find .
       - chmod +x *
       - install -D proximitycore /app/bin/
       - install -D pythoninterpreter /app/bin/
-      - install -D python39/lib/python39.zip /app/bin/python39/lib/python39.zip
+      # there seems to be a weird bug where the python39/lib directory gets flattened to just lib
+      - install -D lib/python39.zip /app/bin/python39/lib/python39.zip
       - install -D *.so* /app/lib/
     sources:
       - type: archive
