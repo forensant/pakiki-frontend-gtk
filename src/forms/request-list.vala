@@ -257,11 +257,11 @@ namespace Proximity {
             return "";
         }
 
-        private void on_websocket_message(int type, Bytes message){
+        private void on_websocket_message (int type, Bytes message) {
             var parser = new Json.Parser ();
             var jsonData = (string)message.get_data();
             
-            if(jsonData == "") {
+            if (jsonData == "") {
                 return;
             }
             
@@ -275,7 +275,11 @@ namespace Proximity {
 
             var request = parser.get_root ().get_object ();
                 
-            if(request.get_string_member ("ObjectType") != "HTTP Request") {
+            if (request.get_string_member ("ObjectType") != "HTTP Request") {
+                return;
+            }
+
+            if (request.get_string_member("ScanID") != scan_id) {
                 return;
             }
 
