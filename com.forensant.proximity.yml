@@ -26,7 +26,7 @@ modules:
   - name: proximitycore
     buildsystem: simple
     build-commands:
-      - cp -r * /app/bin/
+      - cp -r . /app/bin/
       - chmod +x /app/bin/*
       - mv /app/bin/*.so* /app/lib/
     sources:
