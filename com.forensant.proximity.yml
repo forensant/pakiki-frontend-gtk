@@ -30,7 +30,8 @@ modules:
       - install -D proximitycore /app/bin/
       - install -D pythoninterpreter /app/bin/
       # there seems to be a weird bug where the python39/lib directory gets flattened to just lib
-      - install -D lib/python39.zip /app/bin/python39/lib/python39.zip
+      #- install -D lib/python39.zip /app/bin/python39/lib/python39.zip
+      - unzip lib/python39.zip -d /app/bin/python39/lib/python3.9/
       - install -D *.so* /app/lib/
     sources:
       - type: archive
