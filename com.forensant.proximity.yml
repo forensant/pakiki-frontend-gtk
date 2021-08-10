@@ -27,9 +27,10 @@ modules:
     buildsystem: simple
     build-commands:
       - chmod +x *
-      - install -D * /app/bin/
+      - install -D proximitycore /app/bin/
+      - install -D pythoninterpreter /app/bin/
       - install -D python39/lib/python39.zip /app/bin/python39/lib/python39.zip
-      - mv /app/bin/*.so* /app/lib/
+      - install -D *.so* /app/lib/
     sources:
       - type: archive
         url: https://github.com/pipeline/proximity-core/releases/download/v0.1-alpha/ProximityCore-Linux.zip
