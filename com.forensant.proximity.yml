@@ -37,4 +37,4 @@ modules:
     sources:
       - type: archive
         url: https://github.com/pipeline/proximity-core/releases/download/v0.1-alpha/ProximityCore-Linux.zip
-        sha256: c1bd77716fb4e3fb98c8f2432818f18022747394d42c42443f840d8c31d5e75c
+        sha256: e0990e941cf9e3ad0729f26662099839dc3f814b4565bc3e368e0d9daff6597b
