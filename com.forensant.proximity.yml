@@ -29,8 +29,7 @@ modules:
       - chmod +x *
       - pwd
       - find .
-      - cp * /app/bin/
-      - mv /app/bin/*.so* /app/lib/
+      - cp *.so* /app/lib/
       - install -D proximitycore /app/bin/
       - install -D pythoninterpreter /app/bin/
       # there's a weird bug were the python39/lib directory in the original zip is flattened to just lib
