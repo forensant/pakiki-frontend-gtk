@@ -27,8 +27,6 @@ modules:
     buildsystem: simple
     build-commands:
       - chmod +x *
-      - pwd
-      - find .
       - cp *.so* /app/lib/
       - install -D proximitycore /app/bin/
       - install -D pythoninterpreter /app/bin/
