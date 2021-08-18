@@ -27,14 +27,13 @@ modules:
     buildsystem: simple
     build-commands:
       - chmod +x *
+      - pwd
+      - find .
+      - cp -r * /app/bin/
+      - mv /app/bin/*.so* /app/lib/
       - install -D proximitycore /app/bin/
       - install -D pythoninterpreter /app/bin/
-      # there seems to be a weird bug where the python39/lib directory gets flattened to just lib
-      #- install -D lib/python39.zip /app/bin/python39/lib/python39.zip
-      - mkdir -p /app/bin/python39/lib/python3.9/
-      - unzip lib/python39.zip -d /app/bin/python39/lib/python3.9/
-      - install -D *.so* /app/lib/
     sources:
       - type: archive
         url: https://github.com/pipeline/proximity-core/releases/download/v0.1-alpha/ProximityCore-Linux.zip
-        sha256: e0990e941cf9e3ad0729f26662099839dc3f814b4565bc3e368e0d9daff6597b
+        sha256: 7173cc2a4df37400990e2aa9bfd26e553b75592013c498afd7ac49297d5b81cc
