@@ -1,0 +1,24 @@
+name: Build GTK Frontend
+
+on: [push]
+
+jobs:
+  GTK-Frontend:
+    name: 'GTK Frontend'
+    
+    runs-on: ubuntu-latest
+
+    container:
+      image: bilelmoussaoui/flatpak-github-actions:gnome-40
+      options: --privileged
+    
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+
+      - name: Build and package
+        uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v3
+        with:
+          bundle: Proximity.flatpak
+          manifest-path: com.forensant.proximity.yml
+          cache-key: flatpak-builder-${{ github.sha }}  

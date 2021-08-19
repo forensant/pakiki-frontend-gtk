@@ -79,7 +79,7 @@ namespace Proximity {
             try {
                 Soup.Session session = new Soup.Session ();
                 Soup.Request request = session.request ("http://localhost:10101/proxy/ca_certificate.pem");
-                InputStream stream = request.send ();
+                request.send ();
             } catch (Error e) {
                 successful = false;
             }
@@ -208,7 +208,7 @@ namespace Proximity {
 
         [GtkCallback]
         public void visible_child_changed () {
-            if (stack.in_destruction () || controls_hidden)
+            if (stack.in_destruction () || controls_hidden || inject_pane == null)
                 return;
 
             button_intercept.visible = (stack.visible_child == request_list);

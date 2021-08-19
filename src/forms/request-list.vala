@@ -343,7 +343,8 @@ namespace Proximity {
 
             var parameters = "guid=" + guid.get_string () + "&notes=" + Soup.URI.encode (newtext, null);
             message.set_request ("application/x-www-form-urlencoded", Soup.MemoryUse.COPY, parameters.data);
-            session.send_async (message);
+            
+            session.send_async.begin (message);
 
             liststore.set_value (iter, Column.NOTES, newtext);
             guid.unset ();

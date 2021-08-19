@@ -17,7 +17,6 @@ finish-args:
   # TODO: I'm not entirely happy with this. Some sandboxing is better than none, but if we could just use portals that'd be ideal
   - --filesystem=host
 modules:
-  # TODO: Pull the core from GitHub
   - name: proximity
     buildsystem: meson
     sources:
@@ -27,8 +26,14 @@ modules:
   - name: proximitycore
     buildsystem: simple
     build-commands:
-      - cp -r * /app/bin/
+      - chmod +x *
+      - cp *.so* /app/lib/
+      - install -D proximitycore /app/bin/
+      - install -D pythoninterpreter /app/bin/
+      # there's a weird bug were the python39/lib directory in the original zip is flattened to just lib
+      - mkdir /app/bin/python39
+      - cp -r lib /app/bin/python39/
     sources:
-      - type: dir
-        path: /home/parallels/Coding/proximity-core/build/
-  
+      - type: archive
+        url: https://github.com/pipeline/proximity-core/releases/download/v0.1-alpha/ProximityCore-Linux.zip
+        sha256: 7173cc2a4df37400990e2aa9bfd26e553b75592013c498afd7ac49297d5b81cc
