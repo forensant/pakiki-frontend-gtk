@@ -141,7 +141,10 @@ namespace Proximity {
 
             get_requests();
             request_details = new RequestDetails (application_window);
+            request_details.hide ();
             this.add2 (request_details);
+
+            scrolled_window_requests.hide ();
 
             var selection = request_list.get_selection();
             selection.changed.connect(this.on_changed);
