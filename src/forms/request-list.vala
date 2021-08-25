@@ -196,7 +196,7 @@ namespace Proximity {
             var message = new Soup.Message ("GET", url);
 
             session.queue_message (message, (sess, mess) => {
-                liststore.clear();
+                liststore.clear ();
                 this.updating = true;
                 var parser = new Json.Parser ();
                 try {

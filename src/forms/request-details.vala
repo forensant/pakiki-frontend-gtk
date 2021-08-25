@@ -6,7 +6,11 @@ namespace Proximity {
     class RequestDetails : Gtk.Notebook {
 
         [GtkChild]
-        private unowned Gtk.TextView requestResponseText;
+        private unowned Gtk.TextView text_view_request_response;
+        [GtkChild]
+        private unowned Gtk.TextView text_view_original_request_response;
+        [GtkChild]
+        private unowned Gtk.ScrolledWindow scroll_window_original_text;
         //[GtkChild]
         //private WebKit.WebView webkit_preview;
         [GtkChild]
@@ -48,7 +52,7 @@ namespace Proximity {
         [GtkCallback]
         public void on_request_response_popup (Gtk.Menu menu) {
             Gtk.TextIter selection_start, selection_end;
-            var text_selected = requestResponseText.buffer.get_selection_bounds (out selection_start, out selection_end);
+            var text_selected = text_view_request_response.buffer.get_selection_bounds (out selection_start, out selection_end);
 
             if (!text_selected) {
                 return;
@@ -60,7 +64,7 @@ namespace Proximity {
 
             var menu_item = new Gtk.MenuItem.with_label ("Send to Cyberchef");
             menu_item.activate.connect ( () => {
-                var selected_text = requestResponseText.buffer.get_slice (selection_start, selection_end, true);
+                var selected_text = text_view_request_response.buffer.get_slice (selection_start, selection_end, true);
                 var uri = "https://gchq.github.io/CyberChef/#input=" + Soup.URI.encode (Base64.encode (selected_text.data), "");
 
                 try {
@@ -88,11 +92,33 @@ namespace Proximity {
 
                     var rootObj = parser.get_root().get_object();
                     
-                    var request = (string)Base64.decode(rootObj.get_string_member("Request"));
-                    var response = (string)Base64.decode(rootObj.get_string_member("Response"));
+                    var original_request = (string)Base64.decode (rootObj.get_string_member ("Request"));
+                    var original_response = (string)Base64.decode (rootObj.get_string_member ("Response"));
 
-                    var buffer = this.requestResponseText.buffer;
-                    buffer.text = request.make_valid() + "\n\n" + response.make_valid();
+                    var modified_request = (string)Base64.decode (rootObj.get_string_member ("ModifiedRequest"));
+                    var modified_response = (string)Base64.decode (rootObj.get_string_member ("ModifiedResponse"));
+
+                    if (modified_request != "" || modified_response != "") {
+                        scroll_window_original_text.show ();
+
+                        if (modified_request == "") {
+                            modified_request = original_request;
+                        }
+
+                        if (modified_response == "") {
+                            modified_response = original_response;
+                        }
+
+                        var buffer = this.text_view_request_response.buffer;
+                        buffer.text = modified_request.make_valid() + "\n\n" + modified_response.make_valid();
+
+                        buffer = this.text_view_original_request_response.buffer;
+                        buffer.text = original_request.make_valid() + "\n\n" + original_response.make_valid();
+                    } else {
+                        scroll_window_original_text.hide ();
+                        var buffer = this.text_view_request_response.buffer;
+                        buffer.text = original_request.make_valid() + "\n\n" + original_response.make_valid();
+                    }
                 }
                 catch(Error e) {
                     stdout.printf ("Could not parse JSON data, error: %s\nData: %s\n", e.message, jsonData);
@@ -102,7 +128,10 @@ namespace Proximity {
         }
 
         public void reset_state () {
-            requestResponseText.buffer.set_text ("");
+            text_view_request_response.buffer.set_text ("");
+            text_view_original_request_response.buffer.set_text ("");
+            scroll_window_original_text.hide ();
+            this.page = 0;
         }
     }
 }

@@ -8,6 +8,7 @@ sources += files(
     'forms/inject-list-row.vala',
     'forms/inject-pane.vala',
     'forms/inject-underway.vala',
+    'forms/intercept.vala',
     'forms/placeholder-inject.vala',
     'forms/placeholder-requests.vala',
     'forms/request-details.vala',

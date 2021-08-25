@@ -22,13 +22,14 @@ namespace Proximity {
         [GtkChild]
         private unowned Gtk.SearchEntry searchentry;
 
-        private GLib.Settings settings;
-        private InjectPane inject_pane;
-        private RequestList request_list;
-        private RequestNew new_request;
-        private CoreProcess core_process;
         private bool controls_hidden;
+        private CoreProcess core_process;
         private int core_process_timer;
+        private InjectPane inject_pane;
+        private Intercept intercept;
+        private RequestNew new_request;
+        private RequestList request_list;
+        private GLib.Settings settings;
 
         public ApplicationWindow (Gtk.Application application) {
             GLib.Object (application: application);
@@ -107,6 +108,9 @@ namespace Proximity {
 
                 new_request = new RequestNew (this);
                 stack.add_named (new_request, "NewRequest");
+
+                intercept = new Intercept ();
+                stack.add_named (intercept, "Intercept");
             }
         }
 
@@ -144,24 +148,14 @@ namespace Proximity {
 
         [GtkCallback]
         public void on_back_clicked () {
-            if (stack.visible_child == new_request) {
+            if (stack.visible_child == new_request || stack.visible_child == intercept) {
                 stack.visible_child = request_list;
             }
         }
 
         [GtkCallback]
         public void on_intercept_clicked () {
-            var messagedialog = new Gtk.MessageDialog (this,
-                Gtk.DialogFlags.MODAL,
-                Gtk.MessageType.WARNING,
-                Gtk.ButtonsType.OK,
-                "This has not been implemented yet.");
-
-            messagedialog.response.connect ( () => {
-                messagedialog.close ();
-            });
-
-            messagedialog.show ();
+            stack.visible_child = intercept;
         }
 
         [GtkCallback]
@@ -191,6 +185,7 @@ namespace Proximity {
                 inject_pane.reset_state ();
                 new_request.reset_state ();
                 request_list.reset_state ();
+                intercept.reset_state ();
             }
             else {
                 var msgbox = new Gtk.MessageDialog (this, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "Error: Could not open the file.");
@@ -213,7 +208,7 @@ namespace Proximity {
 
             button_intercept.visible = (stack.visible_child == request_list);
             button_new.visible = (stack.visible_child == request_list || (stack.visible_child == inject_pane && !inject_pane.new_shown ()));
-            button_back.visible = (stack.visible_child == new_request);
+            button_back.visible = (stack.visible_child == new_request || stack.visible_child == intercept);
 
             var can_search = (inject_pane.can_search () || stack.visible_child == request_list);
             button_search.sensitive = can_search;
