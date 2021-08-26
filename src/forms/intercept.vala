@@ -22,10 +22,6 @@ namespace Proximity {
         [GtkChild]
         private unowned Gtk.TextView text_view_request;
       
-        // TODO: Select multiple from the request list, so you can forward multiple requests you don't care about
-
-        private string selected_direction;
-        private string selected_guid;
         private Gtk.ListStore liststore_requests;
         private bool updating;
         private WebsocketConnection websocket;
@@ -57,14 +53,17 @@ namespace Proximity {
 
             var selection = list_requests.get_selection();
             selection.changed.connect(this.on_selection_changed);
+            selection.mode = Gtk.SelectionMode.MULTIPLE;
         }
 
         private void add_request_to_table (Json.Object requestData) {
             var action = requestData.get_string_member ("RecordAction");
             var request = requestData.get_object_member ("Request");
+            var list_selection = list_requests.get_selection ();
 
             if (action == "delete") {
                 var guidToRemove = request.get_string_member ("GUID");
+                var select_next = false;
                 
                 liststore_requests.@foreach ((model, path, iter) => {
                     Value rowGuid;
@@ -72,11 +71,21 @@ namespace Proximity {
 
                     if (rowGuid == guidToRemove) {
                         liststore_requests.remove (ref iter);
+                        if (list_selection.iter_is_selected (iter)) {
+                            select_next = true;
+                        }
                         return true;
                     }
 
                     return false;
                 });
+
+                if (select_next) {
+                    liststore_requests.@foreach ((model, path, iter) => {
+                        list_selection.select_iter (iter);
+                        return true;
+                    });
+                }
             } else {
                 // add to the table
                 var direction = requestData.get_string_member ("Direction");
@@ -95,11 +104,17 @@ namespace Proximity {
                     Column.BODY, requestData.get_string_member ("Body")
                 );
 
-                var selection = list_requests.get_selection ();
-                if (selection.get_selected_rows (null).length () == 0) {
-                    selection.select_iter (iter);
+                if (list_selection.get_selected_rows (null).length () == 0) {
+                    list_selection.select_iter (iter);
                 }
             }
+        }
+
+        private void clear_gui () {
+            text_view_request.buffer.text = "";
+            button_drop.sensitive = false;
+            button_forward.sensitive = false;
+            button_intercept_response.sensitive = false;
         }
 
         private void get_intercept_settings () {
@@ -188,6 +203,7 @@ namespace Proximity {
         public void on_checkbox_intercept_to_browser_toggled () {
             if (!updating) {
                 set_intercept ();
+                clear_gui ();
             }
         }
 
@@ -195,48 +211,46 @@ namespace Proximity {
         public void on_checkbox_intercept_to_server_toggled () {
             if (!updating) {
                 set_intercept ();
+                clear_gui ();
             }
         }
 
         private void on_selection_changed () {
-            if(updating) {
-                return;
-            }
-
             var selection = list_requests.get_selection ();
             Gtk.TreeModel model;
             Gtk.TreeIter iter;
-            string guid;
-            string body;
-            string direction;
-    
-            if (selection.get_selected (out model, out iter)) {
-                model.get (iter, Column.GUID, out guid);
-                model.get (iter, Column.DIRECTION, out direction);
-                model.get (iter, Column.BODY, out body);
+            
+            var selection_count = selection.get_selected_rows (null).length ();
 
-                selected_guid = guid;
-                if (direction == "Server to browser") {
-                    selected_direction = "server_to_browser";
+            selection.selected_foreach ((model, path, iter) => {
+                if (selection_count == 1) {
+                    string body;
+                    string direction;
+                    model.get (iter, Column.BODY, out body);
+                    model.get (iter, Column.DIRECTION, out direction);
+                    text_view_request.buffer.text = (string) Base64.decode (body);
+
+                    var is_request = (direction == "Browser to server");
+                    button_forward.sensitive = true;
+                    button_drop.sensitive = is_request;
+                    button_intercept_response.sensitive = is_request;
                 } else {
-                    selected_direction = "browser_to_server";
+                    text_view_request.buffer.text = "(Multiple requests/responses selected)";
+                    button_forward.sensitive = true;
+                    button_drop.sensitive = false;
+                    button_intercept_response.sensitive = false;
                 }
-                text_view_request.buffer.text = (string) Base64.decode (body);
-
-                button_drop.sensitive = true;
-                button_forward.sensitive = true;
-                button_intercept_response.sensitive = true;
-            }
+            });
         }
 
         private void on_websocket_message (int type, Bytes message) {
             var parser = new Json.Parser ();
             var jsonData = (string)message.get_data();
-            
+
             if (jsonData == "") {
                 return;
             }
-            
+
             try {
                 parser.load_from_data (jsonData, -1);
             }
@@ -254,18 +268,18 @@ namespace Proximity {
             add_request_to_table (request);
         }
 
-        private void send_request_response (string action) {
+        private void send_individual_request_response (string guid, string action, string direction, string body) {
             var session = new Soup.Session ();
             var message = new Soup.Message ("PUT", "http://127.0.0.1:10101/proxy/set_intercepted_response");
 
             Json.Builder builder = new Json.Builder ();
             builder.begin_object ();
             builder.set_member_name ("GUID");
-            builder.add_string_value (selected_guid);
+            builder.add_string_value (guid);
             builder.set_member_name ("Body");
-            builder.add_string_value (Base64.encode (text_view_request.buffer.text.data));
+            builder.add_string_value (body);
             builder.set_member_name ("Direction");
-            builder.add_string_value (selected_direction);
+            builder.add_string_value (direction);
             builder.set_member_name ("RequestAction");
             builder.add_string_value (action);
             builder.end_object ();
@@ -275,16 +289,39 @@ namespace Proximity {
             generator.set_root (root);
             string parameters = generator.to_data (null);
 
-            stdout.printf("JSON: %s\n", (string)parameters.data);
-
             message.set_request("application/json", Soup.MemoryUse.COPY, parameters.data);
             
             session.queue_message (message, null);
+        }
 
-            // clear the current selection
-            selected_guid = "";
-            selected_direction = "";
-            text_view_request.buffer.text = "";
+        private void send_request_response (string action) {
+            var list_selection = list_requests.get_selection ();
+
+            var selection_count = list_selection.get_selected_rows (null).length ();
+
+            list_selection.selected_foreach ((model, path, iter) => {
+                string guid;
+                string body;
+                string direction;
+                model.get (iter, Column.GUID, out guid);
+                model.get (iter, Column.DIRECTION, out direction);
+                model.get (iter, Column.BODY, out body);
+
+                if (selection_count == 1) {
+                    body = Base64.encode (text_view_request.buffer.text.data);
+                }
+
+                if (direction == "Browser to server") {
+                    direction = "browser_to_server";
+                } else {
+                    direction = "server_to_browser";
+                }
+
+                send_individual_request_response (guid, action, direction, body);
+            });
+
+            list_selection.unselect_all ();
+            clear_gui ();
         }
 
         private void set_intercept () {
@@ -310,7 +347,9 @@ namespace Proximity {
         }
 
         public void reset_state () {
-            // TODO
+            liststore_requests.clear ();
+            clear_gui ();
+            get_intercept_settings ();
         }
     }
 }

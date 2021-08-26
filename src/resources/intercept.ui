@@ -47,7 +47,6 @@
           <object class="GtkCheckButton" id="checkbox_intercept_to_browser">
             <property name="label" translatable="yes">Server &gt; _Web Browser</property>
             <property name="visible">True</property>
-            <property name="sensitive">False</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
             <property name="margin_top">6</property>
