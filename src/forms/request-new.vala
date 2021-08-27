@@ -52,9 +52,12 @@ namespace Proximity {
 
                     var rootObj = parser.get_root().get_object();
 
+                    var requestData = (string) Base64.decode (rootObj.get_string_member ("RequestData"));
+
                     entry_hostname.set_text (rootObj.get_string_member ("Hostname"));
                     combobox_protocol.set_active (rootObj.get_string_member ("Protocol") == "https://" ? 0 : 1);
-                    text_view_request.buffer.set_text (rootObj.get_string_member ("RequestData"));
+                    text_view_request.buffer.set_text (requestData);
+                    
                 } catch (Error err) {
                     stdout.printf ("Error retrieving/populating request: %s\n", err.message);
                 }
