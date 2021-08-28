@@ -6,11 +6,9 @@ namespace Proximity {
     class RequestDetails : Gtk.Notebook {
 
         [GtkChild]
-        private unowned Gtk.TextView text_view_request_response;
-        [GtkChild]
-        private unowned Gtk.TextView text_view_original_request_response;
-        [GtkChild]
         private unowned Gtk.ScrolledWindow scroll_window_original_text;
+        [GtkChild]
+        private unowned Gtk.ScrolledWindow scroll_window_text;
         //[GtkChild]
         //private WebKit.WebView webkit_preview;
         [GtkChild]
@@ -18,10 +16,28 @@ namespace Proximity {
 
         private ApplicationWindow application_window;
         private string guid;
+        private Gtk.SourceLanguageManager language_manager;
+        private Gtk.SourceBuffer source_buffer;
+        private Gtk.SourceBuffer source_buffer_orig;
+        private Gtk.SourceView text_view_request_response;
+        private Gtk.SourceView text_view_original_request_response;
 
         public RequestDetails (ApplicationWindow application_window) {
             this.application_window = application_window;
             guid = "";
+            language_manager = new Gtk.SourceLanguageManager ();
+
+            source_buffer = new Gtk.SourceBuffer.with_language (language_manager.get_language ("html"));
+            text_view_request_response = new Gtk.SourceView.with_buffer (source_buffer);
+            source_buffer_orig = new Gtk.SourceBuffer.with_language (language_manager.get_language ("html"));
+            text_view_original_request_response = new Gtk.SourceView.with_buffer (source_buffer_orig);
+
+            setup_sourceview (text_view_request_response, scroll_window_text);
+            setup_sourceview (text_view_original_request_response, scroll_window_original_text);
+
+            text_view_request_response.show ();
+            text_view_original_request_response.show ();
+
             // Ensure that when we reactivate webkit, that it's sandboxed: https://gitlab.gnome.org/GNOME/Initiatives/-/wikis/Sandbox-all-the-WebKit!
             //_preview.load_uri("https://www.google.com/");
 
@@ -46,13 +62,25 @@ namespace Proximity {
             item_inject.show ();
             menu.append (item_inject);
 
+            scroll_window_original_text.hide ();
+
             button_send_to.set_popup (menu);
+
+            text_view_request_response.populate_popup.connect (on_request_response_popup_modified);
+            text_view_original_request_response.populate_popup.connect (on_request_response_popup_orig);
         }
 
-        [GtkCallback]
-        public void on_request_response_popup (Gtk.Menu menu) {
+        private void on_request_response_popup_modified (Gtk.Menu menu) {
+            on_request_response_popup (menu, text_view_request_response);
+        }
+
+        private void on_request_response_popup_orig (Gtk.Menu menu) {
+            on_request_response_popup (menu, text_view_original_request_response);
+        }
+
+        public void on_request_response_popup (Gtk.Menu menu, Gtk.SourceView control) {
             Gtk.TextIter selection_start, selection_end;
-            var text_selected = text_view_request_response.buffer.get_selection_bounds (out selection_start, out selection_end);
+            var text_selected = control.buffer.get_selection_bounds (out selection_start, out selection_end);
 
             if (!text_selected) {
                 return;
@@ -64,7 +92,7 @@ namespace Proximity {
 
             var menu_item = new Gtk.MenuItem.with_label ("Send to Cyberchef");
             menu_item.activate.connect ( () => {
-                var selected_text = text_view_request_response.buffer.get_slice (selection_start, selection_end, true);
+                var selected_text = control.buffer.get_slice (selection_start, selection_end, true);
                 var uri = "https://gchq.github.io/CyberChef/#input=" + Soup.URI.encode (Base64.encode (selected_text.data), "");
 
                 try {
@@ -75,6 +103,17 @@ namespace Proximity {
             });
             menu_item.show ();
             menu.append (menu_item);
+        }
+
+        private void setup_sourceview (Gtk.SourceView source_view, Gtk.ScrolledWindow parent) {
+            source_view.expand = true;
+            source_view.monospace = true;
+            source_view.margin_start = 6;
+            source_view.margin_end = 6;
+            source_view.margin_top = 6;
+            source_view.margin_bottom = 6;
+            source_view.set_wrap_mode(Gtk.WrapMode.CHAR);
+            parent.add (source_view);
         }
 
         public void set_request (string guid) {
@@ -110,14 +149,17 @@ namespace Proximity {
                         }
 
                         var buffer = this.text_view_request_response.buffer;
-                        buffer.text = modified_request.make_valid() + "\n\n" + modified_response.make_valid();
+                        set_sourceview_language (source_buffer, modified_response.make_valid ());
+                        buffer.text = modified_request.make_valid () + "\n\n" + modified_response.make_valid ();
 
                         buffer = this.text_view_original_request_response.buffer;
-                        buffer.text = original_request.make_valid() + "\n\n" + original_response.make_valid();
+                        set_sourceview_language (source_buffer_orig, original_response.make_valid ());
+                        buffer.text = original_request.make_valid () + "\n\n" + original_response.make_valid ();
                     } else {
                         scroll_window_original_text.hide ();
                         var buffer = this.text_view_request_response.buffer;
-                        buffer.text = original_request.make_valid() + "\n\n" + original_response.make_valid();
+                        buffer.text = original_request.make_valid () + "\n\n" + original_response.make_valid ();
+                        set_sourceview_language (source_buffer, original_response.make_valid ());
                     }
                 }
                 catch(Error e) {
@@ -125,6 +167,26 @@ namespace Proximity {
                 }
                 
             });
+        }
+
+        private void set_sourceview_language (Gtk.SourceBuffer buffer, string response) {
+            var re = new Regex ("\\s*Content-Type: [/A-Za-z0-9]*\\s*");
+            GLib.MatchInfo match_info;
+            var match_found = re.match (response, 0, out match_info);
+            var language = "html";
+            
+            if (match_found && match_info.get_match_count () >= 1) {
+                var content_type = match_info.fetch (0);
+                if (content_type != null) {
+                    if (content_type.contains ("javascript")) {
+                        language = "javascript";
+                    } else if (content_type.contains ("css") || content_type.contains ("stylesheet")) {
+                        language = "css";
+                    }
+                }
+            }
+
+            buffer.language = language_manager.get_language (language);
         }
 
         public void reset_state () {

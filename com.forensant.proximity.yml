@@ -17,6 +17,13 @@ finish-args:
   # TODO: I'm not entirely happy with this. Some sandboxing is better than none, but if we could just use portals that'd be ideal
   - --filesystem=host
 modules:
+  - name: GtkSourceView
+    buildsystem: meson
+    sources:
+      - type: git
+        tag: 4.8.1
+        url: https://gitlab.gnome.org/GNOME/gtksourceview.git
+
   - name: proximity
     buildsystem: meson
     sources:

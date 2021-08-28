@@ -32,6 +32,7 @@ namespace Proximity {
             label_title.show ();
 
             this.set_selectable (false);
+            this.sensitive = false;
         }
 
         public InjectListRow.placeholder () {
@@ -50,6 +51,7 @@ namespace Proximity {
             label_title.margin_end    = 10;
             label_title.margin_bottom = 20;
             label_title.wrap = true;
+            this.sensitive = false;
 
             label_title.show ();
 
