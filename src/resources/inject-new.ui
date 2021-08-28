@@ -136,7 +136,7 @@
             <property name="hexpand">True</property>
           </object>
           <packing>
-            <property name="left_attach">4</property>
+            <property name="left_attach">3</property>
             <property name="top_attach">0</property>
           </packing>
         </child>
@@ -147,7 +147,7 @@
             <property name="hexpand">True</property>
           </object>
           <packing>
-            <property name="left_attach">3</property>
+            <property name="left_attach">4</property>
             <property name="top_attach">0</property>
           </packing>
         </child>
@@ -162,12 +162,51 @@
       </packing>
     </child>
     <child>
-      <object class="GtkLabel" id="label_request">
+      <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="margin_top">18</property>
-        <property name="label" translatable="yes">Request</property>
-        <property name="xalign">0</property>
+        <child>
+          <object class="GtkLabel" id="label_request">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_top">18</property>
+            <property name="label" translatable="yes">Request</property>
+            <property name="xalign">0</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="hexpand">True</property>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="button_add_separator">
+            <property name="label" translatable="yes">Add _Separator</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="margin_bottom">6</property>
+            <property name="use_underline">True</property>
+            <signal name="clicked" handler="on_button_add_separator_clicked" swapped="no"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
       </object>
       <packing>
         <property name="expand">False</property>
@@ -192,6 +231,7 @@
             <property name="top_margin">6</property>
             <property name="bottom_margin">6</property>
             <property name="monospace">True</property>
+            <signal name="key-release-event" handler="on_text_view_request_key_release_event" swapped="no"/>
           </object>
         </child>
       </object>
@@ -202,17 +242,11 @@
       </packing>
     </child>
     <child>
-      <object class="GtkLabel">
+      <object class="GtkLabel" id="label_error">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="margin_top">12</property>
-        <property name="label" translatable="yes">Enclose parts of the request to be injected with #{}, for example: Cookie: session=#{abc123}
-</property>
-        <property name="wrap">True</property>
+        <property name="margin_top">6</property>
         <property name="xalign">0</property>
-        <attributes>
-          <attribute name="style" value="italic"/>
-        </attributes>
       </object>
       <packing>
         <property name="expand">False</property>
@@ -225,19 +259,6 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="column_homogeneous">True</property>
-        <child>
-          <object class="GtkLabel" id="label_fuzzdb">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="margin_top">12</property>
-            <property name="label" translatable="yes">FuzzDB</property>
-            <property name="xalign">0</property>
-          </object>
-          <packing>
-            <property name="left_attach">0</property>
-            <property name="top_attach">0</property>
-          </packing>
-        </child>
         <child>
           <object class="GtkLabel" id="label_iterate">
             <property name="visible">True</property>
@@ -403,6 +424,19 @@
           <packing>
             <property name="left_attach">2</property>
             <property name="top_attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="label_fuzzdb">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_top">12</property>
+            <property name="label" translatable="yes">FuzzDB</property>
+            <property name="xalign">0</property>
+          </object>
+          <packing>
+            <property name="left_attach">0</property>
+            <property name="top_attach">0</property>
           </packing>
         </child>
       </object>

@@ -21,7 +21,7 @@ namespace Proximity {
         public InjectOperation (Json.Object obj) {
             guid                = obj.get_string_member ("GUID");
             title               = obj.get_string_member ("Title");
-            request             = obj.get_string_member ("Request");
+            request             = parse_request (obj.get_array_member ("Request"));
             archived            = obj.get_boolean_member ("Archived");
             error               = obj.get_string_member ("Error");
             percent_completed   = (int)obj.get_int_member ("PercentCompleted");
@@ -41,6 +41,23 @@ namespace Proximity {
             }
 
             return Status.UNDERWAY;
+        }
+
+        private string parse_request (Json.Array arr) {
+            var str = "";
+            arr.foreach_element ( (array, idx, node) => {
+                var obj = node.get_object ();
+                if (obj != null) {
+                    var decoded = (string) Base64.decode (obj.get_string_member ("RequestPart"));
+                    if (obj.get_boolean_member ("Inject")) {
+                        str += "»" + decoded + "«";
+                    } else {
+                        str += decoded;
+                    }
+                }
+            });
+
+            return str;
         }
     }
 }

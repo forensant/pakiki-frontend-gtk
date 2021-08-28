@@ -1,4 +1,5 @@
 builddir
+build-dir
 .flatpak-builder/*
 python39
 repo

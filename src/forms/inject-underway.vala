@@ -41,7 +41,7 @@ namespace Proximity {
             var different_operation = operation.guid != this.operation.guid;
             
             this.operation = operation;
-            text_view_request.buffer.text = (string) Base64.decode (operation.request);
+            text_view_request.buffer.text = operation.request;
             label_injection_parameters.set_text (operation.inject_description);
 
             if (different_operation || entry_title.has_focus == false) {

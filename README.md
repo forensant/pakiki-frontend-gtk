@@ -12,7 +12,7 @@ This repository contains the GTK (Linux) user interface which proxies traffic. I
 
 One of the reasons for developing this is to give back to the community. I want to help people who are new to pentesting, while still having 99% of what experienced pentesters need day to day.
 
-Feedback would be greatly appreciated.
+Given it is still under heavy development, the file formats (both projects and settings) may change, and there may be many bugs in the pre-release builds. Early feedback would be greatly appreciated though.
 
 ## Installation
 Download from the latest release from [https://github.com/pipeline/proximity-frontend-gtk/releases](https://github.com/pipeline/proximity-frontend-gtk/releases)
@@ -48,9 +48,10 @@ You'll require the following dependencies to develop Proximity:
  * libsoup
  * libjson-glib
  * libwebkit2-gtk
+ * libgtksourceview-4
 
 On Debian based distributions, these can be downloaded with:
- ```sudo apt install build-essential valac meson libgtk-3-dev libsoup2.4-dev libjson-glib-dev libwebkit2gtk-4.0-dev```
+ ```sudo apt install build-essential valac meson libgtk-3-dev libsoup2.4-dev libjson-glib-dev libwebkit2gtk-4.0-dev libgtksourceview-4-dev```
 
 If you're going to be building/packaging Proximity, you'll also require the Flatpak dependencies:
 ```
