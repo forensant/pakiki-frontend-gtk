@@ -25,11 +25,13 @@ namespace Proximity {
         public RequestDetails (ApplicationWindow application_window) {
             this.application_window = application_window;
             guid = "";
-            language_manager = new Gtk.SourceLanguageManager ();
+            language_manager = Gtk.SourceLanguageManager.get_default ();
 
-            source_buffer = new Gtk.SourceBuffer.with_language (language_manager.get_language ("html"));
+            var lang = language_manager.get_language ("xml");
+
+            source_buffer = new Gtk.SourceBuffer.with_language (lang);
             text_view_request_response = new Gtk.SourceView.with_buffer (source_buffer);
-            source_buffer_orig = new Gtk.SourceBuffer.with_language (language_manager.get_language ("html"));
+            source_buffer_orig = new Gtk.SourceBuffer.with_language (lang);
             text_view_original_request_response = new Gtk.SourceView.with_buffer (source_buffer_orig);
 
             setup_sourceview (text_view_request_response, scroll_window_text);
@@ -149,17 +151,20 @@ namespace Proximity {
                         }
 
                         var buffer = this.text_view_request_response.buffer;
+                        buffer.text = "";
                         set_sourceview_language (source_buffer, modified_response.make_valid ());
                         buffer.text = modified_request.make_valid () + "\n\n" + modified_response.make_valid ();
 
                         buffer = this.text_view_original_request_response.buffer;
+                        buffer.text = "";
                         set_sourceview_language (source_buffer_orig, original_response.make_valid ());
                         buffer.text = original_request.make_valid () + "\n\n" + original_response.make_valid ();
                     } else {
                         scroll_window_original_text.hide ();
                         var buffer = this.text_view_request_response.buffer;
-                        buffer.text = original_request.make_valid () + "\n\n" + original_response.make_valid ();
+                        buffer.text = ""; 
                         set_sourceview_language (source_buffer, original_response.make_valid ());
+                        buffer.text = original_request.make_valid () + "\n\n" + original_response.make_valid ();
                     }
                 }
                 catch(Error e) {
@@ -170,20 +175,26 @@ namespace Proximity {
         }
 
         private void set_sourceview_language (Gtk.SourceBuffer buffer, string response) {
-            var re = new Regex ("\\s*Content-Type: [/A-Za-z0-9]*\\s*");
-            GLib.MatchInfo match_info;
-            var match_found = re.match (response, 0, out match_info);
             var language = "html";
-            
-            if (match_found && match_info.get_match_count () >= 1) {
-                var content_type = match_info.fetch (0);
-                if (content_type != null) {
-                    if (content_type.contains ("javascript")) {
-                        language = "javascript";
-                    } else if (content_type.contains ("css") || content_type.contains ("stylesheet")) {
-                        language = "css";
+
+            try {
+                var re = new Regex ("\\s*Content-Type: [/A-Za-z0-9]*\\s*");
+                GLib.MatchInfo match_info;
+                var match_found = re.match (response, 0, out match_info);
+                
+                
+                if (match_found && match_info.get_match_count () >= 1) {
+                    var content_type = match_info.fetch (0);
+                    if (content_type != null) {
+                        if (content_type.contains ("javascript")) {
+                            language = "javascript";
+                        } else if (content_type.contains ("css") || content_type.contains ("stylesheet")) {
+                            language = "css";
+                        }
                     }
                 }
+            } catch (Error e) {
+                stderr.printf ("Could not get the language of the response: %s\n", e.message);
             }
 
             buffer.language = language_manager.get_language (language);

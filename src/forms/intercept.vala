@@ -216,10 +216,7 @@ namespace Proximity {
         }
 
         private void on_selection_changed () {
-            var selection = list_requests.get_selection ();
-            Gtk.TreeModel model;
-            Gtk.TreeIter iter;
-            
+            var selection = list_requests.get_selection ();            
             var selection_count = selection.get_selected_rows (null).length ();
 
             selection.selected_foreach ((model, path, iter) => {

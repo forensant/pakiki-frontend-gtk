@@ -18,9 +18,7 @@ namespace Proximity {
                 stdout.printf ("Error getting temporary path, using /tmp/proximity_temp instead (%s)\n", err.message);
                 return "/tmp/proximity_temp";
             }
-            var path = file.get_path ();
-            stdout.printf ("Storing the files in: %s\n", path);
-            return path;            
+            return file.get_path ();            
         }
 
         public bool open (string? project_path) {
@@ -72,9 +70,12 @@ namespace Proximity {
                         pid.to_string ());
 
                     return true;
-                } catch (Error err) {
-                    stdout.printf("Error launching process: %s\n", err.message);
-                }
+                } catch (Error err) {}
+            }
+
+            stderr.printf ("Could not launch the executable process from any of the following directories:\n");
+            for (int i = 0; i < paths.length; i++) {
+                stderr.printf ("  %s\n", paths[i]);
             }
 
             return false;
@@ -130,8 +131,6 @@ namespace Proximity {
 
             set_common_file_dialog_properties (dialog);
             var response_id = dialog.run ();
-
-            stdout.printf("Got data!");
 
             if (response_id == Gtk.ResponseType.ACCEPT) {
                 var selected_file = dialog.get_file();

@@ -203,7 +203,6 @@ namespace Proximity {
                     parser.load_from_data ((string) message.response_body.flatten ().data, -1);
 
                     var rootArray = parser.get_root ().get_array ();
-                    stdout.printf("Got %lld results\n", rootArray.get_length ());
 
                     show_controls (rootArray.get_length ());
 

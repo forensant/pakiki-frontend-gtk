@@ -242,7 +242,6 @@ namespace Proximity {
 
             Gtk.TextIter start_pos, end_pos;
             var text_selected = text_view_request.buffer.get_selection_bounds (out start_pos, out end_pos);
-            var text = text_view_request.buffer.text;
 
             var last_start_iterator = start_pos;
             var last_end_iterator = start_pos;
