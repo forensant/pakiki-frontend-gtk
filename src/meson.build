@@ -9,11 +9,13 @@ sources += files(
     'forms/inject-pane.vala',
     'forms/inject-underway.vala',
     'forms/intercept.vala',
+    'forms/main-application-pane.vala',
     'forms/placeholder-inject.vala',
     'forms/placeholder-requests.vala',
     'forms/request-details.vala',
     'forms/request-list.vala',
     'forms/request-new.vala',
+    'forms/requests-pane.vala',
 
     'models/core-process.vala',
     'models/inject-operation.vala',

@@ -57,6 +57,7 @@ namespace Proximity {
                     entry_hostname.set_text (rootObj.get_string_member ("Hostname"));
                     combobox_protocol.set_active (rootObj.get_string_member ("Protocol") == "https://" ? 0 : 1);
                     text_view_request.buffer.set_text (requestData);
+                    request_details.reset_state ();
                     
                 } catch (Error err) {
                     stdout.printf ("Error retrieving/populating request: %s\n", err.message);

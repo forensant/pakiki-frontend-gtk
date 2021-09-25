@@ -5,8 +5,12 @@ namespace Proximity {
     [GtkTemplate (ui = "/com/forensant/proximity/request-list.ui")]
     class RequestList : Gtk.Paned {
 
+        public signal void requests_loaded (bool present);
+
         [GtkChild]
         private unowned Gtk.Box box;
+        [GtkChild]
+        private unowned Gtk.Label label_no_requests;
         [GtkChild]
         private unowned Gtk.ListStore liststore;
         [GtkChild]
@@ -19,8 +23,9 @@ namespace Proximity {
         private PlaceholderRequests placeholder_requests;
         private RequestDetails request_details;
         private string scan_id;
-        private string searchQuery;
+        private string search_query;
         private bool updating;
+        private string url_filter;
         private WebsocketConnection websocket;
         
         enum Column {
@@ -41,6 +46,8 @@ namespace Proximity {
             this.exclude_resources = true;
             this.updating = false;
             this.placeholder_requests = new PlaceholderRequests (application_window);
+            this.search_query = "";
+            this.url_filter = "";
 
             this.box.add (placeholder_requests);
 
@@ -110,7 +117,7 @@ namespace Proximity {
             timeColumn.set_cell_data_func(timeCellRenderer, (cell_layout, cell, tree_model, iter) => {
                 Value val;
                 tree_model.get_value(iter, Column.TIME, out val);
-                ((Gtk.CellRendererText)cell).text = responseTime(new DateTime.from_unix_local(val.get_int()));
+                ((Gtk.CellRendererText)cell).text = response_time(new DateTime.from_unix_local(val.get_int()));
                 val.unset();
             });
 
@@ -118,7 +125,7 @@ namespace Proximity {
             responseSizeColumn.set_cell_data_func(responseSizeRenderer, (cell_layout, cell, tree_model, iter) => {
                 Value val;
                 tree_model.get_value(iter, Column.RESPONSE_SIZE, out val);
-                ((Gtk.CellRendererText)cell).text = responseSizeToString(val.get_int());
+                ((Gtk.CellRendererText)cell).text = response_size_to_string(val.get_int());
                 val.unset();
             });
 
@@ -126,7 +133,7 @@ namespace Proximity {
             durationColumn.set_cell_data_func(durationRenderer, (cell_layout, cell, tree_model, iter) => {
                 Value val;
                 tree_model.get_value(iter, Column.DURATION, out val);
-                ((Gtk.CellRendererText)cell).text = responseDuration(val.get_int());
+                ((Gtk.CellRendererText)cell).text = response_duration(val.get_int());
                 val.unset();
             });
 
@@ -151,6 +158,12 @@ namespace Proximity {
         }
 
         private void add_request_to_table (Json.Object request) {
+            var url = request.get_string_member("URL");
+
+            if (url_filter != "" && !url.contains(url_filter)) {
+                return;
+            }
+
             Gtk.TreeIter iter;
             liststore.insert_with_values (out iter, -1,
                 Column.GUID,          request.get_string_member ("GUID"),
@@ -164,17 +177,22 @@ namespace Proximity {
                 Column.NOTES,         request.get_string_member ("Notes")
             );
 
-            if (placeholder_requests.visible) {
+            if (label_no_requests.visible) {
                 show_controls (1);
             }
         }
 
         private void show_controls (uint request_count) {
             if (request_count == 0 && scan_id == "") {
-                placeholder_requests.show ();
+                if (scan_id != "" || search_query != "" || url_filter != "") {
+                    label_no_requests.visible = true;
+                } else {
+                    placeholder_requests.show ();
+                }
                 scrolled_window_requests.hide ();
                 request_details.hide ();
             } else {
+                label_no_requests.visible = false;
                 placeholder_requests.hide ();
                 scrolled_window_requests.show ();
                 request_details.show ();
@@ -182,14 +200,19 @@ namespace Proximity {
         }
 
         private void get_requests () {
+            label_no_requests.visible = false;
             var url = "http://localhost:10101/project/requests?exclude_resources=" + (exclude_resources ? "true" : "false");
 
-            if (searchQuery != null && searchQuery != "") {
-                url += "&filter=" + Soup.URI.encode(searchQuery, null);
+            if (search_query != null && search_query != "") {
+                url += "&filter=" + Soup.URI.encode(search_query, null);
             }
 
             if (scan_id != "") {
                 url += "&scanid=" + scan_id;
+            }
+
+            if (url_filter != "") {
+                url += "&url_filter=" + url_filter;
             }
 
             var session = new Soup.Session ();
@@ -210,6 +233,15 @@ namespace Proximity {
                         var request = reqElement.get_object ();
                         add_request_to_table (request);
                     }
+
+                    this.requests_loaded (rootArray.get_length () > 0);
+
+                    if (rootArray.get_length () == 0 && (url_filter != "" || scan_id != "" || search_query != "")) {
+                        label_no_requests.visible = true;
+                    } else {
+                        label_no_requests.visible = false;
+                    }
+
                 } catch (Error err) {
                     stdout.printf ("Could not populate request list: %s\n", err.message);
                 }
@@ -227,8 +259,8 @@ namespace Proximity {
                 filter += "exclude_resources:true";
             }
 
-            if (searchQuery != null && searchQuery != "") {
-                filter += Soup.URI.encode (" " + searchQuery, null);
+            if (search_query != null && search_query != "") {
+                filter += Soup.URI.encode (" " + search_query, null);
             }
 
             if (filter != "") {
@@ -353,7 +385,7 @@ namespace Proximity {
         }
 
         public void on_search (string query, bool exclude_resources) {
-            this.searchQuery = query;
+            this.search_query = query;
             this.exclude_resources = exclude_resources;
             get_requests ();
         }
@@ -393,8 +425,8 @@ namespace Proximity {
 
             return false; // allow other event handlers to also be run
         }
-      
-        private string responseDuration (int64 duration) {
+
+        private string response_duration (int64 duration) {
             if (duration > 5000) {
                 return ((float)(duration/1000.0)).to_string ("%.2f s");
             }
@@ -402,7 +434,7 @@ namespace Proximity {
             return duration.to_string () + " ms";
         }
 
-        private string responseSizeToString (int64 responseSize) {
+        private string response_size_to_string (int64 responseSize) {
             var bytes = (float)responseSize;
             if (bytes < 1024) {
                 return bytes.to_string() + " B";
@@ -426,7 +458,7 @@ namespace Proximity {
             return "";
         }
 
-        private string responseTime (DateTime time) {
+        private string response_time (DateTime time) {
             var now = new DateTime.now ();
             var isToday = (time.get_day_of_year () == now.get_day_of_year () && time.get_year () ==  now.get_year ());
 
@@ -438,14 +470,19 @@ namespace Proximity {
             }
         }
 
+        public void reset_state () {
+            get_requests ();
+            request_details.reset_state ();
+        }
+
         public void set_scan_id (string guid) {
             this.scan_id = guid;
             this.get_requests ();
         }
 
-        public void reset_state () {
-            get_requests ();
-            request_details.reset_state ();
+        public void set_url_filter (string url) {
+            this.url_filter = url;
+            this.get_requests ();
         }
 
         public void set_processed_launched (bool successful) {

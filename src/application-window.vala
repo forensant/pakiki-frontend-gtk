@@ -28,7 +28,7 @@ namespace Proximity {
         private InjectPane inject_pane;
         private Intercept intercept;
         private RequestNew new_request;
-        private RequestList request_list;
+        private RequestsPane requests_pane;
         private GLib.Settings settings;
 
         public ApplicationWindow (Gtk.Application application) {
@@ -96,10 +96,9 @@ namespace Proximity {
         private void render_controls (bool process_launched) {
             controls_hidden = !process_launched;
 
-            request_list = new RequestList (this);
-            request_list.show ();
-            request_list.set_processed_launched (process_launched);
-            stack.add_titled (request_list, "RequestList", "Requests");
+            requests_pane = new RequestsPane (this, process_launched);
+            requests_pane.show ();
+            stack.add_titled (requests_pane, "RequestList", "Requests");
             
             if (process_launched) {
                 inject_pane = new InjectPane (this);
@@ -149,7 +148,7 @@ namespace Proximity {
         [GtkCallback]
         public void on_back_clicked () {
             if (stack.visible_child == new_request || stack.visible_child == intercept) {
-                stack.visible_child = request_list;
+                stack.visible_child = requests_pane;
             }
         }
 
@@ -160,7 +159,7 @@ namespace Proximity {
 
         [GtkCallback]
         public void on_new_clicked () {
-            if (stack.visible_child == request_list) {
+            if (stack.visible_child == requests_pane) {
                 stack.visible_child = new_request;
             } else if (stack.visible_child == inject_pane) {
                 inject_pane.on_new_inject_operation ();
@@ -184,7 +183,7 @@ namespace Proximity {
             if (launch_successful) {
                 inject_pane.reset_state ();
                 new_request.reset_state ();
-                request_list.reset_state ();
+                requests_pane.reset_state ();
                 intercept.reset_state ();
             }
             else {
@@ -197,7 +196,7 @@ namespace Proximity {
 
         [GtkCallback]
         public void search_text_changed () {
-            request_list.on_search (searchentry.get_text (), checkButtonExcludeResources.get_active ());
+            requests_pane.on_search (searchentry.get_text (), checkButtonExcludeResources.get_active ());
             inject_pane.on_search  (searchentry.get_text (), checkButtonExcludeResources.get_active ());
         }
 
@@ -206,11 +205,11 @@ namespace Proximity {
             if (stack.in_destruction () || controls_hidden || inject_pane == null)
                 return;
 
-            button_intercept.visible = (stack.visible_child == request_list);
-            button_new.visible = (stack.visible_child == request_list || (stack.visible_child == inject_pane && !inject_pane.new_shown ()));
+            button_intercept.visible = (stack.visible_child == requests_pane);
+            button_new.visible = (stack.visible_child == requests_pane || (stack.visible_child == inject_pane && !inject_pane.new_shown ()));
             button_back.visible = (stack.visible_child == new_request || stack.visible_child == intercept);
 
-            var can_search = (inject_pane.can_search () || stack.visible_child == request_list);
+            var can_search = (inject_pane.can_search () || stack.visible_child == requests_pane);
             button_search.sensitive = can_search;
 
             if (searchbar.visible && !can_search) {

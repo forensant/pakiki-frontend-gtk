@@ -340,8 +340,6 @@ namespace Proximity {
             generator.set_root (root);
             string parameters = generator.to_data (null);
 
-            stdout.printf("JSON: %s\n", parameters);
-
             message.set_request("application/json", Soup.MemoryUse.COPY, parameters.data);
             
             session.queue_message (message, (sess, mess) => {
