@@ -42,5 +42,5 @@ modules:
       - cp -r lib /app/bin/python39/
     sources:
       - type: archive
-        url: https://github.com/pipeline/proximity-core/releases/download/v0.2-alpha/ProximityCore-Linux.zip
-        sha256: 9c08a2b142df5960864ad13f9df38a1db0541cb90700c8726261e1563c97e772
+        url: https://github.com/pipeline/proximity-core/releases/download/v0.3-alpha/ProximityCore-Linux.zip
+        sha256: 3e6a8b84e9afffac76eb565af9de6a6ce537491dc73ede4994d9e29fa648d145
