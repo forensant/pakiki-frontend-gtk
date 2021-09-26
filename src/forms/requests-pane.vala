@@ -22,9 +22,8 @@ namespace Proximity {
             tree_store_site_map.set (iter, 0, "All");
 
             tree_view_site_map = new Gtk.TreeView.with_model (tree_store_site_map);
-            tree_view_site_map.activate_on_single_click = true;
             tree_view_site_map.border_width = 0;
-            tree_view_site_map.row_activated.connect ( on_sitemap_row_activated );
+            tree_view_site_map.get_selection ().changed.connect ( on_sitemap_row_changed );
             Gtk.CellRendererText cell = new Gtk.CellRendererText ();
             tree_view_site_map.insert_column_with_attributes (-1, "Sitemap", cell, "text", 0);
 
@@ -164,14 +163,16 @@ namespace Proximity {
             }
         }
 
-        private void on_sitemap_row_activated (Gtk.TreePath path, Gtk.TreeViewColumn column) {
+        private void on_sitemap_row_changed () {
+            Gtk.TreeModel model;
             Gtk.TreeIter path_iter;
-            if (tree_store_site_map.get_iter (out path_iter, path)) {
+
+            if (tree_view_site_map.get_selection ().get_selected (out model, out path_iter)) {
                 string url = get_path_string (path_iter);
                 if (url == "://All") {
                     url = "";
                 }
-
+    
                 request_list.set_url_filter (url);
             }
         }

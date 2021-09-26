@@ -177,7 +177,7 @@ namespace Proximity {
                 Column.NOTES,         request.get_string_member ("Notes")
             );
 
-            if (label_no_requests.visible) {
+            if (label_no_requests.visible || placeholder_requests.visible) {
                 show_controls (1);
             }
         }
