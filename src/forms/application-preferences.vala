@@ -34,7 +34,7 @@ namespace Proximity {
 
         [GtkCallback]
         public void on_button_certificate_save_clicked (Gtk.Button button) {
-            proxy_settings.save_certificate (application_window);
+            proxy_settings.save_certificate (this);
         }
 
         [GtkCallback]
