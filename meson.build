@@ -10,7 +10,7 @@ dependencies = [
     dependency('json-glib-1.0'),
     dependency('libsoup-2.4'),
     meson.get_compiler('vala').find_library('posix'),
-    dependency('gtksourceview-4'),
+    dependency('gtksourceview-3.0'),
 #   dependency('webkit2gtk-4.0')
 ]
 
