@@ -236,12 +236,6 @@ namespace Proximity {
 
                     this.requests_loaded (rootArray.get_length () > 0);
 
-                    if (rootArray.get_length () == 0 && (url_filter != "" || scan_id != "" || search_query != "")) {
-                        label_no_requests.visible = true;
-                    } else {
-                        label_no_requests.visible = false;
-                    }
-
                 } catch (Error err) {
                     stdout.printf ("Could not populate request list: %s\n", err.message);
                 }

@@ -2,7 +2,7 @@ using Soup;
 
 namespace Proximity {
     [GtkTemplate (ui = "/com/forensant/proximity/inject-pane.ui")]
-    class InjectPane : Gtk.Paned {
+    class InjectPane : Gtk.Paned, MainApplicationPane {
 
         [GtkChild]
         private Gtk.Grid grid;
@@ -42,7 +42,10 @@ namespace Proximity {
             list_box_injection_scans.row_selected.connect (on_row_selected);
 
             get_inject_operations ();
-            //this.show_all ();
+        }
+
+        public bool can_search () {
+            return inject_underway_form.visible;
         }
 
         private void get_inject_operations () {
@@ -98,6 +101,88 @@ namespace Proximity {
             });
         }
 
+        private void insert_into_position (InjectListRow row_to_insert) {
+            var i = 0;
+            var inserted = false;
+            list_box_injection_scans.@foreach ( (widget) => {
+                if (inserted) {
+                    return;
+                }
+
+                var row = (InjectListRow)widget;
+
+                if (row.row_type == InjectListRow.Type.LABEL && row.status == row_to_insert.status) {
+                    list_box_injection_scans.insert (row_to_insert, i + 1);
+                    inserted = true;
+                    row_to_insert.show_all ();
+                }
+
+                i++;
+            });
+        }
+
+        public bool new_visible () {
+            return !inject_new_form.visible;
+        }
+
+        private void on_new_clicked () {
+            on_new_inject_operation ();
+        }
+
+        public void on_new_inject_operation (string? guid = null) {
+            inject_underway_form.hide ();
+            placeholder_form.hide ();
+            inject_new_form.show ();
+            if (guid != null) {
+                inject_new_form.populate_request (guid);
+            }
+            list_box_injection_scans.unselect_all ();
+            pane_changed ();
+        }
+
+        private void on_row_selected (Gtk.ListBoxRow? widget) {
+            if (widget == null) {
+                return;
+            }
+
+            var row = (InjectListRow)widget;
+            inject_new_form.hide ();
+            placeholder_form.hide ();
+            inject_underway_form.show ();
+            inject_underway_form.set_inject_operation (row.inject_operation);
+            pane_changed ();
+        }
+
+        public void on_search (string query, bool exclude_resources) {
+            inject_underway_form.on_search (query, exclude_resources);
+        }
+
+        private void on_websocket_message (int type, Bytes message) {
+            var parser = new Json.Parser ();
+            var json_data = (string) message.get_data ();
+            
+            if(json_data == "") {
+                return;
+            }
+            
+            try {
+                parser.load_from_data (json_data, -1);
+            }
+            catch(Error e) {
+                stdout.printf ("Could not parse JSON data, error: %s\nData: %s\n", e.message, json_data);
+                return;
+            }
+
+            var operation = parser.get_root ().get_object ();
+                
+            if(operation.get_string_member("ObjectType") != "Inject Operation") {
+                return;
+            }
+
+            parse_inject_object (operation);
+            show_appropriate_labels ();
+        }
+
         private void parse_inject_object (Json.Object obj) {            
             var guid = obj.get_string_member("GUID");
             var inject_operation = new InjectOperation (obj);
@@ -146,24 +231,28 @@ namespace Proximity {
             }
         }
 
-        private void insert_into_position (InjectListRow row_to_insert) {
-            var i = 0;
-            var inserted = false;
-            list_box_injection_scans.@foreach ( (widget) => {
-                if (inserted) {
-                    return;
-                }
+        public void reset_state () {
+            get_inject_operations ();
+            inject_underway_form.hide ();
+            inject_new_form.hide ();
+            pane_changed ();
+        }
 
+        public void select_when_received (string guid) {
+            var found = false;
+
+            list_box_injection_scans.@foreach ( (widget) => {
                 var row = (InjectListRow)widget;
 
-                if (row.row_type == InjectListRow.Type.LABEL && row.status == row_to_insert.status) {
-                    list_box_injection_scans.insert (row_to_insert, i + 1);
-                    inserted = true;
-                    row_to_insert.show_all ();
+                if (row.row_type == InjectListRow.Type.INJECT_SCAN && row.inject_operation.guid == guid) {
+                    found = true;
+                    select_guid_when_received = null;
+                    
+                    list_box_injection_scans.select_row (row);
                 }
-
-                i++;
             });
+
+            select_guid_when_received = guid;
         }
 
         private void show_appropriate_labels() {
@@ -202,92 +291,6 @@ namespace Proximity {
             } else {
                 inject_list_placeholder_row.hide ();
             }
-        }
-
-        public void on_new_inject_operation (string? guid = null) {
-            inject_underway_form.hide ();
-            placeholder_form.hide ();
-            inject_new_form.show ();
-            if (guid != null) {
-                inject_new_form.populate_request (guid);
-            }
-            list_box_injection_scans.unselect_all ();
-            application_window.visible_child_changed ();
-        }
-
-        private void on_row_selected (Gtk.ListBoxRow? widget) {
-            if (widget == null) {
-                return;
-            }
-
-            var row = (InjectListRow)widget;
-            inject_new_form.hide ();
-            placeholder_form.hide ();
-            inject_underway_form.show ();
-            inject_underway_form.set_inject_operation (row.inject_operation);
-            application_window.visible_child_changed ();
-        }
-
-        public void on_search (string query, bool exclude_resources) {
-            inject_underway_form.on_search (query, exclude_resources);
-        }
-
-        private void on_websocket_message (int type, Bytes message) {
-            var parser = new Json.Parser ();
-            var json_data = (string) message.get_data ();
-            
-            if(json_data == "") {
-                return;
-            }
-            
-            try {
-                parser.load_from_data (json_data, -1);
-            }
-            catch(Error e) {
-                stdout.printf ("Could not parse JSON data, error: %s\nData: %s\n", e.message, json_data);
-                return;
-            }
-
-            var operation = parser.get_root ().get_object ();
-                
-            if(operation.get_string_member("ObjectType") != "Inject Operation") {
-                return;
-            }
-
-            parse_inject_object (operation);
-            show_appropriate_labels ();
-        }
-
-        public void select_when_received (string guid) {
-            var found = false;
-
-            list_box_injection_scans.@foreach ( (widget) => {
-                var row = (InjectListRow)widget;
-
-                if (row.row_type == InjectListRow.Type.INJECT_SCAN && row.inject_operation.guid == guid) {
-                    found = true;
-                    select_guid_when_received = null;
-                    
-                    list_box_injection_scans.select_row (row);
-                }
-            });
-
-            select_guid_when_received = guid;
-        }
-
-        public void reset_state () {
-            get_inject_operations ();
-            inject_underway_form.hide ();
-            inject_new_form.hide ();
-            application_window.visible_child_changed ();
-        }
-
-        public bool new_shown () {
-            return inject_new_form.visible;
-        }
-
-        public bool can_search () {
-            return inject_underway_form.visible;
         }
     }
 }

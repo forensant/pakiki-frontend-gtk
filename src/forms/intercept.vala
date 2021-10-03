@@ -5,7 +5,7 @@ using Gtk;
 namespace Proximity {
     
     [GtkTemplate (ui = "/com/forensant/proximity/intercept.ui")]
-    class Intercept : Gtk.Paned {
+    class Intercept : Gtk.Paned, MainApplicationPane {
 
         [GtkChild]
         private unowned Gtk.Button button_drop;
@@ -22,6 +22,7 @@ namespace Proximity {
         [GtkChild]
         private unowned Gtk.TextView text_view_request;
       
+        private ApplicationWindow application_window;
         private Gtk.ListStore liststore_requests;
         private bool updating;
         private WebsocketConnection websocket;
@@ -33,7 +34,8 @@ namespace Proximity {
             BODY
         }
         
-        public Intercept () {
+        public Intercept (ApplicationWindow application_window) {
+            this.application_window = application_window;
             liststore_requests = new Gtk.ListStore (4, typeof (string), typeof (string), typeof (string), typeof (string));
             list_requests.set_model (liststore_requests);
 
@@ -110,6 +112,14 @@ namespace Proximity {
             }
         }
 
+        public bool back_visible () {
+            return true;
+        }
+
+        public bool can_search () {
+            return false;
+        }
+
         private void clear_gui () {
             text_view_request.buffer.text = "";
             button_drop.sensitive = false;
@@ -182,6 +192,10 @@ namespace Proximity {
                 }
                 websocket.message.connect (on_websocket_message);
             });
+        }
+
+        public void on_back_clicked () {
+            application_window.change_pane ("RequestList");
         }
 
         [GtkCallback]

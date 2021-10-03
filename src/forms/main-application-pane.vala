@@ -1,20 +1,28 @@
 namespace Proximity {
     interface MainApplicationPane : Object {
+        public signal void pane_changed ();
         
         public virtual bool back_visible () {
             return false;
+        }
+
+        public virtual bool can_search () {
+            return true;
         }
 
         public virtual bool new_visible () {
             return false;
         }
 
-        public virtual bool search_sensitive () {
-            return true;
+        public virtual void on_back_clicked () {
         }
 
-        public abstract void   on_search (string text, bool exclude_resources);
-        public abstract string pane_name ();
-        public abstract void   reset_state ();
+        public virtual void on_new_clicked () {
+        }
+
+        public virtual void on_search (string text, bool exclude_resources) {
+        }
+
+        public abstract void reset_state ();
     }
 }

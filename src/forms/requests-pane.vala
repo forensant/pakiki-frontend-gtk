@@ -3,14 +3,18 @@ using Soup;
 namespace Proximity {
     class RequestsPane : Gtk.Paned, MainApplicationPane {
         
-        private Gtk.TreeStore tree_store_site_map;
+        private ApplicationWindow application_window;
+        private bool launch_successful;
         private RequestList request_list;
         private bool requests_loaded;
+        private Gtk.TreeStore tree_store_site_map;
         private Gtk.TreeView tree_view_site_map;
         private WebsocketConnection websocket;
 
         public RequestsPane (ApplicationWindow application_window, bool launch_successful) {
             requests_loaded = false;
+            this.application_window = application_window;
+            this.launch_successful = launch_successful;
             request_list = new RequestList (application_window);
             request_list.requests_loaded.connect (on_requests_loaded);
             request_list.show ();
@@ -102,6 +106,10 @@ namespace Proximity {
             }
         }
 
+        public bool can_search () {
+            return requests_loaded;
+        }
+
         private void get_sitemap () {
             var url = "http://localhost:10101/project/sitemap";
 
@@ -155,11 +163,17 @@ namespace Proximity {
             return "://" + value;
         }
 
+        public void on_new_clicked () {
+            application_window.change_pane ("NewRequest");
+        }
+
         private void on_requests_loaded (bool requests_present) {
             if (requests_present && requests_loaded == false) {
                 position = 300;
                 request_list.requests_loaded.disconnect (on_requests_loaded);
                 requests_loaded = true;
+
+                pane_changed ();
             }
         }
 
@@ -203,11 +217,7 @@ namespace Proximity {
         }
 
         public bool new_visible () {
-            return true;
-        }
-
-        public string pane_name () {
-            return "Requests";
+            return launch_successful;
         }
 
         public void on_search (string text, bool exclude_resources) {
@@ -215,7 +225,9 @@ namespace Proximity {
         }
 
         public void reset_state () {
-            // TODO: 
+            tree_store_site_map.clear ();
+            get_sitemap ();
+            request_list.reset_state ();
         }
     }
 }

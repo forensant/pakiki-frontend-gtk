@@ -3,7 +3,7 @@ using Soup;
 namespace Proximity {
     
     [GtkTemplate (ui = "/com/forensant/proximity/request-new.ui")]
-    class RequestNew : Gtk.Paned {
+    class RequestNew : Gtk.Paned, MainApplicationPane {
 
         [GtkChild]
         private unowned Gtk.ComboBox combobox_protocol;
@@ -20,9 +20,11 @@ namespace Proximity {
         [GtkChild]
         private unowned Gtk.TextView text_view_request;
 
+        private ApplicationWindow application_window;
         private RequestDetails request_details;
 
         public RequestNew (ApplicationWindow application_window) {
+            this.application_window = application_window;
             var renderer_text = new Gtk.CellRendererText();
             combobox_protocol.pack_start (renderer_text, true);
             combobox_protocol.add_attribute (renderer_text, "text", 0);
@@ -38,31 +40,16 @@ namespace Proximity {
             this.add2 (request_details);
         }
 
-        public void populate_request (string guid) {
-            var url = "http://localhost:10101/project/request?guid=" + guid;
+        public bool back_visible () {
+            return true;
+        }
 
-            var session = new Soup.Session ();
-            var message = new Soup.Message ("GET", url);
+        public bool can_search () {
+            return false;
+        }
 
-            session.queue_message (message, (sess, mess) => {
-                var parser = new Json.Parser ();
-
-                try {
-                    parser.load_from_data ((string) message.response_body.flatten ().data, -1);
-
-                    var rootObj = parser.get_root().get_object();
-
-                    var requestData = (string) Base64.decode (rootObj.get_string_member ("RequestData"));
-
-                    entry_hostname.set_text (rootObj.get_string_member ("Hostname"));
-                    combobox_protocol.set_active (rootObj.get_string_member ("Protocol") == "https://" ? 0 : 1);
-                    text_view_request.buffer.set_text (requestData);
-                    request_details.reset_state ();
-                    
-                } catch (Error err) {
-                    stdout.printf ("Error retrieving/populating request: %s\n", err.message);
-                }
-            });
+        public void on_back_clicked () {
+            application_window.change_pane ("RequestList");
         }
 
         [GtkCallback]
@@ -113,6 +100,33 @@ namespace Proximity {
                 }
 
                 spinner.stop ();
+            });
+        }
+
+        public void populate_request (string guid) {
+            var url = "http://localhost:10101/project/request?guid=" + guid;
+
+            var session = new Soup.Session ();
+            var message = new Soup.Message ("GET", url);
+
+            session.queue_message (message, (sess, mess) => {
+                var parser = new Json.Parser ();
+
+                try {
+                    parser.load_from_data ((string) message.response_body.flatten ().data, -1);
+
+                    var rootObj = parser.get_root().get_object();
+
+                    var requestData = (string) Base64.decode (rootObj.get_string_member ("RequestData"));
+
+                    entry_hostname.set_text (rootObj.get_string_member ("Hostname"));
+                    combobox_protocol.set_active (rootObj.get_string_member ("Protocol") == "https://" ? 0 : 1);
+                    text_view_request.buffer.set_text (requestData);
+                    request_details.reset_state ();
+                    
+                } catch (Error err) {
+                    stdout.printf ("Error retrieving/populating request: %s\n", err.message);
+                }
             });
         }
 
