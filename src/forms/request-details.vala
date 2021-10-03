@@ -43,30 +43,8 @@ namespace Proximity {
             // Ensure that when we reactivate webkit, that it's sandboxed: https://gitlab.gnome.org/GNOME/Initiatives/-/wikis/Sandbox-all-the-WebKit!
             //_preview.load_uri("https://www.google.com/");
 
-            // create the send-to menu
-            var menu = new Gtk.Menu ();
-            
-            var item_new_request = new Gtk.MenuItem.with_label ("New Request");
-            item_new_request.activate.connect ( () => {
-                if (guid != "") {
-                    application_window.send_to_new_request (guid);
-                }
-            });
-            item_new_request.show ();
-            menu.append (item_new_request);
-
-            var item_inject = new Gtk.MenuItem.with_label ("Inject");
-            item_inject.activate.connect ( () => {
-                if (guid != "") {
-                    application_window.send_to_inject (guid);
-                }
-            });
-            item_inject.show ();
-            menu.append (item_inject);
-
+            set_send_to_popup ();
             scroll_window_original_text.hide ();
-
-            button_send_to.set_popup (menu);
 
             text_view_request_response.populate_popup.connect (on_request_response_popup_modified);
             text_view_original_request_response.populate_popup.connect (on_request_response_popup_orig);
@@ -172,6 +150,30 @@ namespace Proximity {
                 }
                 
             });
+        }
+
+        private void set_send_to_popup () {
+            var menu = new Gtk.Menu ();
+                        
+            var item_new_request = new Gtk.MenuItem.with_label ("New Request");
+            item_new_request.activate.connect ( () => {
+                if (guid != "") {
+                    application_window.send_to_new_request (guid);
+                }
+            });
+            item_new_request.show ();
+            menu.append (item_new_request);
+
+            var item_inject = new Gtk.MenuItem.with_label ("Inject");
+            item_inject.activate.connect ( () => {
+                if (guid != "") {
+                    application_window.send_to_inject (guid);
+                }
+            });
+            item_inject.show ();
+            menu.append (item_inject);
+
+            button_send_to.set_popup (menu);
         }
 
         private void set_sourceview_language (Gtk.SourceBuffer buffer, string response) {
