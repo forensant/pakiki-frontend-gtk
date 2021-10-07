@@ -12,10 +12,6 @@ finish-args:
   - --share=network
   # to allow interactions with the system secret store
   - --talk-name=org.freedesktop.secrets
-
-  # needed for the core to open existing files on the file system
-  # TODO: I'm not entirely happy with this. Some sandboxing is better than none, but if we could just use portals that'd be ideal
-  - --filesystem=host
 modules:
   - name: GtkSourceView
     buildsystem: autotools

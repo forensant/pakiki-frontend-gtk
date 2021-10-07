@@ -22,21 +22,17 @@ As the project grows, it will be published to repositories, for now, it is avail
 sudo apt install flatpak
 ```
 
-You'll need the Flatpak platform it's based on:
-```
-flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-flatpak install flathub org.gnome.Platform//40
-```
-
 Then you can install Proximity:
 ```
-flatpak install proximity.flatpak
+flatpak install Proximity.flatpak
 ```
 
 To run, from a console type:
 ```
 flatpak run com.forensant.proximity
 ```
+
+To run this on Windows Subsystem for Linux (Windows 11), you'll need a headless keyring: https://github.com/jaraco/keyring#using-keyring-on-headless-linux-systems
 
 ## Development/build instructions
 

@@ -5,9 +5,9 @@ namespace Proximity {
     class InjectPane : Gtk.Paned, MainApplicationPane {
 
         [GtkChild]
-        private Gtk.Grid grid;
+        private unowned Gtk.Grid grid;
         [GtkChild]
-        private Gtk.ScrolledWindow injectListScrollWindow;
+        private unowned Gtk.ScrolledWindow injectListScrollWindow;
 
         private ApplicationWindow application_window;
         private InjectNew inject_new_form;

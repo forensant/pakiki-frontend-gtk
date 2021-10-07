@@ -6,21 +6,21 @@ namespace Proximity {
     class InjectUnderway : Gtk.Grid {
 
         [GtkChild]
-        private Gtk.Button button_action;
+        private unowned Gtk.Button button_action;
         [GtkChild]
-        private Gtk.Entry entry_title;
+        private unowned Gtk.Entry entry_title;
         [GtkChild]
-        private Gtk.Label label_error;
+        private unowned Gtk.Label label_error;
         [GtkChild]
-        private Gtk.Label label_error_title;
+        private unowned Gtk.Label label_error_title;
         [GtkChild]
-        private Gtk.Label label_injection_parameters;
+        private unowned Gtk.Label label_injection_parameters;
         [GtkChild]
-        private Gtk.Label label_title;
+        private unowned Gtk.Label label_title;
         [GtkChild]
-        private Gtk.ProgressBar progress_bar;
+        private unowned Gtk.ProgressBar progress_bar;
         [GtkChild]
-        private Gtk.TextView text_view_request;
+        private unowned Gtk.TextView text_view_request;
 
         public InjectOperation operation { get; private set; }
         private RequestList request_list_full;
