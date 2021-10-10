@@ -8,13 +8,12 @@ namespace Proximity {
 
         [GtkChild]
         private unowned Gtk.ComboBoxText combobox_request_doubleclick;
-
         [GtkChild]
         private unowned Gtk.Entry entry_proxy_address;
-
         [GtkChild]
         private unowned Gtk.Entry entry_upstream_proxy;
-
+        [GtkChild]
+        private unowned Gtk.Entry entry_max_conns_per_host;
         [GtkChild]
         private unowned Gtk.Label label_error;
 
@@ -30,11 +29,18 @@ namespace Proximity {
             proxy_settings = new ProxySettings ();
             entry_proxy_address.text = proxy_settings.proxy_address;
             entry_upstream_proxy.text = proxy_settings.upstream_proxy_address;
+            entry_max_conns_per_host.text = proxy_settings.maximum_conns_per_host.to_string ();
         }
 
         [GtkCallback]
         public void on_button_certificate_save_clicked (Gtk.Button button) {
             proxy_settings.save_certificate (this);
+        }
+
+        [GtkCallback]
+        public void on_entry_max_conns_per_host_changed () {
+            proxy_settings.maximum_conns_per_host = int64.parse (entry_max_conns_per_host.text);
+            save_settings ();
         }
 
         [GtkCallback]

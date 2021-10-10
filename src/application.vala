@@ -30,7 +30,7 @@ namespace Proximity {
             dialog.program_name = "Proximity Community Edition";
             dialog.comments = "Intercepting proxy";
             dialog.copyright = "Copyright © %d Forensant Ltd".printf (new DateTime.now ().get_year ());
-            dialog.version = "0.1";
+            dialog.version = "0.3";
 
             dialog.license_type = Gtk.License.MIT_X11;
 
