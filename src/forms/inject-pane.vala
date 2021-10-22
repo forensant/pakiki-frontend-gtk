@@ -31,7 +31,7 @@ namespace Proximity {
             grid.attach (inject_underway_form, 0, 1);
             inject_underway_form.hide ();
 
-            inject_new_form = new InjectNew (this);
+            inject_new_form = new InjectNew (application_window, this);
             grid.attach (inject_new_form, 0, 0);
             inject_new_form.hide ();
 
