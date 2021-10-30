@@ -22,7 +22,7 @@ namespace Proximity {
         private bool exclude_resources;
         private PlaceholderRequests placeholder_requests;
         private RequestDetails request_details;
-        private string scan_id;
+        private string[] scan_ids;
         private string search_query;
         private bool updating;
         private string url_filter;
@@ -40,9 +40,9 @@ namespace Proximity {
             NOTES
         }
         
-        public RequestList (ApplicationWindow application_window, string scan_id = "") {
+        public RequestList (ApplicationWindow application_window, string[] scan_ids = {}) {
             this.application_window = application_window;
-            this.scan_id = scan_id;
+            this.scan_ids = scan_ids;
             this.exclude_resources = true;
             this.updating = false;
             this.placeholder_requests = new PlaceholderRequests (application_window);
@@ -183,8 +183,8 @@ namespace Proximity {
         }
 
         private void show_controls (uint request_count) {
-            if (request_count == 0 && scan_id == "") {
-                if (scan_id != "" || search_query != "" || url_filter != "") {
+            if (request_count == 0 && scan_ids.length == 0) {
+                if (search_query != "" || url_filter != "") {
                     label_no_requests.visible = true;
                 } else {
                     placeholder_requests.show ();
@@ -207,6 +207,7 @@ namespace Proximity {
                 url += "&filter=" + Soup.URI.encode(search_query, null);
             }
 
+            var scan_id = string.joinv (";", scan_ids);
             if (scan_id != "") {
                 url += "&scanid=" + scan_id;
             }
@@ -307,7 +308,17 @@ namespace Proximity {
                 return;
             }
 
-            if (request.get_string_member("ScanID") != scan_id) {
+            var scan_id = request.get_string_member ("ScanID");
+            var scan_id_found = false;
+
+            for (int i = 0; i < scan_ids.length; i++) {
+                if (scan_ids[i] == scan_id) {
+                    scan_id_found = true;
+                    break;
+                }
+            }
+
+            if (scan_id_found == false && scan_ids.length == 0) {
                 return;
             }
 
@@ -469,8 +480,8 @@ namespace Proximity {
             request_details.reset_state ();
         }
 
-        public void set_scan_id (string guid) {
-            this.scan_id = guid;
+        public void set_scan_ids (string[] guids) {
+            this.scan_ids = guids;
             this.get_requests ();
         }
 

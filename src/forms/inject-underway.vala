@@ -28,7 +28,8 @@ namespace Proximity {
         private string search_query;
 
         public InjectUnderway (ApplicationWindow application_window) {
-            request_list_full = new RequestList (application_window, "-");
+            string[] scan_ids = {"-"};
+            request_list_full = new RequestList (application_window, scan_ids);
             this.attach (request_list_full, 0, 4, 2, 1);
 
             label_title.set_text_with_mnemonic ("_Title");
@@ -68,7 +69,8 @@ namespace Proximity {
             }
 
             if (different_operation) {
-                request_list_full.set_scan_id (operation.guid);
+                string[] scan_ids = {operation.guid};
+                request_list_full.set_scan_ids (scan_ids);
                 request_list_full.on_search (search_query, search_exclude_resources);
             }
 
