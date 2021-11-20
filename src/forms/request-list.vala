@@ -213,7 +213,7 @@ namespace Proximity {
             }
 
             if (url_filter != "") {
-                url += "&url_filter=" + url_filter;
+                url += "&url_filter=" + Soup.URI.encode("://" + url_filter, null);
             }
 
             var session = new Soup.Session ();

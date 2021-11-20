@@ -1,0 +1,11 @@
+{
+    "tasks": [
+        {
+            "label": "build ninja",
+            "type": "shell",
+            "command": "ninja -C builddir"
+            
+        }
+    ],
+    "version": "2.0.0"
+}

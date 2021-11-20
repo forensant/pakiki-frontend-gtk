@@ -39,7 +39,7 @@ namespace Proximity {
         }
 
         public void set_inject_operation (InjectOperation operation) {
-            var different_operation = operation.guid != this.operation.guid;
+            var different_operation = this.operation == null || operation.guid != this.operation.guid;
             
             this.operation = operation;
             text_view_request.buffer.text = operation.request;

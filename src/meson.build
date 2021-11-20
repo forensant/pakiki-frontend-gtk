@@ -16,6 +16,7 @@ sources += files(
     'forms/request-list.vala',
     'forms/request-new.vala',
     'forms/requests-pane.vala',
+    'forms/sitemap-widget.vala',
 
     'models/core-process.vala',
     'models/inject-operation.vala',
