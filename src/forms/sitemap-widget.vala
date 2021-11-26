@@ -193,7 +193,7 @@ namespace Proximity {
                 parser.load_from_data (json_data, -1);
             }
             catch(Error e) {
-                stdout.printf ("Could not parse JSON data, error: %s\nData: %s\n", e.message, json_data);
+                stdout.printf ("Could not parse JSON data for sitemap, error: %s\nData: %s\n", e.message, json_data);
                 return;
             }
 

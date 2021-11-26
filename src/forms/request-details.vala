@@ -98,7 +98,12 @@ namespace Proximity {
 
         public void set_request (string guid) {
             this.guid = guid;
+            reset_state ();
             button_send_to.set_visible (true);
+
+            if (guid == "" || guid == "-") {
+                return;
+            }
 
             var session = new Soup.Session ();
             var message = new Soup.Message ("GET", "http://127.0.0.1:10101/project/requestresponse?guid=" + guid);

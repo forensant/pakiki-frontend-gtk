@@ -146,10 +146,10 @@ namespace Proximity {
             request_list.get_column(Column.ERROR).sort_column_id         = Column.ERROR;
             request_list.get_column(Column.NOTES).sort_column_id         = Column.NOTES;
 
-            get_requests();
             request_details = new RequestDetails (application_window);
             request_details.hide ();
             this.add2 (request_details);
+            get_requests();
 
             scrolled_window_requests.hide ();
 
@@ -318,7 +318,7 @@ namespace Proximity {
                 }
             }
 
-            if (scan_id_found == false && scan_ids.length == 0) {
+            if (scan_id_found == false && scan_ids.length != 0) {
                 return;
             }
 
