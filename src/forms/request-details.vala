@@ -112,7 +112,9 @@ namespace Proximity {
                 var parser = new Json.Parser ();
                 var jsonData = (string)mess.response_body.flatten().data;
                 try {
-                    parser.load_from_data (jsonData, -1);
+                    if (!parser.load_from_data (jsonData, -1)) {
+                        return;
+                    }
 
                     var rootObj = parser.get_root().get_object();
                     

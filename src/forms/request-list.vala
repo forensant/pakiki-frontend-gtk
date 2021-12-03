@@ -51,23 +51,23 @@ namespace Proximity {
 
             this.box.add (placeholder_requests);
 
-            var urlRenderer = new Gtk.CellRendererText();
-            urlRenderer.ellipsize = Pango.EllipsizeMode.END;
-            urlRenderer.ellipsize_set = true;
+            var url_renderer = new Gtk.CellRendererText();
+            url_renderer.ellipsize = Pango.EllipsizeMode.END;
+            url_renderer.ellipsize_set = true;
 
-            var timeCellRenderer     = new Gtk.CellRendererText();
-            var responseSizeRenderer = new Gtk.CellRendererText();
-            var durationRenderer     = new Gtk.CellRendererText();
+            var time_cell_renderer     = new Gtk.CellRendererText();
+            var response_size_renderer = new Gtk.CellRendererText();
+            var duration_renderer     = new Gtk.CellRendererText();
 
             var errorRenderer = new Gtk.CellRendererText();
             errorRenderer.ellipsize = Pango.EllipsizeMode.END;
             errorRenderer.ellipsize_set = true;
 
-            var notesRenderer = new Gtk.CellRendererText();
-            notesRenderer.ellipsize = Pango.EllipsizeMode.END;
-            notesRenderer.ellipsize_set = true;
-            notesRenderer.editable = true;
-            notesRenderer.edited.connect(on_notes_updated);
+            var notes_renderer = new Gtk.CellRendererText();
+            notes_renderer.ellipsize = Pango.EllipsizeMode.END;
+            notes_renderer.ellipsize_set = true;
+            notes_renderer.editable = true;
+            notes_renderer.edited.connect(on_notes_updated);
 
             /*columns*/
             request_list.insert_column_with_attributes (-1, "GUID",
@@ -75,19 +75,19 @@ namespace Proximity {
                                                     Column.GUID);
 
             request_list.insert_column_with_attributes (-1, "Time",
-                                                    timeCellRenderer,
+                                                    time_cell_renderer,
                                                     "text", Column.TIME);
 
             request_list.insert_column_with_attributes (-1, "URL",
-                                                    urlRenderer,
+                                                    url_renderer,
                                                     "text", Column.URL);
 
             request_list.insert_column_with_attributes (-1, "Size",
-                                                    responseSizeRenderer,
+                                                    response_size_renderer,
                                                     "text", Column.RESPONSE_SIZE);
 
             request_list.insert_column_with_attributes (-1, "Duration",
-                                                    durationRenderer,
+                                                    duration_renderer,
                                                     "text", Column.DURATION);
 
             request_list.insert_column_with_attributes (-1, "Verb",
@@ -103,7 +103,7 @@ namespace Proximity {
                                                     "text", Column.ERROR);
 
             request_list.insert_column_with_attributes (-1, "Notes",
-                                                    notesRenderer,
+                                                    notes_renderer,
                                                     "text", Column.NOTES);
 
             
@@ -114,7 +114,7 @@ namespace Proximity {
             urlColumn.set_expand(true);
 
             var timeColumn = request_list.get_column(Column.TIME);
-            timeColumn.set_cell_data_func(timeCellRenderer, (cell_layout, cell, tree_model, iter) => {
+            timeColumn.set_cell_data_func(time_cell_renderer, (cell_layout, cell, tree_model, iter) => {
                 Value val;
                 tree_model.get_value(iter, Column.TIME, out val);
                 ((Gtk.CellRendererText)cell).text = response_time(new DateTime.from_unix_local(val.get_int()));
@@ -122,7 +122,7 @@ namespace Proximity {
             });
 
             var responseSizeColumn = request_list.get_column(Column.RESPONSE_SIZE);
-            responseSizeColumn.set_cell_data_func(responseSizeRenderer, (cell_layout, cell, tree_model, iter) => {
+            responseSizeColumn.set_cell_data_func(response_size_renderer, (cell_layout, cell, tree_model, iter) => {
                 Value val;
                 tree_model.get_value(iter, Column.RESPONSE_SIZE, out val);
                 ((Gtk.CellRendererText)cell).text = response_size_to_string(val.get_int());
@@ -130,7 +130,7 @@ namespace Proximity {
             });
 
             var durationColumn = request_list.get_column(Column.DURATION);
-            durationColumn.set_cell_data_func(durationRenderer, (cell_layout, cell, tree_model, iter) => {
+            durationColumn.set_cell_data_func(duration_renderer, (cell_layout, cell, tree_model, iter) => {
                 Value val;
                 tree_model.get_value(iter, Column.DURATION, out val);
                 ((Gtk.CellRendererText)cell).text = response_duration(val.get_int());

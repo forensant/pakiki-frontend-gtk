@@ -25,6 +25,7 @@ namespace Proximity {
         private unowned Gtk.TreeView treeview_fuzzdb;
 
         private ApplicationWindow application_window;
+        private string path_to_set;
         private bool populating_fuzzdb;
         private Gtk.TreeModelFilter treeview_model_filter;
 
@@ -60,6 +61,7 @@ namespace Proximity {
         public PayloadSelectionWidget (ApplicationWindow application_window, bool show_iterator) {
             this.application_window = application_window;
             populating_fuzzdb = false;
+            path_to_set = "";
             populate_payloads ();
 
             if (show_iterator == false) {
@@ -278,6 +280,11 @@ namespace Proximity {
 
                 populating_fuzzdb = false;
                 treeview_model_filter.refilter ();
+
+                if (path_to_set != "") {
+                    set_fuzzdb_path (path_to_set);
+                    path_to_set = "";
+                }
             });
         }
 
@@ -355,6 +362,44 @@ namespace Proximity {
             treeview_model_filter.convert_iter_to_child_iter (out parent_model_iter, parent);
             treestore_fuzzdb.set_value (parent_model_iter, Column.CHECKED, checked_val);
             set_fuzzdb_parent_status (parent);
+        }
+
+        public void set_fuzzdb_path (string path) {
+            Gtk.TreeIter iter;
+            var assigned = treestore_fuzzdb.get_iter_first (out iter);
+
+            if (populating_fuzzdb || !assigned) {
+                path_to_set = path;
+                return;
+            }
+
+            var path_components = path.split ("/");
+            
+            for (int i = 0; i < path_components.length; i++) {
+                var part = path_components[i];
+
+                while (true) {
+                    Value title;
+                    treestore_fuzzdb.get_value (iter, Column.TITLE, out title);
+                    if (title.get_string () == part) {
+                        treeview_fuzzdb.expand_to_path (new Gtk.TreePath.from_string (treestore_fuzzdb.get_string_from_iter (iter)));
+                        treeview_fuzzdb.set_cursor (new Gtk.TreePath.from_string (treestore_fuzzdb.get_string_from_iter (iter)), null, false);
+
+                        var prev_iter = iter;
+                        if (!treestore_fuzzdb.iter_children (out iter, iter)) {
+                            if (i == path_components.length - 1) {
+                                treestore_fuzzdb.set_value(prev_iter, Column.CHECKED, "Checked");
+                            }
+                            return;
+                        }
+                        break;
+                    }
+
+                    if (!treestore_fuzzdb.iter_next (ref iter)) {
+                        return;
+                    }
+                }
+            }
         }
 
         private bool should_fuzzdb_row_be_visible (Gtk.TreeModel model, Gtk.TreeIter iter) {

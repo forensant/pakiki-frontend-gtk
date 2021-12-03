@@ -16,6 +16,7 @@ namespace Proximity {
 
         public SitemapWidget () {
             has_loaded = false;
+            this.get_selection ().set_mode (Gtk.SelectionMode.SINGLE);
             tree_store_site_map = new Gtk.TreeStore (1, typeof (string));
             Gtk.TreeIter iter;
             tree_store_site_map.append (out iter, null);
@@ -139,11 +140,6 @@ namespace Proximity {
         }
 
         private void set_url_path_position (Gee.List<string> path_components, Gtk.TreeIter iter) {
-            stdout.printf("Path components:\n");
-            for (int i = 0; i < path_components.size; i++) {
-                stdout.printf("Path component %d: %s\n", i, path_components[i]);
-            }
-
             if (path_components.size == 0) {
                 return;
             }
@@ -157,14 +153,11 @@ namespace Proximity {
                     Value path_value;
                     tree_store_site_map.get_value (child_iter, 0, out path_value);
 
-                    stdout.printf("%s == %s?\n", path_value.get_string (), path);
-
                     if (path_value.get_string () == path) {
                         path_components.remove_at (0);
 
 
                         if (path_components.size == 0) {
-                            stdout.printf("Selecting path\n");
                             this.expand_to_path (tree_store_site_map.get_path (iter));
                             this.get_selection ().select_iter (child_iter);
                             return;
