@@ -28,6 +28,7 @@ namespace Proximity {
         private string search_query;
 
         public InjectUnderway (ApplicationWindow application_window) {
+            search_query = "";
             string[] scan_ids = {"-"};
             request_list_full = new RequestList (application_window, scan_ids);
             this.attach (request_list_full, 0, 4, 2, 1);

@@ -10,6 +10,7 @@ sources += files(
     'forms/inject-underway.vala',
     'forms/intercept.vala',
     'forms/main-application-pane.vala',
+    'forms/payload-selection-widget.vala',
     'forms/placeholder-inject.vala',
     'forms/placeholder-requests.vala',
     'forms/request-details.vala',
