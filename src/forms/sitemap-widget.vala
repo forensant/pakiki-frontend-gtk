@@ -214,6 +214,10 @@ namespace Proximity {
 
                     foreach (var element in rootArray.get_elements ()) {
                         var path = element.get_string ();
+                        var scheme_idx = path.index_of ("://");
+                        if (scheme_idx != -1) {
+                            path = path.substring (scheme_idx + 3);
+                        }
                         add_path_to_sitemap (path);
                     }
 
