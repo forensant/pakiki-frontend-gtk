@@ -5,22 +5,16 @@ namespace Proximity {
 
         [GtkChild]
         private unowned Gtk.Button button_certificate_save;
-
         [GtkChild]
         private unowned Gtk.Frame frame_error;
-
         [GtkChild]
         private unowned Gtk.Label label_certificate;
-
         [GtkChild]
         private unowned Gtk.Label label_error;
-
         [GtkChild]
         private unowned Gtk.Label label_title_certificate;
-
         [GtkChild]
         private unowned Gtk.Label label_title_proxy;
-
         [GtkChild]
         private unowned Gtk.Label label_setup_proxy;
 
@@ -39,18 +33,23 @@ namespace Proximity {
         }
 
         void update_proxy_address () {
-            proxy_settings = new ProxySettings ();
+            proxy_settings = new ProxySettings (application_window);
             if (proxy_settings.successful) {
                 label_setup_proxy.label = label_setup_proxy.label.replace ("PROXYADDRESS", "http://localhost" + proxy_settings.proxy_address);
             }
             else {
-                set_error ();
+                set_error (application_window.core_address);
             }
         }
 
-        public void set_error () {
+        public void set_error (string core_address) {
             application_window.hide_controls ();
-            label_error.set_text ("An error has occurred when launching the core. Ensure that 'proximitycore' is in the directory next to Proximity.");
+            if (core_address == "") {
+                label_error.set_text ("An error has occurred when launching the core. Ensure that 'proximitycore' is in the directory next to Proximity.");
+            } else {
+                label_error.set_markup ("An error has occurred when connecting to Proximity Core at <a href=\"http://" + core_address + "\">http://" + core_address + "</a>. Ensure that Proximity Core is running and that the address is correct.");
+            }
+            
             frame_error.visible = true;
 
             button_certificate_save.visible = false;

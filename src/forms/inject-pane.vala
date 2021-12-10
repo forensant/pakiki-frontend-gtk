@@ -49,7 +49,7 @@ namespace Proximity {
         }
 
         private void get_inject_operations () {
-            var url = "http://localhost:10101/inject_operations";
+            var url = "http://" + application_window.core_address + "/inject_operations";
 
             var session = new Soup.Session ();
             var message = new Soup.Message ("GET", url);
@@ -87,7 +87,7 @@ namespace Proximity {
                 websocket.close(Soup.WebsocketCloseCode.NO_STATUS, null);
             }
 
-            url = "http://127.0.0.1:10101/project/notifications";
+            url = "http://" + application_window.core_address + "/project/notifications";
             
             var wsmessage = new Soup.Message("GET", url);
             session.websocket_connect_async.begin(wsmessage, "localhost", null, null, (obj, res) => {

@@ -1,11 +1,12 @@
 namespace Proximity {
     public class Application : Gtk.Application {
-        private ApplicationWindow window;
-
+        private string? core_address;
         private List<Gdk.Pixbuf> icons;
+        private ApplicationWindow window;
 
         public Application () {
             application_id = "com.forensant.proximity";
+            flags |= GLib.ApplicationFlags.HANDLES_COMMAND_LINE;
             GLib.Environment.set_prgname("Proximity");
 
             icons = new List<Gdk.Pixbuf> ();
@@ -30,7 +31,7 @@ namespace Proximity {
             dialog.program_name = "Proximity Community Edition";
             dialog.comments = "Intercepting proxy";
             dialog.copyright = "Copyright © %d Forensant Ltd".printf (new DateTime.now ().get_year ());
-            dialog.version = "0.1";
+            dialog.version = "0.4";
 
             dialog.license_type = Gtk.License.MIT_X11;
 
@@ -56,11 +57,15 @@ namespace Proximity {
 
         public override void activate () {
             if (window == null) {
-                window = new ApplicationWindow (this);
+                window = new ApplicationWindow (this, core_address);
             }
             window.set_icon_list (icons);
             window.present ();
 
+            Gtk.CssProvider css_provider = new Gtk.CssProvider ();
+            css_provider.load_from_resource ("/com/forensant/proximity/style.css");
+            Gtk.StyleContext.add_provider_for_screen (Gdk.Screen.get_default (), css_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
+    
             var action = new SimpleAction("new", null);
             action.activate.connect (window.on_new_project);
             add_action (action);
@@ -72,6 +77,55 @@ namespace Proximity {
             action = new SimpleAction("save_as", null);
             action.activate.connect (window.on_save_project);
             add_action (action);
+        }
+
+        private int _command_line (ApplicationCommandLine command_line) {
+            bool version = false;
+    
+            OptionEntry[] options = new OptionEntry[2];
+            options[0] = { "version", 0, 0, OptionArg.NONE, ref version, "Display version number", null };
+            options[1] = { "core", 0, 0, OptionArg.STRING, ref core_address, "Address for a running Proximity Core instance to connect to", "HOST:PORT" };
+    
+            // We have to make an extra copy of the array, since .parse assumes
+            // that it can remove strings from the array without freeing them.
+            string[] args = command_line.get_arguments ();
+            string*[] _args = new string[args.length];
+            for (int i = 0; i < args.length; i++) {
+                _args[i] = args[i];
+            }
+    
+            try {
+                var opt_context = new OptionContext ();
+                opt_context.set_help_enabled (true);
+                opt_context.add_main_entries (options, null);
+                unowned string[] tmp = _args;
+                opt_context.parse (ref tmp);
+            } catch (OptionError e) {
+                command_line.print ("error: %s\n", e.message);
+                command_line.print ("Run '%s --help' to see a full list of available command line options.\n", args[0]);
+                return 0;
+            }
+    
+            if (version) {
+                command_line.print ("Proximity Community Edition 0.4\n");
+                return 0;
+            }
+
+            if (core_address == null) {
+                core_address = "";
+            }
+
+            activate ();
+    
+            return 0;
+        }
+    
+        public override int command_line (ApplicationCommandLine command_line) {
+            // keep the application running until we are done with this commandline
+            this.hold ();
+            int res = _command_line (command_line);
+            this.release ();
+            return res;
         }
 
         private void preferences () {

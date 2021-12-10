@@ -128,7 +128,7 @@ namespace Proximity {
         }
 
         private void get_intercept_settings () {
-            var url = "http://localhost:10101/proxy/intercept_settings";
+            var url = "http://" + application_window.core_address + "/proxy/intercept_settings";
 
             var session = new Soup.Session ();
             var message = new Soup.Message ("GET", url);
@@ -152,7 +152,7 @@ namespace Proximity {
         }
 
         private void get_requests () {
-            var url = "http://localhost:10101/proxy/intercepted_requests";
+            var url = "http://" + application_window.core_address + "/proxy/intercepted_requests";
 
             var session = new Soup.Session ();
             var message = new Soup.Message ("GET", url);
@@ -181,7 +181,7 @@ namespace Proximity {
                 websocket.close (Soup.WebsocketCloseCode.NO_STATUS, null);
             }
 
-            url = "http://127.0.0.1:10101/project/notifications";
+            url = "http://" + application_window.core_address + "/project/notifications";
 
             var wsmessage = new Soup.Message ("GET", url);
             session.websocket_connect_async.begin (wsmessage, "localhost", null, null, (obj, res) => {
@@ -281,7 +281,7 @@ namespace Proximity {
 
         private void send_individual_request_response (string guid, string action, string direction, string body) {
             var session = new Soup.Session ();
-            var message = new Soup.Message ("PUT", "http://127.0.0.1:10101/proxy/set_intercepted_response");
+            var message = new Soup.Message ("PUT", "http://" + application_window.core_address + "/proxy/set_intercepted_response");
 
             Json.Builder builder = new Json.Builder ();
             builder.begin_object ();
@@ -337,7 +337,7 @@ namespace Proximity {
 
         private void set_intercept () {
             var session = new Soup.Session ();
-            var message = new Soup.Message ("PUT", "http://127.0.0.1:10101/proxy/intercept_settings");
+            var message = new Soup.Message ("PUT", "http://" + application_window.core_address + "/proxy/intercept_settings");
 
             Json.Builder builder = new Json.Builder ();
             builder.begin_object ();

@@ -1,0 +1,4 @@
+label#lbl_connection_lost {
+    color: white;
+    background-color: rgba(0, 0, 0, 0.7);
+}

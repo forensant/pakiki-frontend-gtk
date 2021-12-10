@@ -101,9 +101,10 @@
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">You can change specific parts of each request in order to attempt to exploit vulnerabilities. This can be used for a number of tasks, common uses may include:
+                <property name="label" translatable="yes">This function changes specific parts of each request in order to attempt to exploit vulnerabilities. This can be used for a number of tasks, common uses may include:
+
   • Sending malicious payloads designed trigger SQL injection, cross site scripting, etc, and then closely monitoring the responses to check for indications the attacks were successful.
-  • Finding records you do not have access to, via direct object reference vulnerabilities.
+  • Finding records which the user should not have access to, via direct object reference vulnerabilities.
   • Finding hidden files or directories.
 
 </property>
@@ -136,7 +137,7 @@
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">The easiest way is to send a request from elsewhere in the proxy to here. Alternatively you can click the "Add" button in the top right corner to create a request from scratch.</property>
+                <property name="label" translatable="yes">The easiest way is to send a request from elsewhere in the proxy to here. Alternatively click the "New" button in the top right corner to create a request from scratch.</property>
                 <property name="use_markup">True</property>
                 <property name="justify">fill</property>
                 <property name="wrap">True</property>

@@ -57,7 +57,7 @@ namespace Proximity {
             spinner.start ();
             label_error.visible = false;
             var session = new Soup.Session ();
-            var message = new Soup.Message ("POST", "http://127.0.0.1:10101/proxy/make_request");
+            var message = new Soup.Message ("POST", "http://" + application_window.core_address + "/proxy/make_request");
 
             Json.Builder builder = new Json.Builder ();
             builder.begin_object ();
@@ -104,7 +104,7 @@ namespace Proximity {
         }
 
         public void populate_request (string guid) {
-            var url = "http://localhost:10101/project/request?guid=" + guid;
+            var url = "http://" + application_window.core_address + "/project/request?guid=" + guid;
 
             var session = new Soup.Session ();
             var message = new Soup.Message ("GET", url);

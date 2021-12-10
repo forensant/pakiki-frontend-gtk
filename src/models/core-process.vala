@@ -1,12 +1,16 @@
 namespace Proximity {
-    class CoreProcess {
-        ApplicationWindow application_window;
-        GLib.Subprocess process;
-        string path;
-        bool temporary_file;
+    class CoreProcess : Object {
+        public signal void core_started (string location);
+        public signal void listener_error (string warning);
+
+        private ApplicationWindow application_window;
+        private Pid child_pid;
+        private string path;
+        private bool temporary_file;
 
         public CoreProcess (ApplicationWindow parent) {
             this.application_window = parent;
+            child_pid = 0;
         }
 
         private string? get_temporary_file_path () {
@@ -22,8 +26,9 @@ namespace Proximity {
         }
 
         public bool open (string? project_path) {
-            if (process != null) {
-                process.force_exit ();
+            if (child_pid != 0) {
+                Posix.kill (child_pid, Posix.Signal.TERM);
+                child_pid = 0;
             }
 
             if (project_path == null ) {
@@ -62,15 +67,50 @@ namespace Proximity {
             
             foreach (string core_exe_path in paths) {
                 try {
-                    process = new GLib.Subprocess (GLib.SubprocessFlags.NONE,
-                        core_exe_path + "proximitycore",
-                        "-project",
-                        path,
-                        "-parentpid",
-                        pid.to_string ());
+                    string[] spawn_args = {core_exe_path + "proximitycore", "-project", path, "-parentpid", pid.to_string ()};
+                    string[] spawn_env = Environ.get ();
+                    Pid child_pid;
+
+                    int standard_input;
+                    int standard_output;
+                    int standard_error;
+
+                    if (core_exe_path == "") {
+                        core_exe_path = "/";
+                    }
+
+                    Process.spawn_async_with_pipes (core_exe_path,
+                        spawn_args,
+                        spawn_env,
+                        SpawnFlags.SEARCH_PATH | SpawnFlags.DO_NOT_REAP_CHILD,
+                        null,
+                        out child_pid,
+                        out standard_input,
+                        out standard_output,
+                        out standard_error);
+
+                    // stdout:
+                    IOChannel output = new IOChannel.unix_new (standard_output);
+                    output.add_watch (IOCondition.IN | IOCondition.HUP, (channel, condition) => {
+                        return process_line (channel, condition, "stdout");
+                    });
+
+                    // stderr:
+                    IOChannel error = new IOChannel.unix_new (standard_error);
+                    error.add_watch (IOCondition.IN | IOCondition.HUP, (channel, condition) => {
+                        return process_line (channel, condition, "stderr");
+                    });
+
+                    ChildWatch.add (child_pid, (pid, status) => {
+                        // Triggered when the child indicated by child_pid exits
+                        stdout.printf("Proximity core closed with status %d\n", status);
+                        this.child_pid = 0;
+                        Process.close_pid (pid);
+                    });
 
                     return true;
-                } catch (Error err) {}
+                } catch (Error err) {
+                }
             }
 
             stderr.printf ("Could not launch the executable process from any of the following directories:\n");
@@ -99,7 +139,7 @@ namespace Proximity {
                     var file = open_dialog.get_file();
                     var filename = file.get_path ();
                     open (filename);
-                    application_window.on_new_project_open ();
+                    //application_window.on_new_project_open ();
 
                     break;
     
@@ -121,8 +161,42 @@ namespace Proximity {
             handle_open_project_response (dialog, res, true);
         }
 
+        private bool process_line (IOChannel channel, IOCondition condition, string stream_name) {
+            if (condition == IOCondition.HUP) {
+                print ("%s: The fd has been closed.\n", stream_name);
+                return false;
+            }
+        
+            try {
+                string line;
+                channel.read_line (out line, null, null);
+                print ("[Proximity Core] %s: %s", stream_name, line);
+                
+                if (line.contains ("Web frontend is available at:")) {
+                    var scheme_idx = line.index_of ("://");
+                    var host_idx = line.index_of ("/", scheme_idx + 4);
+                    var host = line.substring (scheme_idx + 3, host_idx - scheme_idx - 3);
+                    this.core_started (host);
+                }
+
+                if (line.contains ("Warning: The proxy could not be started")) {
+                    var warning_location = line.index_of ("Warning:");
+                    var warning_message = line.substring (warning_location);
+                    this.listener_error (warning_message);
+                }
+
+            } catch (IOChannelError e) {
+                print ("%s: IOChannelError: %s\n", stream_name, e.message);
+                return false;
+            } catch (ConvertError e) {
+                print ("%s: ConvertError: %s\n", stream_name, e.message);
+                return false;
+            }
+        
+            return true;
+        }
+
         public void save_project () {
-            stdout.printf("Saving project");
             var dialog = new Gtk.FileChooserNative ("Pick a file",
                 application_window,
                 Gtk.FileChooserAction.SAVE,
@@ -135,8 +209,9 @@ namespace Proximity {
             if (response_id == Gtk.ResponseType.ACCEPT) {
                 var selected_file = dialog.get_file();
                 var filename = selected_file.get_path ();
-                if (process != null) {
-                    process.force_exit ();
+                if (child_pid != 0) {
+                    Posix.kill (child_pid, Posix.Signal.TERM);
+                    child_pid = 0;
                 }
 
                 File file1 = File.new_for_path (this.path);

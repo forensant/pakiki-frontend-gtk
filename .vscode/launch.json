@@ -9,11 +9,11 @@
             "request": "launch",
             "name": "Debug",
             "program": "${workspaceFolder}/builddir/proximity",
-            "args": [],
+            "args": ["--core=localhost:10101"],
             "cwd": "${workspaceFolder}",
             "env": {
-                "GSETTINGS_SCHEMA_DIR": "builddir/src/"//,
-                //"G_DEBUG": "fatal_warnings"
+                "GSETTINGS_SCHEMA_DIR": "builddir/src/",
+                "G_DEBUG": "fatal_warnings"
             },
             "preLaunchTask": "build ninja"
         }

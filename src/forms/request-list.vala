@@ -40,7 +40,7 @@ namespace Proximity {
             NOTES
         }
         
-        public RequestList (ApplicationWindow application_window, string[] scan_ids = {}) {
+        public RequestList (ApplicationWindow application_window, bool load_requests = true, string[] scan_ids = {}) {
             this.application_window = application_window;
             this.scan_ids = scan_ids;
             this.exclude_resources = true;
@@ -149,7 +149,10 @@ namespace Proximity {
             request_details = new RequestDetails (application_window);
             request_details.hide ();
             this.add2 (request_details);
-            get_requests();
+            
+            if (load_requests) {
+                get_requests();
+            }
 
             scrolled_window_requests.hide ();
 
@@ -196,18 +199,19 @@ namespace Proximity {
                 placeholder_requests.hide ();
                 scrolled_window_requests.show ();
                 request_details.show ();
+                this.requests_loaded (true);
             }
         }
 
         private void get_requests () {
             label_no_requests.visible = false;
-            var url = "http://localhost:10101/project/requests?exclude_resources=" + (exclude_resources ? "true" : "false");
+            var url = "http://" + application_window.core_address + "/project/requests?exclude_resources=" + (exclude_resources ? "true" : "false");
 
             if (search_query != null && search_query != "") {
                 url += "&filter=" + Soup.URI.encode(search_query, null);
             }
 
-            var scan_id = string.joinv (";", scan_ids);
+            var scan_id = string.joinv (":", scan_ids);
             if (scan_id != "") {
                 url += "&scanid=" + scan_id;
             }
@@ -224,6 +228,11 @@ namespace Proximity {
                 this.updating = true;
                 var parser = new Json.Parser ();
                 try {
+                    if (message.status_code != 200) {
+                        stderr.printf("Could not connect to %s\n", url);
+                        return;
+                    }
+
                     parser.load_from_data ((string) message.response_body.flatten ().data, -1);
 
                     var rootArray = parser.get_root ().get_array ();
@@ -248,7 +257,7 @@ namespace Proximity {
                 websocket.close (Soup.WebsocketCloseCode.NO_STATUS, null);
             }
 
-            url = "http://127.0.0.1:10101/project/notifications";
+            url = "http://" + application_window.core_address + "/project/notifications";
             string filter = "";
             if (exclude_resources) {
                 filter += "exclude_resources:true";
@@ -266,10 +275,10 @@ namespace Proximity {
             session.websocket_connect_async.begin (wsmessage, "localhost", null, null, (obj, res) => {
                 try {
                     websocket = session.websocket_connect_async.end (res);
+                    websocket.message.connect (on_websocket_message);
                 } catch (Error err) {
-                    stdout.printf ("Error ending websocket: %s\n", err.message);
+                    stdout.printf ("Error connecting to websocket %s, error message: %s\n", url, err.message);
                 }
-                websocket.message.connect (on_websocket_message);
             });
         }
 
@@ -378,7 +387,7 @@ namespace Proximity {
             liststore.get_value (iter, Column.GUID, out guid);
 
             var session = new Soup.Session ();
-            var message = new Soup.Message ("POST", "http://127.0.0.1:10101/project/update_request");
+            var message = new Soup.Message ("POST", "http://" + application_window.core_address + "/project/update_request");
 
             var parameters = "guid=" + guid.get_string () + "&notes=" + Soup.URI.encode (newtext, null);
             message.set_request ("application/x-www-form-urlencoded", Soup.MemoryUse.COPY, parameters.data);
@@ -396,13 +405,19 @@ namespace Proximity {
         }
 
         [GtkCallback]
-        public bool on_request_list_button_press (Gdk.EventButton event) {         
+        public bool on_request_list_button_press_event (Gdk.EventButton event) {         
             if (event.type == Gdk.EventType.@2BUTTON_PRESS) {
                 var guid = get_selected_guid ();
                 application_window.request_double_clicked (guid);
-            } else if (event.type == Gdk.EventType.BUTTON_PRESS && event.button == 3) {
-                // right click
+            }
 
+            return false; // allow other event handlers to be processed as well
+         }
+         
+         [GtkCallback]
+         public bool on_request_list_button_release_event (Gdk.EventButton event) {
+             if (event.type == Gdk.EventType.BUTTON_RELEASE && event.button == 3) {
+                // right click
                 var menu = new Gtk.Menu ();
             
                 var item_new_request = new Gtk.MenuItem.with_label ("New Request");
@@ -492,7 +507,7 @@ namespace Proximity {
 
         public void set_processed_launched (bool successful) {
             if (!successful) {
-                placeholder_requests.set_error ();
+                placeholder_requests.set_error (application_window.core_address);
             }
         }
     }

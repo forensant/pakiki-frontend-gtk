@@ -10,17 +10,16 @@ namespace Proximity {
             set { set_url_path_internal (value); }
         }
 
+        private ApplicationWindow application_window;
         public bool has_loaded;
         private Gtk.TreeStore tree_store_site_map;
         private WebsocketConnection websocket;
 
-        public SitemapWidget () {
+        public SitemapWidget (ApplicationWindow application_window) {
             has_loaded = false;
+            this.application_window = application_window;
             this.get_selection ().set_mode (Gtk.SelectionMode.SINGLE);
             tree_store_site_map = new Gtk.TreeStore (1, typeof (string));
-            Gtk.TreeIter iter;
-            tree_store_site_map.append (out iter, null);
-            tree_store_site_map.set (iter, 0, "All");
 
             this.model = tree_store_site_map;
             this.get_selection ().changed.connect ( on_sitemap_row_changed );
@@ -29,6 +28,18 @@ namespace Proximity {
         }
 
         private void add_path_to_sitemap (string path, Gtk.TreeIter? parent = null) {
+            var path_without_scheme = "";
+            if (parent == null) {
+                var scheme_idx = path.index_of ("://");
+                if (scheme_idx != -1) {
+                    path_without_scheme = path.substring (scheme_idx + 3);
+                }
+            }
+
+            if (path_without_scheme != "") {
+                path = path_without_scheme;
+            }
+
             var path_components = path.split("/");
 
             path = path_components[0];
@@ -38,7 +49,9 @@ namespace Proximity {
             Gtk.TreeIter? insert_before = null;
 
             var child_count = tree_store_site_map.iter_n_children (parent);
-            for (int i = 0; i < child_count; i++) {
+
+            // start at 1, so that "All" stays at the top
+            for (int i = 1; i < child_count; i++) {
                 if (tree_store_site_map.iter_nth_child (out current_iter, parent, i)) {
                     Value path_value;
                     tree_store_site_map.get_value (current_iter, 0, out path_value);
@@ -200,7 +213,8 @@ namespace Proximity {
         }
 
         public void populate_sitemap () {
-            var url = "http://localhost:10101/project/sitemap";
+            tree_store_site_map.clear ();
+            var url = "http://" + application_window.core_address + "/project/sitemap";
 
             var session = new Soup.Session ();
             var message = new Soup.Message ("GET", url);
@@ -208,6 +222,10 @@ namespace Proximity {
             session.queue_message (message, (sess, mess) => {
                 var parser = new Json.Parser ();
                 try {
+                    Gtk.TreeIter iter;
+                    tree_store_site_map.append (out iter, null);
+                    tree_store_site_map.set (iter, 0, "All");
+
                     parser.load_from_data ((string) message.response_body.flatten ().data, -1);
 
                     var rootArray = parser.get_root().get_array();
@@ -232,7 +250,7 @@ namespace Proximity {
                 websocket.close(Soup.WebsocketCloseCode.NO_STATUS, null);
             }
 
-            url = "http://127.0.0.1:10101/project/notifications";
+            url = "http://" + application_window.core_address + "/project/notifications";
             
             var wsmessage = new Soup.Message("GET", url);
             session.websocket_connect_async.begin(wsmessage, "localhost", null, null, (obj, res) => {
@@ -247,7 +265,6 @@ namespace Proximity {
         }
 
         public void reset_state () {
-            tree_store_site_map.clear ();
             populate_sitemap ();
         }
     }

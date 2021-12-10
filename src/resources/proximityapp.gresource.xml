@@ -24,6 +24,7 @@
     <file>Logo128.png</file>
     <file>Logo256.png</file>
     <file>Pinchy.svg</file>
+    <file>style.css</file>
 
   </gresource>
 </gresources>

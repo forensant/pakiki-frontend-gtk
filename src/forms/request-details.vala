@@ -106,7 +106,7 @@ namespace Proximity {
             }
 
             var session = new Soup.Session ();
-            var message = new Soup.Message ("GET", "http://127.0.0.1:10101/project/requestresponse?guid=" + guid);
+            var message = new Soup.Message ("GET", "http://" + application_window.core_address + "/project/requestresponse?guid=" + guid);
 
             session.queue_message (message, (sess, mess) => {
                 var parser = new Json.Parser ();

@@ -27,7 +27,7 @@ namespace Proximity {
             settings = new GLib.Settings("com.forensant.proximity");
             settings.bind("request-double-click", combobox_request_doubleclick, "active-id", GLib.SettingsBindFlags.DEFAULT);
 
-            proxy_settings = new ProxySettings ();
+            proxy_settings = new ProxySettings (window);
             entry_proxy_address.text = proxy_settings.proxy_address;
             entry_upstream_proxy.text = proxy_settings.upstream_proxy_address;
         }

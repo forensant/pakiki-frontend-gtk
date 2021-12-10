@@ -263,7 +263,7 @@ namespace Proximity {
 
         private void populate_payloads () {
             var session = new Soup.Session ();
-            var message = new Soup.Message ("PUT", "http://127.0.0.1:10101/inject_operations/payloads");
+            var message = new Soup.Message ("PUT", "http://" + application_window.core_address + "/inject_operations/payloads");
 
             session.queue_message (message, (sess, mess) => {
                 var parser = new Json.Parser ();

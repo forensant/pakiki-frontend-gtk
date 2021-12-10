@@ -4,39 +4,64 @@ namespace Proximity {
     public class ApplicationWindow : Gtk.ApplicationWindow {
 
         [GtkChild]
+        private Gtk.Box box_bind_error;
+        [GtkChild]
         private unowned Gtk.Button button_back;
         [GtkChild]
         private unowned Gtk.Button button_intercept;
         [GtkChild]
         private unowned Gtk.Button button_new;
         [GtkChild]
-        private unowned Gtk.Stack stack;
+        private unowned Gtk.ToggleButton button_search;
+        [GtkChild]
+        private unowned Gtk.CheckButton check_button_exclude_resources;
         [GtkChild]
         private unowned Gtk.MenuButton gears;
         [GtkChild]
-        private unowned Gtk.CheckButton checkButtonExcludeResources;
+        private unowned Gtk.Label label_proxy_bind_error;
         [GtkChild]
-        private unowned Gtk.ToggleButton button_search;
+        private unowned Gtk.Overlay overlay;
         [GtkChild]
         private unowned Gtk.SearchBar searchbar;
         [GtkChild]
         private unowned Gtk.SearchEntry searchentry;
+        [GtkChild]
+        private unowned Gtk.Separator separator_proxy_bind_error;
+        [GtkChild]
+        private unowned Gtk.Stack stack;
+
+        public string core_address;
 
         private bool controls_hidden;
         private CoreProcess core_process;
-        private int core_process_timer;
+        //private int core_process_timer;
         private InjectPane inject_pane;
         private Intercept intercept;
+        private Gtk.Label label_connection_lost;
         private RequestNew new_request;
         private RequestsPane requests_pane;
         private GLib.Settings settings;
 
-        public ApplicationWindow (Gtk.Application application) {
+        public ApplicationWindow (Gtk.Application application, string core_address) {
             GLib.Object (application: application);
-
             core_process = new CoreProcess (this);
-            var process_launched = core_process.open (null);
+            this.core_address = core_address;
 
+            var process_launched = true;
+            if (core_address == "") {
+                process_launched = core_process.open (null);
+            }
+
+            stack.notify.connect ( (s, property) => {
+                if (property.name == "visible-child") {
+                    on_pane_changed ();
+                }
+            });
+
+            label_connection_lost = new Gtk.Label ("Connection to Proximity Core lost. Retrying...\n\nOnce the connection is re-established, the data will be reloaded.");
+            label_connection_lost.name = "lbl_connection_lost";
+            overlay.add_overlay (label_connection_lost);
+            
             settings = new GLib.Settings ("com.forensant.proximity");
             
             button_search.bind_property ("active", searchbar, "search-mode-enabled",
@@ -47,9 +72,6 @@ namespace Proximity {
 
             searchbar.visible = false;
 
-            //var gtk_settings = Gtk.Settings.get_default ();
-            //gtk_settings.gtk_application_prefer_dark_theme = true;
-
             var builder = new Gtk.Builder.from_resource ("/com/forensant/proximity/app-menu.ui");
             var menu = (MenuModel) builder.get_object ("menu");
             gears.menu_model = menu;
@@ -57,44 +79,28 @@ namespace Proximity {
             // works around a webkit bug
             //new WebKit.WebView();
 
+            if (core_address != "") {
+                on_core_started (core_address);
+            }
+
+            core_process.core_started.connect (on_core_started);
+
+            core_process.listener_error.connect ((message) => {
+                this.box_bind_error.show ();
+                label_proxy_bind_error.label = message.strip () + "\nRequests are not being intercepted.";
+            });
+
             if (process_launched == true) {
-                // sometimes it takes a while for the process to launch, so wait until we can establish comms with it
-                Timeout.add_full (Priority.DEFAULT, 10, check_core_launched_first_launch);
+                Timeout.add_full (Priority.DEFAULT, 5000, monitor_core_connection);
             }
             else {
+                stdout.printf("Core didn't start\n");
                 render_controls (false);
             }
         }
 
         public void change_pane (string name) {
             stack.set_visible_child_name (name);
-        }
-
-        private bool check_core_launched_first_launch () {
-            return check_core_process_launched (render_controls);
-        }
-
-        private bool check_core_launched_subsequent_launch () {
-            return check_core_process_launched (reset_state);
-        }
-
-        delegate void OnProcessLaunched (bool successful);
-        private bool check_core_process_launched (OnProcessLaunched on_process_launched) {
-            var successful = true;
-            try {
-                Soup.Session session = new Soup.Session ();
-                Soup.Request request = session.request ("http://localhost:10101/proxy/ca_certificate.pem");
-                request.send ();
-            } catch (Error e) {
-                successful = false;
-            }
-
-            core_process_timer += 1;
-            if (core_process_timer > 50 || successful) {
-                on_process_launched (successful);
-                return Source.REMOVE;
-            }
-            return Source.CONTINUE;
         }
 
         public void hide_controls () {
@@ -104,12 +110,48 @@ namespace Proximity {
             button_back.visible = false;
             gears.visible = false;
             button_search.visible = false;
-            stack.remove (inject_pane);
+            if (inject_pane != null) {
+                stack.remove (inject_pane);
+                inject_pane = null;
+            }
+        }
+
+        private bool monitor_core_connection () {
+            Soup.Session session = new Soup.Session ();
+            var message = new Soup.Message ("GET", "http://" + core_address + "/proxy/ping");
+
+            session.queue_message (message, (sess, mess) => {
+                if (mess.status_code == 200) {
+                    if (label_connection_lost.visible == true) {
+                        label_connection_lost.hide ();
+                        reset_state (true);
+                    }
+                }
+                else {
+                    if (label_connection_lost.visible == false) {
+                        label_connection_lost.show ();
+                    }
+                }
+            });
+
+            return Source.CONTINUE;
         }
 
         [GtkCallback]
         public void on_back_clicked () {
             selected_pane ().on_back_clicked ();
+        }
+
+        [GtkCallback]
+        public void on_button_dismiss_error_clicked () {
+            box_bind_error.hide ();
+            separator_proxy_bind_error.hide ();
+        }
+
+        private void on_core_started (string address) {
+            this.core_address = address;
+            stdout.printf("Core started on address: %s, Resetting state\n", address);
+            render_controls (true);
         }
 
         [GtkCallback]
@@ -124,11 +166,6 @@ namespace Proximity {
 
         public void on_new_project () {
             core_process.new_project ();
-        }
-
-        public void on_new_project_open () {
-            // sometimes it takes a while for the process to launch, so wait until we can establish comms with it
-            Timeout.add_full (Priority.DEFAULT, 10, check_core_launched_subsequent_launch);
         }
 
         public void on_open_project () {
@@ -162,26 +199,58 @@ namespace Proximity {
         private void render_controls (bool process_launched) {
             controls_hidden = !process_launched;
 
+            stack.transition_type = Gtk.StackTransitionType.NONE;
+
+            var request_pane_child = stack.get_child_by_name ("RequestList");
+            if (request_pane_child != null) {
+                stack.remove (request_pane_child);
+            }
+
+            var inject_pane_child = stack.get_child_by_name ("Inject");
+            if (inject_pane_child != null) {
+                stack.remove (inject_pane_child);
+            }
+
             requests_pane = new RequestsPane (this, process_launched);
+            requests_pane.pane_changed.connect(on_pane_changed);
             requests_pane.show ();
             stack.add_titled (requests_pane, "RequestList", "Requests");
             
             if (process_launched) {
-                inject_pane = new InjectPane (this);
-                inject_pane.show ();
-                stack.add_titled (inject_pane, "Inject", "Inject");
+                if (stack.get_child_by_name ("Inject") == null) {
+                    inject_pane = new InjectPane (this);
+                    inject_pane.show ();
+                    inject_pane.pane_changed.connect(on_pane_changed);
+                    stack.add_titled (inject_pane, "Inject", "Inject");
+                } else {
+                    inject_pane.reset_state ();
+                }
 
-                new_request = new RequestNew (this);
-                stack.add_named (new_request, "NewRequest");
+                if (stack.get_child_by_name ("NewRequest") == null) {
+                    new_request = new RequestNew (this);
+                    new_request.pane_changed.connect(on_pane_changed);
+                    stack.add_named (new_request, "NewRequest");    
+                } else {
+                    new_request.reset_state ();
+                }
+                
+                if (stack.get_child_by_name ("Intercept") == null) {
+                    intercept = new Intercept (this);
+                    intercept.pane_changed.connect(on_pane_changed);
+                    stack.add_named (intercept, "Intercept");
+                } else {
+                    intercept.reset_state ();
+                }
 
-                intercept = new Intercept (this);
-                stack.add_named (intercept, "Intercept");
+                button_new.visible = true;
+                button_intercept.visible = true;
+                button_back.visible = true;
+                gears.visible = true;
+                button_search.visible = true;
+                stack.set_visible_child_name ("RequestList");
             }
 
-            stack.@foreach ((w) => {
-                var pane = (MainApplicationPane) w;
-                pane.pane_changed.connect(on_pane_changed);
-            });
+            stack.transition_type = Gtk.StackTransitionType.SLIDE_LEFT_RIGHT;
         }
 
         public void request_double_clicked (string guid) {
@@ -203,13 +272,12 @@ namespace Proximity {
                 var msgbox = new Gtk.MessageDialog (this, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "Error: Could not open the file.");
                 msgbox.run ();
                 core_process.open (null);
-                Timeout.add_full (Priority.DEFAULT, 10, check_core_launched_subsequent_launch);
             }
         }
 
         [GtkCallback]
         public void search_text_changed () {
-            selected_pane ().on_search (searchentry.get_text (), checkButtonExcludeResources.get_active ());
+            selected_pane ().on_search (searchentry.get_text (), check_button_exclude_resources.get_active ());
         }
 
         private MainApplicationPane selected_pane () {
@@ -224,11 +292,6 @@ namespace Proximity {
         public void send_to_new_request (string guid) {
             stack.visible_child = new_request;
             new_request.populate_request (guid);
-        }
-
-        [GtkCallback]
-        public void visible_child_changed () {
-            on_pane_changed ();
         }
     }
 }

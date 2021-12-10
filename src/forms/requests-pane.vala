@@ -14,12 +14,12 @@ namespace Proximity {
             requests_loaded = false;
             this.application_window = application_window;
             this.launch_successful = launch_successful;
-            request_list = new RequestList (application_window);
+            request_list = new RequestList (application_window, launch_successful);
             request_list.requests_loaded.connect (on_requests_loaded);
             request_list.show ();
             request_list.set_processed_launched (launch_successful);
 
-            sitemap_widget = new SitemapWidget ();
+            sitemap_widget = new SitemapWidget (application_window);
             sitemap_widget.border_width = 0;
 
             sitemap_widget.url_filter_set.connect ((url) => {

@@ -237,7 +237,7 @@ namespace Proximity {
         [GtkCallback]
         private void on_run_clicked () {
             var session = new Soup.Session ();
-            var message = new Soup.Message ("POST", "http://127.0.0.1:10101/inject_operations/run");
+            var message = new Soup.Message ("POST", "http://" + application_window.core_address + "/inject_operations/run");
 
             button_run.sensitive = false;
             spinner.active = true;
@@ -297,7 +297,7 @@ namespace Proximity {
         }
 
         public void populate_request (string guid) {
-            var url = "http://localhost:10101/project/request?guid=" + guid;
+            var url = "http://" + application_window.core_address + "/project/request?guid=" + guid;
 
             var session = new Soup.Session ();
             var message = new Soup.Message ("GET", url);

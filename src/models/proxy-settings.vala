@@ -1,24 +1,27 @@
 namespace Proximity {
     class ProxySettings {
 
+        private ApplicationWindow application_window;
         private string certificate;
         public string proxy_address;
         public string upstream_proxy_address;
         public bool successful;
         
-        public ProxySettings () {
+        public ProxySettings (ApplicationWindow application_window) {
+            this.application_window = application_window;
             successful = true;
             download_settings ();
             download_certificate ();
         }
 
         void download_certificate () {
+            var url = "http://" + application_window.core_address + "/proxy/ca_certificate.pem";
             try {
                 // Create a session:
                 Soup.Session session = new Soup.Session ();
         
                 // Request a file:
-                Soup.Request request = session.request ("http://localhost:10101/proxy/ca_certificate.pem");
+                Soup.Request request = session.request (url);
                 InputStream stream = request.send ();
         
                 // Print the content:
@@ -31,19 +34,20 @@ namespace Proximity {
                     certificate += "\n";
                 }
             } catch (Error e) {
-                stderr.printf ("Error downloading certificate: %s\n", e.message);
+                stderr.printf ("Error connecting to %s to download the certificate: %s\n", url, e.message);
                 successful = false;
             }
             
         }
 
         void download_settings () {
+            var url = "http://" + application_window.core_address + "/proxy/settings";
             try {
                 // Create a session:
                 Soup.Session session = new Soup.Session ();
         
                 // Request a file:
-                Soup.Request request = session.request ("http://localhost:10101/proxy/settings");
+                Soup.Request request = session.request (url);
                 InputStream stream = request.send ();
         
                 // Print the content:
@@ -66,13 +70,13 @@ namespace Proximity {
                 proxy_address = "UNKNOWN";
                 successful = false;
 
-                stderr.printf ("Error getting proxy port: %s\n", e.message);
+                stderr.printf ("Error connecting to %s to get the proxy port: %s\n", url, e.message);
             }
         }
 
         public string save () {
             var session = new Soup.Session ();
-            var message = new Soup.Message ("PUT", "http://127.0.0.1:10101/proxy/settings");
+            var message = new Soup.Message ("PUT", "http://" + application_window.core_address + "/proxy/settings");
 
             Json.Builder builder = new Json.Builder ();
             builder.begin_object ();

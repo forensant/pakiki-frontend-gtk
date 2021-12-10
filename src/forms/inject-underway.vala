@@ -22,15 +22,17 @@ namespace Proximity {
         [GtkChild]
         private Gtk.TextView text_view_request;
 
+        private ApplicationWindow application_window;
         public InjectOperation operation { get; private set; }
         private RequestList request_list_full;
         private bool search_exclude_resources;
         private string search_query;
 
         public InjectUnderway (ApplicationWindow application_window) {
+            this.application_window = application_window;
             search_query = "";
             string[] scan_ids = {"-"};
-            request_list_full = new RequestList (application_window, scan_ids);
+            request_list_full = new RequestList (application_window, true, scan_ids);
             this.attach (request_list_full, 0, 4, 2, 1);
 
             label_title.set_text_with_mnemonic ("_Title");
@@ -108,7 +110,7 @@ namespace Proximity {
             }
 
             var session = new Soup.Session ();
-            var message = new Soup.Message ("PUT", "http://127.0.0.1:10101" + uri);
+            var message = new Soup.Message ("PUT", "http://" + application_window.core_address + uri);
 
             var parameters = "guid=" + operation.guid;
             if (archive != "") {
@@ -127,7 +129,7 @@ namespace Proximity {
         [GtkCallback]
         public void on_title_changed () {
             var session = new Soup.Session ();
-            var message = new Soup.Message ("PUT", "http://127.0.0.1:10101/inject_operation");
+            var message = new Soup.Message ("PUT", "http://" + application_window.core_address + "/inject_operation");
 
             Json.Builder builder = new Json.Builder ();
             builder.begin_object ();
