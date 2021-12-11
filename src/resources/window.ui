@@ -16,6 +16,7 @@
           <object class="GtkButton" id="button_back">
             <property name="can_focus">False</property>
             <property name="receives_default">False</property>
+            <property name="tooltip_text" translatable="yes">Back</property>
             <signal name="clicked" handler="on_back_clicked" swapped="no"/>
             <child>
               <object class="GtkArrow">
@@ -32,6 +33,7 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="receives_default">False</property>
+            <property name="tooltip_text" translatable="yes">New Request</property>
             <property name="use_underline">True</property>
             <signal name="clicked" handler="on_new_clicked" swapped="no"/>
           </object>
@@ -45,6 +47,7 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="receives_default">False</property>
+            <property name="tooltip_text" translatable="yes">Intercept Requests and Responses</property>
             <property name="use_underline">True</property>
             <signal name="clicked" handler="on_intercept_clicked" swapped="no"/>
           </object>
@@ -64,6 +67,7 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="receives_default">False</property>
+            <property name="tooltip_text" translatable="yes">Menu</property>
             <property name="direction">none</property>
             <child>
               <object class="GtkImage" id="gears-icon">
@@ -91,6 +95,7 @@
               <object class="GtkImage" id="search-icon">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="tooltip_text" translatable="yes">Search Requests</property>
                 <property name="icon_name">edit-find-symbolic</property>
                 <property name="icon_size">1</property>
               </object>

@@ -179,6 +179,7 @@ namespace Proximity {
 
             var pane = selected_pane ();
             button_new.visible  = pane.new_visible ();
+            button_new.tooltip_text = pane.new_tooltip_text ();
             button_back.visible = pane.back_visible ();
 
             var can_search = pane.can_search ();
@@ -217,14 +218,10 @@ namespace Proximity {
             stack.add_titled (requests_pane, "RequestList", "Requests");
             
             if (process_launched) {
-                if (stack.get_child_by_name ("Inject") == null) {
-                    inject_pane = new InjectPane (this);
-                    inject_pane.show ();
-                    inject_pane.pane_changed.connect(on_pane_changed);
-                    stack.add_titled (inject_pane, "Inject", "Inject");
-                } else {
-                    inject_pane.reset_state ();
-                }
+                inject_pane = new InjectPane (this);
+                inject_pane.show ();
+                inject_pane.pane_changed.connect(on_pane_changed);
+                stack.add_titled (inject_pane, "Inject", "Inject");
 
                 if (stack.get_child_by_name ("NewRequest") == null) {
                     new_request = new RequestNew (this);

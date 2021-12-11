@@ -55,7 +55,10 @@ namespace Proximity {
             url_renderer.ellipsize = Pango.EllipsizeMode.END;
             url_renderer.ellipsize_set = true;
 
-            var time_cell_renderer     = new Gtk.CellRendererText();
+            var time_cell_renderer = new Gtk.CellRendererText();
+            time_cell_renderer.ellipsize = Pango.EllipsizeMode.MIDDLE;
+            time_cell_renderer.ellipsize_set = true;
+
             var response_size_renderer = new Gtk.CellRendererText();
             var duration_renderer     = new Gtk.CellRendererText();
 
@@ -107,19 +110,23 @@ namespace Proximity {
                                                     "text", Column.NOTES);
 
             
-            var guidColumn = request_list.get_column(Column.GUID);
-            guidColumn.visible = false;
+            var guid_column = request_list.get_column(Column.GUID);
+            guid_column.visible = false;
 
-            var urlColumn = request_list.get_column(Column.URL);
-            urlColumn.set_expand(true);
+            var url_column = request_list.get_column(Column.URL);
+            url_column.expand = true;
+            url_column.min_width = 200;
+            url_column.resizable = true;
 
-            var timeColumn = request_list.get_column(Column.TIME);
-            timeColumn.set_cell_data_func(time_cell_renderer, (cell_layout, cell, tree_model, iter) => {
+            var time_column = request_list.get_column(Column.TIME);
+            time_column.set_cell_data_func(time_cell_renderer, (cell_layout, cell, tree_model, iter) => {
                 Value val;
                 tree_model.get_value(iter, Column.TIME, out val);
                 ((Gtk.CellRendererText)cell).text = response_time(new DateTime.from_unix_local(val.get_int()));
                 val.unset();
             });
+            time_column.min_width = 100;
+            time_column.resizable = true;
 
             var responseSizeColumn = request_list.get_column(Column.RESPONSE_SIZE);
             responseSizeColumn.set_cell_data_func(response_size_renderer, (cell_layout, cell, tree_model, iter) => {

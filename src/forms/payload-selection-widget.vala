@@ -266,6 +266,9 @@ namespace Proximity {
             var message = new Soup.Message ("PUT", "http://" + application_window.core_address + "/inject_operations/payloads");
 
             session.queue_message (message, (sess, mess) => {
+                if (mess.status_code != 200) {
+                    return;
+                }
                 var parser = new Json.Parser ();
                 try {
                     parser.load_from_data ((string) message.response_body.flatten ().data, -1);

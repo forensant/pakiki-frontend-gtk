@@ -134,6 +134,9 @@ namespace Proximity {
             var message = new Soup.Message ("GET", url);
 
             session.queue_message (message, (sess, mess) => {
+                if (mess.status_code != 200) {
+                    return;
+                }
                 this.updating = true;
                 var parser = new Json.Parser ();
                 try {
@@ -158,6 +161,9 @@ namespace Proximity {
             var message = new Soup.Message ("GET", url);
 
             session.queue_message (message, (sess, mess) => {
+                if (mess.status_code != 200) {
+                    return;
+                }
                 liststore_requests.clear ();
                 this.updating = true;
                 var parser = new Json.Parser ();
@@ -187,10 +193,10 @@ namespace Proximity {
             session.websocket_connect_async.begin (wsmessage, "localhost", null, null, (obj, res) => {
                 try {
                     websocket = session.websocket_connect_async.end (res);
+                    websocket.message.connect (on_websocket_message);
                 } catch (Error err) {
                     stdout.printf ("Error ending websocket: %s\n", err.message);
                 }
-                websocket.message.connect (on_websocket_message);
             });
         }
 

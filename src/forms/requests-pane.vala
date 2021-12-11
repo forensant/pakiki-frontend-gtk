@@ -49,13 +49,17 @@ namespace Proximity {
             return requests_loaded;
         }
 
+        public string new_tooltip_text () {
+            return "New Request";
+        }
+
         public void on_new_clicked () {
             application_window.change_pane ("NewRequest");
         }
 
         private void on_requests_loaded (bool requests_present) {
             if (requests_present && requests_loaded == false) {
-                position = 300;
+                position = 250;
                 request_list.requests_loaded.disconnect (on_requests_loaded);
                 requests_loaded = true;
 

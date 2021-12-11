@@ -220,6 +220,10 @@ namespace Proximity {
             var message = new Soup.Message ("GET", url);
 
             session.queue_message (message, (sess, mess) => {
+                if (mess.status_code != 200) {
+                    return;
+                }
+
                 var parser = new Json.Parser ();
                 try {
                     Gtk.TreeIter iter;
@@ -256,11 +260,11 @@ namespace Proximity {
             session.websocket_connect_async.begin(wsmessage, "localhost", null, null, (obj, res) => {
                 try {
                     websocket = session.websocket_connect_async.end(res);
+                    websocket.message.connect(on_websocket_message);
                 }
                 catch (Error err) {
-                    stdout.printf ("Error ending websocket connection: %s\n", err.message);
+                    stdout.printf ("Error, ending websocket connection: %s\n", err.message);
                 }
-                websocket.message.connect(on_websocket_message);
             });
         }
 

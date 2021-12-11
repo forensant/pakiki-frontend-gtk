@@ -10,6 +10,10 @@ namespace Proximity {
             return true;
         }
 
+        public virtual string new_tooltip_text () {
+            return "";
+        }
+
         public virtual bool new_visible () {
             return false;
         }
