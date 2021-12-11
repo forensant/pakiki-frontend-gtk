@@ -101,6 +101,7 @@ namespace Proximity {
                         return process_line (channel, condition, "stderr");
                     });
 
+                    this.child_pid = child_pid;
                     ChildWatch.add (child_pid, (pid, status) => {
                         // Triggered when the child indicated by child_pid exits
                         stdout.printf("Proximity core closed with status %d\n", status);

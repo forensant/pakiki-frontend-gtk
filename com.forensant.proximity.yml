@@ -13,9 +13,10 @@ finish-args:
   # to allow interactions with the system secret store
   - --talk-name=org.freedesktop.secrets
 
-  # needed for the core to open existing files on the file system
-  # TODO: I'm not entirely happy with this. Some sandboxing is better than none, but if we could just use portals that'd be ideal
+  # TODO: I'm not happy with this. Some sandboxing is better than none, but if we could use portals that'd be ideal
+  # see the notes at: https://github.com/pipeline/proximity-frontend-gtk/issues/6
   - --filesystem=host
+  
 modules:
   - name: GtkSourceView
     buildsystem: autotools
@@ -39,8 +40,15 @@ modules:
       - install -D pythoninterpreter /app/bin/
       # there's a weird bug were the python39/lib directory in the original zip is flattened to just lib
       - mkdir /app/bin/python39
+      - ls -lah
       - cp -r lib /app/bin/python39/
+      # if testing locally, use this instead:
+      #- cp -r python39 /app/bin/
     sources:
+#manual_ifdef production
       - type: archive
-        url: https://github.com/pipeline/proximity-core/releases/download/v0.3-alpha/ProximityCore-Linux.zip
-        sha256: 3e6a8b84e9afffac76eb565af9de6a6ce537491dc73ede4994d9e29fa648d145
+        url: https://github.com/pipeline/proximity-core/releases/download/v0.4-alpha/ProximityCore-Linux.zip
+        sha256: a56bd7e0ee2312d049af9b396fa65ac9dbe29d1a3f1b6edbdcb876d20d17c178
+#manual_ifdef local
+#      - type: dir
+#        path: /home/user/Coding/proximity-core/build/
