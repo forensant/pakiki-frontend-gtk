@@ -13,6 +13,10 @@ finish-args:
   # to allow interactions with the system secret store
   - --talk-name=org.freedesktop.secrets
   
+  # TODO: I'm not happy with this. Some sandboxing is better than none, but if we could use portals that'd be ideal
+  # see the notes at: https://github.com/pipeline/proximity-frontend-gtk/issues/6
+  - --filesystem=host
+  
 modules:
   - name: GtkSourceView
     buildsystem: autotools
