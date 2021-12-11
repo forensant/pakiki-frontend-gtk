@@ -58,6 +58,8 @@ namespace Proximity {
                     exe_path = exe_path.slice (0, last_slash + 1);
                 }
             }
+
+            stdout.printf ("Opening project with core: %s\n", path);
         
             string[] paths = {
                 exe_path,
