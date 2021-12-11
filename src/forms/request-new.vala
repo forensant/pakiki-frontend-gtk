@@ -103,6 +103,38 @@ namespace Proximity {
             });
         }
 
+        [GtkCallback]
+        private void on_text_view_request_populate_popup (Gtk.Menu menu) {
+            Gtk.TextIter selection_start, selection_end;
+            var text_selected = text_view_request.buffer.get_selection_bounds (out selection_start, out selection_end);
+
+            if (!text_selected) {
+                return;
+            }
+
+            var separator = new Gtk.SeparatorMenuItem ();
+            separator.show ();
+            menu.append (separator);
+
+            var selected_text = text_view_request.buffer.get_slice (selection_start, selection_end, true);
+
+            var menu_item_encode = new Gtk.MenuItem.with_label ("URL Encode");
+            menu_item_encode.activate.connect ( () => {
+                var encoded_text = Soup.URI.encode (selected_text, null);
+                this.replace_selected_text (encoded_text);
+            });
+            menu_item_encode.show ();
+            menu.append (menu_item_encode);
+
+            var menu_item_decode = new Gtk.MenuItem.with_label ("URL Decode");
+            menu_item_decode.activate.connect ( () => {
+                var decoded_text = Soup.URI.decode (selected_text);
+                this.replace_selected_text (decoded_text);
+            });
+            menu_item_decode.show ();
+            menu.append (menu_item_decode);
+        }
+
         public void populate_request (string guid) {
             var url = "http://" + application_window.core_address + "/project/request?guid=" + guid;
 
@@ -128,6 +160,17 @@ namespace Proximity {
                     stdout.printf ("Error retrieving/populating request: %s\n", err.message);
                 }
             });
+        }
+
+        private void replace_selected_text (string new_text) {            
+            text_view_request.buffer.delete_selection (true, true);
+            text_view_request.buffer.insert_at_cursor (new_text, new_text.length);
+
+            // now highlight the newly inserted text
+            Gtk.TextIter selection_start, selection_end;
+            text_view_request.buffer.get_selection_bounds (out selection_start, out selection_end);
+            selection_start.backward_chars (new_text.length);
+            text_view_request.buffer.select_range (selection_start, selection_end);
         }
 
         public void reset_state () {

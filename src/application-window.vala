@@ -244,7 +244,7 @@ namespace Proximity {
 
                 button_new.visible = true;
                 button_intercept.visible = true;
-                button_back.visible = true;
+                button_back.visible = false;
                 gears.visible = true;
                 button_search.visible = true;
                 stack.set_visible_child_name ("RequestList");
