@@ -2,3 +2,12 @@ label#lbl_connection_lost {
     color: white;
     background-color: rgba(0, 0, 0, 0.7);
 }
+
+scrolledwindow#scrolled_window_hex_count {
+    background-color: rgba(0,0,0,0.05);
+}
+  
+textview#text_view_hex_count text {
+    background-color: rgba(0,0,0,0.05);
+}
+  
