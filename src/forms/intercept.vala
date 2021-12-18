@@ -72,10 +72,10 @@ namespace Proximity {
                     model.get_value (iter, Column.GUID, out rowGuid);
 
                     if (rowGuid == guidToRemove) {
-                        liststore_requests.remove (ref iter);
                         if (list_selection.iter_is_selected (iter)) {
                             select_next = true;
                         }
+                        liststore_requests.remove (ref iter);
                         return true;
                     }
 
@@ -90,7 +90,15 @@ namespace Proximity {
                 }
             } else {
                 // add to the table
+                var guid = request.get_string_member ("GUID");
                 var direction = requestData.get_string_member ("Direction");
+                var url = request.get_string_member ("URL");
+                var body = requestData.get_string_member ("Body");
+
+                // check if it's a binary request we can't handle
+                if (skip_request_if_required (guid, body, direction)) {
+                    return;
+                }
 
                 if (direction == "browser_to_server") {
                     direction = "Browser to server";
@@ -100,10 +108,10 @@ namespace Proximity {
 
                 Gtk.TreeIter iter;
                 liststore_requests.insert_with_values (out iter, -1,
-                    Column.GUID, request.get_string_member ("GUID"),
+                    Column.GUID, guid,
                     Column.DIRECTION, direction,
-                    Column.URL, request.get_string_member ("URL"),
-                    Column.BODY, requestData.get_string_member ("Body")
+                    Column.URL, url,
+                    Column.BODY, body
                 );
 
                 if (list_selection.get_selected_rows (null).length () == 0) {
@@ -361,6 +369,17 @@ namespace Proximity {
             message.set_request("application/json", Soup.MemoryUse.COPY, parameters.data);
             
             session.queue_message (message, null);
+        }
+
+        private bool skip_request_if_required (string guid, string base64_body, string direction) {
+            var body = (string)Base64.decode (base64_body);
+
+            if (body.make_valid () != body) {
+                send_individual_request_response (guid, "forward", direction, base64_body);
+                return true;
+            }
+
+            return false;
         }
 
         public void reset_state () {
