@@ -11,8 +11,18 @@ namespace Proximity {
         public InjectOperation.Status status    { get; set; }
         public InjectOperation inject_operation { get; set; }
 
+        public bool first {
+            set {
+                if (value) {
+                    this.margin_top = 0;
+                } else {
+                    this.margin_top = 3; 
+                }
+            }
+        }
+
         private Gtk.Label label_title;
-        private Gtk.ProgressBar progress_bar;
+        private RoundProgressBar progress_bar;
 
         public InjectListRow.label (InjectOperation.Status status, string title) {
             this.row_type = Type.LABEL;
@@ -30,6 +40,9 @@ namespace Proximity {
             label_title.xalign = 0.0f;
 
             label_title.show ();
+
+            this.margin_top = 3;
+            this.margin_bottom = 3;
 
             this.set_selectable (false);
             this.sensitive = false;
@@ -63,25 +76,20 @@ namespace Proximity {
             this.status           = inject_operation.get_status ();
             this.inject_operation = inject_operation;
 
-            var hbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 5);
-            hbox.set_spacing (5);
+            var hbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 2);
             this.add (hbox);
 
-            Gtk.Image image;
-
-            if (inject_operation.get_status () == InjectOperation.Status.COMPLETED) {
-                image = new Gtk.Image.from_icon_name ("gtk-apply", Gtk.IconSize.DND);
-            } else if (inject_operation.get_status () == InjectOperation.Status.UNDERWAY) {
-                image = new Gtk.Image.from_icon_name ("media-playback-start", Gtk.IconSize.DND);
+            progress_bar = new RoundProgressBar ();
+            if (inject_operation.get_status () == InjectOperation.Status.COMPLETED || inject_operation.get_status () == InjectOperation.Status.ARCHIVED) {
+                progress_bar.fraction = 1.0f;
             } else {
-                image = new Gtk.Image.from_icon_name ("document-open", Gtk.IconSize.DND);
+                progress_bar.fraction = ((double)inject_operation.percent_completed * 0.01);
             }
-            image.pixel_size = 32;
-            image.margin_start = 6;
-            hbox.pack_start (image, false, false, 0);
+            
+            progress_bar.margin_start = 6;
+            hbox.pack_start (progress_bar, false, false, 0);
 
-            var vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 5);
-            vbox.set_spacing (2);
+            var vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 2);
             hbox.pack_start (vbox, true, true, 0);
 
             label_title = new Gtk.Label (inject_operation.title);
@@ -91,18 +99,14 @@ namespace Proximity {
             vbox.pack_start (label_title, false, false, 0);
 
             var label_subtitle = new Gtk.Label (inject_operation.url + " - " + inject_operation.inject_description);
+            label_subtitle.name = "lbl_inject_subtitle";
             label_subtitle.margin_start = 6;
             label_subtitle.xalign = 0.0f;
+            
             vbox.pack_start (label_subtitle, false, false, 0);
 
-            if (inject_operation.get_status () == InjectOperation.Status.UNDERWAY) {
-                progress_bar = new Gtk.ProgressBar ();
-                progress_bar.set_fraction ((double)inject_operation.percent_completed * 0.01);
-                progress_bar.margin_start = 6;
-                progress_bar.margin_end = 12;
-                progress_bar.margin_bottom = 6;
-                vbox.pack_start (progress_bar, true, true, 0);
-            }
+            this.margin_top = 3;
+            this.margin_bottom = 3;
 
             this.set_selectable (true);
             this.show_all();
@@ -112,7 +116,7 @@ namespace Proximity {
             this.inject_operation = operation;
             label_title.set_text (operation.title);
             if (inject_operation.get_status () == InjectOperation.Status.UNDERWAY) {
-                progress_bar.set_fraction ((double)inject_operation.percent_completed * 0.01);
+                progress_bar.fraction = ((double)inject_operation.percent_completed * 0.01);
             }
         }
     }

@@ -19,6 +19,7 @@ sources += files(
     'forms/requests-pane.vala',
     'forms/sitemap-widget.vala',
     'forms/widgets/request-text-view.vala',
+    'forms/widgets/round-progress-bar.vala',
 
     'models/core-process.vala',
     'models/inject-operation.vala',

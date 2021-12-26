@@ -3,6 +3,10 @@ label#lbl_connection_lost {
     background-color: rgba(0, 0, 0, 0.7);
 }
 
+label#lbl_inject_subtitle {
+    opacity: 0.7;
+}
+
 scrolledwindow#scrolled_window_hex_count {
     background-color: rgba(0,0,0,0.05);
 }
@@ -10,4 +14,3 @@ scrolledwindow#scrolled_window_hex_count {
 textview#text_view_hex_count text {
     background-color: rgba(0,0,0,0.05);
 }
-  

@@ -282,9 +282,20 @@ namespace Proximity {
                 if (row.row_type == InjectListRow.Type.LABEL) {
                     var show = false;
 
-                    if (row.status == InjectOperation.Status.COMPLETED && completed_present) { show = true; }
-                    if (row.status == InjectOperation.Status.UNDERWAY  && underway_present)  { show = true; }
-                    if (row.status == InjectOperation.Status.ARCHIVED  && archived_present)  { show = true; }
+                    if (row.status == InjectOperation.Status.COMPLETED && completed_present) {
+                        show = true;
+                        row.first = true;
+                    }
+
+                    if (row.status == InjectOperation.Status.UNDERWAY  && underway_present)  {
+                        show = true;
+                        row.first = (completed_present == false);
+                    }
+
+                    if (row.status == InjectOperation.Status.ARCHIVED  && archived_present)  {
+                        show = true;
+                        row.first = (completed_present == false && underway_present == false);
+                    }
                     
                     if (show) {
                         row.show_all ();
