@@ -36,6 +36,7 @@ namespace Proximity {
             DURATION,
             VERB,
             STATUS,
+            PAYLOADS,
             ERROR,
             NOTES
         }
@@ -62,9 +63,13 @@ namespace Proximity {
             var response_size_renderer = new Gtk.CellRendererText();
             var duration_renderer     = new Gtk.CellRendererText();
 
-            var errorRenderer = new Gtk.CellRendererText();
-            errorRenderer.ellipsize = Pango.EllipsizeMode.END;
-            errorRenderer.ellipsize_set = true;
+            var payload_renderer = new Gtk.CellRendererText();
+            payload_renderer.ellipsize = Pango.EllipsizeMode.END;
+            payload_renderer.ellipsize_set = true;
+
+            var error_renderer = new Gtk.CellRendererText();
+            error_renderer.ellipsize = Pango.EllipsizeMode.END;
+            error_renderer.ellipsize_set = true;
 
             var notes_renderer = new Gtk.CellRendererText();
             notes_renderer.ellipsize = Pango.EllipsizeMode.END;
@@ -101,8 +106,12 @@ namespace Proximity {
                                                     new Gtk.CellRendererText (),
                                                     "text", Column.STATUS);
 
+            request_list.insert_column_with_attributes (-1, "Payloads",
+                                                    payload_renderer,
+                                                    "text", Column.PAYLOADS);
+
             request_list.insert_column_with_attributes (-1, "Error",
-                                                    errorRenderer,
+                                                    error_renderer,
                                                     "text", Column.ERROR);
 
             request_list.insert_column_with_attributes (-1, "Notes",
@@ -116,7 +125,6 @@ namespace Proximity {
             var url_column = request_list.get_column(Column.URL);
             url_column.expand = true;
             url_column.min_width = 200;
-            url_column.resizable = true;
 
             var time_column = request_list.get_column(Column.TIME);
             time_column.set_cell_data_func(time_cell_renderer, (cell_layout, cell, tree_model, iter) => {
@@ -126,23 +134,39 @@ namespace Proximity {
                 val.unset();
             });
             time_column.min_width = 100;
-            time_column.resizable = true;
 
-            var responseSizeColumn = request_list.get_column(Column.RESPONSE_SIZE);
-            responseSizeColumn.set_cell_data_func(response_size_renderer, (cell_layout, cell, tree_model, iter) => {
+            var response_size_column = request_list.get_column(Column.RESPONSE_SIZE);
+            response_size_column.set_cell_data_func(response_size_renderer, (cell_layout, cell, tree_model, iter) => {
                 Value val;
                 tree_model.get_value(iter, Column.RESPONSE_SIZE, out val);
-                ((Gtk.CellRendererText)cell).text = response_size_to_string(val.get_int());
+                ((Gtk.CellRendererText)cell).text = response_size_to_string(val.get_int ());
                 val.unset();
             });
 
-            var durationColumn = request_list.get_column(Column.DURATION);
-            durationColumn.set_cell_data_func(duration_renderer, (cell_layout, cell, tree_model, iter) => {
+            var duration_column = request_list.get_column(Column.DURATION);
+            duration_column.set_cell_data_func(duration_renderer, (cell_layout, cell, tree_model, iter) => {
                 Value val;
                 tree_model.get_value(iter, Column.DURATION, out val);
-                ((Gtk.CellRendererText)cell).text = response_duration(val.get_int());
+                ((Gtk.CellRendererText)cell).text = response_duration(val.get_int ());
                 val.unset();
             });
+
+            var payload_column = request_list.get_column(Column.PAYLOADS);
+            payload_column.set_cell_data_func(payload_renderer, (cell_layout, cell, tree_model, iter) => {
+                Value val;
+                tree_model.get_value(iter, Column.PAYLOADS, out val);
+                ((Gtk.CellRendererText)cell).text = payloads_to_string(val.get_string ());
+                val.unset();
+            });
+
+            // if it's a scan, then it'll have payloads to show
+            if (scan_ids.length == 0) {
+                payload_column.visible = false;
+            }
+
+            for (int i = 0; i < request_list.get_n_columns(); i++) {
+                request_list.get_column(i).resizable = true;
+            }
 
             request_list.get_column(Column.TIME).sort_column_id          = Column.TIME;
             request_list.get_column(Column.URL).sort_column_id           = Column.URL;
@@ -150,6 +174,7 @@ namespace Proximity {
             request_list.get_column(Column.DURATION).sort_column_id      = Column.DURATION;
             request_list.get_column(Column.VERB).sort_column_id          = Column.VERB;
             request_list.get_column(Column.STATUS).sort_column_id        = Column.STATUS;
+            request_list.get_column(Column.PAYLOADS).sort_column_id      = Column.PAYLOADS;
             request_list.get_column(Column.ERROR).sort_column_id         = Column.ERROR;
             request_list.get_column(Column.NOTES).sort_column_id         = Column.NOTES;
 
@@ -183,6 +208,7 @@ namespace Proximity {
                 Column.DURATION,      request.get_int_member ("ResponseTime"),
                 Column.VERB,          request.get_string_member ("Verb"),
                 Column.STATUS,        request.get_int_member ("ResponseStatusCode"),
+                Column.PAYLOADS,      request.get_string_member ("Payloads"),
                 Column.ERROR,         request.get_string_member ("Error"),
                 Column.NOTES,         request.get_string_member ("Notes")
             );
@@ -355,6 +381,7 @@ namespace Proximity {
                     liststore.set_value (iter, Column.DURATION,      request.get_int_member("ResponseTime"));
                     liststore.set_value (iter, Column.VERB,          request.get_string_member("Verb"));
                     liststore.set_value (iter, Column.STATUS,        request.get_int_member("ResponseStatusCode"));
+                    liststore.set_value (iter, Column.PAYLOADS,      request.get_string_member("Payloads"));
                     liststore.set_value (iter, Column.ERROR,         request.get_string_member("Error"));
                     liststore.set_value (iter, Column.NOTES,         request.get_string_member("Notes"));
 
@@ -451,6 +478,37 @@ namespace Proximity {
             }
 
             return false; // allow other event handlers to also be run
+        }
+
+        private string payloads_to_string (string str) {
+            if (str == "") {
+                return "";
+            }
+
+            var parser = new Json.Parser ();
+            
+            try {
+                parser.load_from_data (str, -1);
+                var payload_str = "";
+
+                var payload_parts = parser.get_root ().get_object ();
+                payload_parts.foreach_member ((obj, name, val) => {
+                    var str_val = val.get_string ();
+                    if (str_val != null) {
+                        if (payload_str != "") {
+                            payload_str += ", ";
+                        }
+
+                        payload_str += name + ": " + str_val;
+                    }
+                });
+
+                return payload_str;
+            }
+            catch(Error e) {
+                stdout.printf ("Could not parse JSON payload data, error: %s\nData: %s\n", e.message, str);
+                return "";
+            }
         }
 
         private string response_duration (int64 duration) {

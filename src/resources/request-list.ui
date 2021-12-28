@@ -18,6 +18,8 @@
       <column type="gchararray"/>
       <!-- column-name status -->
       <column type="gint"/>
+      <!-- column-name payloads -->
+      <column type="gchararray"/>
       <!-- column-name error -->
       <column type="gchararray"/>
       <!-- column-name notes -->
