@@ -3,7 +3,7 @@
   <gresource prefix="/com/forensant/proximity">
     <file preprocess="xml-stripblanks">app-menu.ui</file>
     <file preprocess="xml-stripblanks">inject-pane.ui</file>
-    <file preprocess="xml-stripblanks">inject-new.ui</file>
+    <file preprocess="xml-stripblanks">inject-point-selection-widget.ui</file>
     <file preprocess="xml-stripblanks">inject-underway.ui</file>
     <file preprocess="xml-stripblanks">intercept.ui</file>
     <file preprocess="xml-stripblanks">payload-selection-widget.ui</file>

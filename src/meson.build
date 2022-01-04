@@ -18,6 +18,7 @@ sources += files(
     'forms/request-new.vala',
     'forms/requests-pane.vala',
     'forms/sitemap-widget.vala',
+    'forms/widgets/inject-point-selection-widget.vala',
     'forms/widgets/request-text-view.vala',
     'forms/widgets/round-progress-bar.vala',
 

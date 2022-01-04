@@ -2,6 +2,9 @@ using Soup;
 
 namespace Proximity {
     class RequestsPane : Gtk.Paned, MainApplicationPane {
+
+        public signal void request_double_clicked (string guid);
+        public signal void request_selected (string guid);
         
         private ApplicationWindow application_window;
         private bool launch_successful;
@@ -10,12 +13,19 @@ namespace Proximity {
 
         private SitemapWidget sitemap_widget;
 
+        public bool process_actions {
+            get { return request_list.process_actions; }
+            set { request_list.process_actions = value; }
+        }
+
         public RequestsPane (ApplicationWindow application_window, bool launch_successful) {
             requests_loaded = false;
             this.application_window = application_window;
             this.launch_successful = launch_successful;
             request_list = new RequestList (application_window, launch_successful);
             request_list.requests_loaded.connect (on_requests_loaded);
+            request_list.request_selected.connect ( (guid) => { this.request_selected (guid); } );
+            request_list.request_double_clicked.connect ( (guid) => { this.request_double_clicked (guid); } );
             request_list.show ();
             request_list.set_processed_launched (launch_successful);
 

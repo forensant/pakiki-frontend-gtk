@@ -20,8 +20,20 @@ namespace Proximity {
         private RequestTextView request_text_view;
         private RequestTextView orig_request_text_view;
 
+        private bool _show_send_to;
+        public bool show_send_to {
+            get { return _show_send_to; }
+            set {
+                _show_send_to = value; 
+                button_send_to.visible = value;
+            }
+        }
+
+        private bool ended;
+
         public RequestDetails (ApplicationWindow application_window) {
             this.application_window = application_window;
+            ended = false;
             guid = "";
 
             request_text_view = new RequestTextView ();
@@ -43,10 +55,16 @@ namespace Proximity {
             scroll_window_original_text.hide ();
         }
 
+        ~RequestDetails () {
+            ended = true;
+        }
+
         public void set_request (string guid) {
             this.guid = guid;
             reset_state ();
-            button_send_to.set_visible (true);
+            if (_show_send_to) {
+                button_send_to.set_visible (true);
+            }
 
             if (guid == "" || guid == "-") {
                 return;
@@ -56,6 +74,10 @@ namespace Proximity {
             var message = new Soup.Message ("GET", "http://" + application_window.core_address + "/project/requestresponse?guid=" + guid);
 
             session.queue_message (message, (sess, mess) => {
+                if (ended) {
+                    return;
+                }
+
                 var parser = new Json.Parser ();
                 var jsonData = (string)mess.response_body.flatten().data;
                 try {

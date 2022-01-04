@@ -6,6 +6,8 @@ namespace Proximity {
     class RequestList : Gtk.Paned {
 
         public signal void requests_loaded (bool present);
+        public signal void request_double_clicked (string guid);
+        public signal void request_selected (string guid);
 
         [GtkChild]
         private unowned Gtk.Box box;
@@ -27,6 +29,15 @@ namespace Proximity {
         private bool updating;
         private string url_filter;
         private WebsocketConnection websocket;
+
+        private bool _process_actions;
+        public bool process_actions {
+            get { return _process_actions; }
+            set { 
+                _process_actions = value;
+                request_details.show_send_to = value;
+            }
+        }
         
         enum Column {
             GUID,
@@ -49,6 +60,7 @@ namespace Proximity {
             this.placeholder_requests = new PlaceholderRequests (application_window);
             this.search_query = "";
             this.url_filter = "";
+            this._process_actions = true;
 
             this.box.add (placeholder_requests);
 
@@ -410,6 +422,8 @@ namespace Proximity {
             var guid = get_selected_guid ();
             if (guid != "") {
                 request_details.set_request (guid);
+                
+                request_selected (guid);
             }
         }
 
@@ -442,15 +456,24 @@ namespace Proximity {
         public bool on_request_list_button_press_event (Gdk.EventButton event) {         
             if (event.type == Gdk.EventType.@2BUTTON_PRESS) {
                 var guid = get_selected_guid ();
-                application_window.request_double_clicked (guid);
+
+                if (guid == "") {
+                    return false;
+                }
+
+                this.request_double_clicked (guid);
+                
+                if (process_actions) {
+                    application_window.request_double_clicked (guid);
+                }
             }
 
             return false; // allow other event handlers to be processed as well
          }
          
-         [GtkCallback]
-         public bool on_request_list_button_release_event (Gdk.EventButton event) {
-             if (event.type == Gdk.EventType.BUTTON_RELEASE && event.button == 3) {
+        [GtkCallback]
+        public bool on_request_list_button_release_event (Gdk.EventButton event) {
+            if (event.type == Gdk.EventType.BUTTON_RELEASE && event.button == 3 && process_actions) {
                 // right click
                 var menu = new Gtk.Menu ();
             
