@@ -1,4 +1,5 @@
 using Soup;
+using WebKit;
 
 namespace Proximity {
     
@@ -9,8 +10,8 @@ namespace Proximity {
         private unowned Gtk.ScrolledWindow scroll_window_original_text;
         [GtkChild]
         private unowned Gtk.ScrolledWindow scroll_window_text;
-        //[GtkChild]
-        //private WebKit.WebView webkit_preview;
+        [GtkChild]
+        private WebKit.WebView webkit_preview;
         [GtkChild]
         private unowned Gtk.MenuButton button_send_to;
 
@@ -48,15 +49,30 @@ namespace Proximity {
             request_text_view.show ();
             orig_request_text_view.show ();
 
-            // Ensure that when we reactivate webkit, that it's sandboxed: https://gitlab.gnome.org/GNOME/Initiatives/-/wikis/Sandbox-all-the-WebKit!
-            //_preview.load_uri("https://www.google.com/");
-
             set_send_to_popup ();
             scroll_window_original_text.hide ();
+            webkit_preview.hide ();
+
+            webkit_preview.decide_policy.connect (on_link_clicked);
         }
 
         ~RequestDetails () {
             ended = true;
+        }
+
+        private bool on_link_clicked (PolicyDecision policy_decision, PolicyDecisionType type) {
+            if (type != WebKit.PolicyDecisionType.NAVIGATION_ACTION) {
+                return false;
+            }
+
+            var decision = (NavigationPolicyDecision)policy_decision;
+
+            if (decision.get_navigation_action ().get_navigation_type () == WebKit.NavigationType.LINK_CLICKED) {
+                decision.ignore ();
+                return true;
+            }
+
+            return false;
         }
 
         public void set_request (string guid) {
@@ -85,14 +101,17 @@ namespace Proximity {
                         return;
                     }
 
-                    var rootObj = parser.get_root().get_object();
+                    var root_obj = parser.get_root().get_object();
                     
-                    var original_request = Base64.decode (rootObj.get_string_member ("Request"));
-                    var original_response = Base64.decode (rootObj.get_string_member ("Response"));
+                    var original_request = Base64.decode (root_obj.get_string_member ("Request"));
+                    var original_response = Base64.decode (root_obj.get_string_member ("Response"));
 
-                    var modified_request = Base64.decode (rootObj.get_string_member ("ModifiedRequest"));
-                    var modified_response = Base64.decode (rootObj.get_string_member ("ModifiedResponse"));
+                    var modified_request = Base64.decode (root_obj.get_string_member ("ModifiedRequest"));
+                    var modified_response = Base64.decode (root_obj.get_string_member ("ModifiedResponse"));
 
+                    var url = root_obj.get_string_member ("URL");
+                    var mimetype = root_obj.get_string_member ("MimeType");
+                    
                     if (modified_request.length != 0 || modified_response.length != 0) {
                         scroll_window_original_text.show ();
 
@@ -106,10 +125,13 @@ namespace Proximity {
 
                         request_text_view.set_request_response (modified_request, modified_response);
                         orig_request_text_view.set_request_response (original_request, original_response);
+                        set_webview (modified_response, mimetype, url);
+                        
                     } else {
                         scroll_window_original_text.hide ();
 
                         request_text_view.set_request_response (original_request, original_response);
+                        set_webview (original_response, mimetype, url);
                     }
                 }
                 catch(Error e) {
@@ -141,6 +163,32 @@ namespace Proximity {
             menu.append (item_inject);
 
             button_send_to.set_popup (menu);
+        }
+
+        private void set_webview (uchar[] bytes, string mimetype, string url) {
+            if ( mimetype.index_of ("application/") == 0) {
+                webkit_preview.hide ();
+                return;
+            }
+
+            var proxy_settings = new WebKit.NetworkProxySettings ("http://" + application_window.preview_proxy_address + "/", null);
+            var web_context = webkit_preview.get_context ();
+            web_context.clear_cache ();
+            web_context.set_tls_errors_policy (WebKit.TLSErrorsPolicy.IGNORE);
+            web_context.set_network_proxy_settings (WebKit.NetworkProxyMode.CUSTOM, proxy_settings);
+
+            var bytes_str = (string)bytes;
+            var end_of_headers = bytes_str.index_of ("\r\n\r\n");
+
+            if (end_of_headers == -1) {
+                webkit_preview.hide ();
+                return;
+            }
+
+            GLib.Bytes body = new GLib.Bytes (bytes[end_of_headers + 4:bytes.length]);
+
+            webkit_preview.show ();
+            webkit_preview.load_bytes (body, mimetype, null, url);
         }
 
         public void reset_state () {

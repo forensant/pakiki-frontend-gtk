@@ -2,6 +2,7 @@ namespace Proximity {
     public class Application : Gtk.Application {
         private string? core_address;
         private List<Gdk.Pixbuf> icons;
+        private string? preview_proxy_address;
         private ApplicationWindow window;
 
         public Application () {
@@ -57,7 +58,7 @@ namespace Proximity {
 
         public override void activate () {
             if (window == null) {
-                window = new ApplicationWindow (this, core_address);
+                window = new ApplicationWindow (this, core_address, preview_proxy_address);
             }
             window.set_icon_list (icons);
             window.present ();
@@ -82,9 +83,10 @@ namespace Proximity {
         private int _command_line (ApplicationCommandLine command_line) {
             bool version = false;
     
-            OptionEntry[] options = new OptionEntry[2];
+            OptionEntry[] options = new OptionEntry[3];
             options[0] = { "version", 0, 0, OptionArg.NONE, ref version, "Display version number", null };
             options[1] = { "core", 0, 0, OptionArg.STRING, ref core_address, "Address for a running Proximity Core instance to connect to", "HOST:PORT" };
+            options[2] = { "preview-proxy", 0, 0, OptionArg.STRING, ref preview_proxy_address, "Address for a running Proximity Core's preview proxy instance to connect to", "HOST:PORT" };
     
             // We have to make an extra copy of the array, since .parse assumes
             // that it can remove strings from the array without freeing them.
@@ -111,10 +113,16 @@ namespace Proximity {
                 return 0;
             }
 
-            if (core_address == null) {
-                core_address = "";
+            if (core_address != null && preview_proxy_address == null) {
+                command_line.print ("If a core address is specified, a preview proxy should also be specified\n");
+                return 0;
             }
 
+            if (core_address == null) {
+                core_address = "";
+                preview_proxy_address = "";
+            }
+            
             activate ();
     
             return 0;

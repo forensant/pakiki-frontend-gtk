@@ -101,6 +101,7 @@ namespace Proximity {
             var label_subtitle = new Gtk.Label (inject_operation.url + " - " + inject_operation.inject_description);
             label_subtitle.name = "lbl_inject_subtitle";
             label_subtitle.margin_start = 6;
+            label_subtitle.margin_bottom = 3;
             label_subtitle.xalign = 0.0f;
             
             vbox.pack_start (label_subtitle, false, false, 0);

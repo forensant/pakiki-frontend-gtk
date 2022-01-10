@@ -58,7 +58,7 @@ namespace Proximity {
                     exe_path = exe_path.slice (0, last_slash + 1);
                 }
             }
-        
+
             string[] paths = {
                 exe_path,
                 "", // system path
@@ -82,7 +82,7 @@ namespace Proximity {
                     Process.spawn_async_with_pipes (core_exe_path,
                         spawn_args,
                         spawn_env,
-                        SpawnFlags.SEARCH_PATH | SpawnFlags.DO_NOT_REAP_CHILD,
+                        SpawnFlags.SEARCH_PATH,
                         null,
                         out child_pid,
                         out standard_input,
@@ -178,6 +178,13 @@ namespace Proximity {
                     var host_idx = line.index_of ("/", scheme_idx + 4);
                     var host = line.substring (scheme_idx + 3, host_idx - scheme_idx - 3);
                     this.core_started (host);
+                }
+
+                if (line.contains ("Preview proxy is available at:")) {
+                    var scheme_idx = line.index_of ("://");
+                    var host_idx = line.index_of ("/", scheme_idx + 4);
+                    var host = line.substring (scheme_idx + 3, host_idx - scheme_idx - 3);
+                    application_window.preview_proxy_address = host;
                 }
 
                 if (line.contains ("Warning: The proxy could not be started")) {

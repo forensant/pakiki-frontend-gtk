@@ -31,6 +31,7 @@ namespace Proximity {
         private unowned Gtk.Stack stack;
 
         public string core_address;
+        public string preview_proxy_address;
 
         private bool controls_hidden;
         private CoreProcess core_process;
@@ -42,10 +43,11 @@ namespace Proximity {
         private RequestsPane requests_pane;
         private GLib.Settings settings;
 
-        public ApplicationWindow (Gtk.Application application, string core_address) {
+        public ApplicationWindow (Gtk.Application application, string core_address, string preview_proxy_address) {
             GLib.Object (application: application);
             core_process = new CoreProcess (this);
             this.core_address = core_address;
+            this.preview_proxy_address = preview_proxy_address;
 
             var process_launched = true;
             if (core_address == "") {
@@ -76,8 +78,10 @@ namespace Proximity {
             var menu = (MenuModel) builder.get_object ("menu");
             gears.menu_model = menu;
 
+            WebKit.WebContext.get_default ().set_sandbox_enabled (true);
+
             // works around a webkit bug
-            //new WebKit.WebView();
+            new WebKit.WebView();
 
             if (core_address != "") {
                 on_core_started (core_address);
