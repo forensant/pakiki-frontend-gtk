@@ -12,6 +12,8 @@ finish-args:
   - --share=network
   # to allow interactions with the system secret store
   - --talk-name=org.freedesktop.secrets
+  # to allow notifications to be sent to the desktop
+  - --talk-name=org.freedesktop.Notifications
 
   # TODO: I'm not happy with this. Some sandboxing is better than none, but if we could use portals that'd be ideal
   # see the notes at: https://github.com/pipeline/proximity-frontend-gtk/issues/6

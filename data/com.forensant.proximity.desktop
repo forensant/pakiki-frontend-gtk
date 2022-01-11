@@ -4,4 +4,5 @@ Name=Proximity
 Icon=com.forensant.proximity
 StartupNotify=true
 Exec=com.forensant.proximity
+Categories=Network;Security;
 X-GNOME-UsesNotifications=true
