@@ -4,8 +4,6 @@ namespace Proximity {
     public class ApplicationWindow : Gtk.ApplicationWindow {
 
         [GtkChild]
-        private Gtk.Box box_bind_error;
-        [GtkChild]
         private unowned Gtk.Button button_back;
         [GtkChild]
         private unowned Gtk.Button button_intercept;
@@ -18,6 +16,8 @@ namespace Proximity {
         [GtkChild]
         private unowned Gtk.MenuButton gears;
         [GtkChild]
+        private unowned Gtk.InfoBar info_bar_bind_error;
+        [GtkChild]
         private unowned Gtk.Label label_proxy_bind_error;
         [GtkChild]
         private unowned Gtk.Overlay overlay;
@@ -25,8 +25,6 @@ namespace Proximity {
         private unowned Gtk.SearchBar searchbar;
         [GtkChild]
         private unowned Gtk.SearchEntry searchentry;
-        [GtkChild]
-        private unowned Gtk.Separator separator_proxy_bind_error;
         [GtkChild]
         private unowned Gtk.Stack stack;
 
@@ -90,8 +88,8 @@ namespace Proximity {
             core_process.core_started.connect (on_core_started);
 
             core_process.listener_error.connect ((message) => {
-                this.box_bind_error.show ();
-                label_proxy_bind_error.label = message.strip () + "\nRequests are not being intercepted.";
+                this.info_bar_bind_error.revealed = true;
+                label_proxy_bind_error.label = message.strip () + "  —  Requests are not being intercepted.";
             });
 
             if (process_launched == true) {
@@ -146,16 +144,21 @@ namespace Proximity {
             selected_pane ().on_back_clicked ();
         }
 
-        [GtkCallback]
-        public void on_button_dismiss_error_clicked () {
-            box_bind_error.hide ();
-            separator_proxy_bind_error.hide ();
-        }
-
         private void on_core_started (string address) {
             this.core_address = address;
             stdout.printf("Core started on address: %s, Resetting state\n", address);
             render_controls (true);
+        }
+
+        [GtkCallback]
+        public void on_info_bar_bind_error_close () {
+            info_bar_bind_error.revealed = false;
+        }
+
+        [GtkCallback]
+        public void on_info_bar_bind_error_response (int response) {
+            // at this point there are no other actions other than closing on the info bar
+            on_info_bar_bind_error_close ();
         }
 
         [GtkCallback]

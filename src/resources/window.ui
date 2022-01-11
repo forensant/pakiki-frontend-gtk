@@ -59,7 +59,6 @@
           <object class="GtkStackSwitcher" id="stack_switcher_tabs">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="stack">stack</property>
           </object>
         </child>
         <child>
@@ -173,83 +172,66 @@
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkBox" id="box_bind_error">
+                  <object class="GtkInfoBar" id="info_bar_bind_error">
+                    <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="visible">True</property>
+                    <property name="message_type">warning</property>
+                    <property name="show_close_button">True</property>
+                    <property name="revealed">False</property>
+                    <signal name="close" handler="on_info_bar_bind_error_close" swapped="no"/>
+                    <signal name="response" handler="on_info_bar_bind_error_response" swapped="no"/>
+                    <child internal-child="action_area">
+                      <object class="GtkButtonBox">
                         <property name="can_focus">False</property>
-                      </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="label_proxy_bind_error">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="margin_left">18</property>
-                        <property name="margin_right">18</property>
-                        <property name="margin_top">18</property>
-                        <property name="margin_bottom">18</property>
-                        <property name="label" translatable="yes">Proxy could not be started on XYZ, requests are not being intercepted.</property>
-                        <attributes>
-                          <attribute name="weight" value="medium"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="button_dismiss_error">
-                        <property name="label" translatable="yes">_Dismiss</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="margin_right">18</property>
-                        <property name="margin_top">18</property>
-                        <property name="margin_bottom">18</property>
-                        <property name="use_underline">True</property>
-                        <signal name="clicked" handler="on_button_dismiss_error_clicked" swapped="no"/>
+                        <property name="spacing">6</property>
+                        <property name="layout_style">end</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
                       </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
-                        <property name="position">2</property>
+                        <property name="position">0</property>
                       </packing>
                     </child>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="visible">True</property>
+                    <child internal-child="content_area">
+                      <object class="GtkBox">
                         <property name="can_focus">False</property>
+                        <property name="spacing">16</property>
+                        <child>
+                          <object class="GtkLabel" id="label_proxy_bind_error">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Proxy could not be started on XYZ, requests are not being intercepted.</property>
+                            <attributes>
+                              <attribute name="weight" value="medium"/>
+                            </attributes>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
                       </object>
                       <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="position">3</property>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">0</property>
                       </packing>
                     </child>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkSeparator" id="separator_proxy_bind_error">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">1</property>
+                    <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
@@ -264,7 +246,7 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">2</property>
+                    <property name="position">1</property>
                   </packing>
                 </child>
               </object>
