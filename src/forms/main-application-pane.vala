@@ -1,5 +1,5 @@
 namespace Proximity {
-    interface MainApplicationPane : Object {
+    public interface MainApplicationPane : Object {
         public signal void pane_changed ();
         
         public virtual bool back_visible () {
@@ -28,5 +28,8 @@ namespace Proximity {
         }
 
         public abstract void reset_state ();
+
+        public virtual void set_selected_guid (string guid) {
+        }
     }
 }

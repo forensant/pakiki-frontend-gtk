@@ -59,6 +59,7 @@
           <object class="GtkStackSwitcher" id="stack_switcher_tabs">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="stack">stack</property>
           </object>
         </child>
         <child>

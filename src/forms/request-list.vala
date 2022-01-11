@@ -383,6 +383,10 @@ namespace Proximity {
                 return;
             }
 
+            if (scan_ids.length == 0 && scan_id != "") {
+                return;
+            }
+
             var scroll_to_bottom = ((request_list.vadjustment.value + request_list.vadjustment.page_size + 200.0) > request_list.vadjustment.upper);
 
             var request_guid = request.get_string_member ("GUID");

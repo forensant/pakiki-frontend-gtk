@@ -1,3 +1,5 @@
+using Notify;
+
 namespace Proximity {
 
     [GtkTemplate (ui = "/com/forensant/proximity/window.ui")]
@@ -31,6 +33,7 @@ namespace Proximity {
         public string core_address;
         public string preview_proxy_address;
 
+        private Application proximity_application;
         private bool controls_hidden;
         private CoreProcess core_process;
         //private int core_process_timer;
@@ -41,9 +44,12 @@ namespace Proximity {
         private RequestsPane requests_pane;
         private GLib.Settings settings;
 
-        public ApplicationWindow (Gtk.Application application, string core_address, string preview_proxy_address) {
+        private Notify.Notification notification;
+
+        public ApplicationWindow (Application application, string core_address, string preview_proxy_address) {
             GLib.Object (application: application);
             core_process = new CoreProcess (this);
+            this.proximity_application = application;
             this.core_address = core_address;
             this.preview_proxy_address = preview_proxy_address;
 
@@ -76,6 +82,8 @@ namespace Proximity {
             var menu = (MenuModel) builder.get_object ("menu");
             gears.menu_model = menu;
 
+            Notify.init ("Proximity");
+
             WebKit.WebContext.get_default ().set_sandbox_enabled (true);
 
             // works around a webkit bug
@@ -103,6 +111,26 @@ namespace Proximity {
 
         public void change_pane (string name) {
             stack.set_visible_child_name (name);
+        }
+
+        public void display_notification (string title, string message, MainApplicationPane pane, string guid) {
+            if (has_toplevel_focus && selected_pane () == pane) {
+                return;
+            }
+
+            notification = new Notify.Notification(title, message, "dialog-information");
+
+            notification.add_action ("default", "Show", (notification, action) => {
+                this.grab_focus ();
+                stack.visible_child = (Gtk.Widget)pane;
+                pane.set_selected_guid (guid);
+            });
+
+            try {
+                notification.show ();
+            } catch (Error e) {
+                stdout.printf("Error displaying notification: %s\n", e.message);
+            }
         }
 
         public void hide_controls () {

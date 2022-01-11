@@ -208,6 +208,19 @@ namespace Proximity {
                 if (row.inject_operation != null && row.inject_operation.guid == guid) {
                     exists = true;
 
+                    if (row.inject_operation.get_status () == InjectOperation.Status.UNDERWAY && inject_operation.get_status () == InjectOperation.Status.COMPLETED) {
+                        var message = "Proximity has finished an inject scan.";
+
+                        if (row.inject_operation.title != "") {
+                            message = "Proximity has finished the following scan: " + row.inject_operation.title;
+                        }
+
+                        application_window.display_notification ("Inject scan completed",
+                                message,
+                                this,
+                                row.inject_operation.guid);
+                    }
+
                     if (row.inject_operation.get_status () == inject_operation.get_status ()) {
                         row.update_inject_operation (inject_operation);
                     }
@@ -261,6 +274,10 @@ namespace Proximity {
             });
 
             select_guid_when_received = guid;
+        }
+
+        public void set_selected_guid (string guid) {
+            select_when_received (guid);
         }
 
         private void show_appropriate_labels() {
