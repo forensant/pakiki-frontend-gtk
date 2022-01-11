@@ -2,7 +2,7 @@ app-id: com.forensant.proximity
 runtime: org.gnome.Platform
 runtime-version: '40'
 sdk: org.gnome.Sdk
-command: proximity
+command: com.forensant.proximity
 finish-args:
   # X11 access
   - --socket=fallback-x11
