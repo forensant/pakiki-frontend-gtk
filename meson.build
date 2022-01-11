@@ -1,4 +1,4 @@
-project('proximity', 'vala', 'c',
+project('com.forensant.proximity', 'vala', 'c',
   version: '0.1',
   license: 'MIT')
 
