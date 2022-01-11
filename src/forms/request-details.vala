@@ -18,9 +18,9 @@ namespace Proximity {
         private ApplicationWindow application_window;
         private string guid;
 
-        private RequestTextView request_text_view;
         private RequestTextView orig_request_text_view;
-
+        private RequestTextView request_text_view;
+        
         private bool _show_send_to;
         public bool show_send_to {
             get { return _show_send_to; }
@@ -186,6 +186,11 @@ namespace Proximity {
             }
 
             GLib.Bytes body = new GLib.Bytes (bytes[end_of_headers + 4:bytes.length]);
+
+            if (body.length == 0) {
+                webkit_preview.hide ();
+                return;
+            }
 
             webkit_preview.show ();
             webkit_preview.load_bytes (body, mimetype, null, url);

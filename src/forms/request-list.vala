@@ -22,6 +22,7 @@ namespace Proximity {
 
         private ApplicationWindow application_window;
         private bool exclude_resources;
+        private Gee.Set<string> guid_set;
         private PlaceholderRequests placeholder_requests;
         private RequestDetails request_details;
         private string[] scan_ids;
@@ -61,6 +62,7 @@ namespace Proximity {
             this.search_query = "";
             this.url_filter = "";
             this._process_actions = true;
+            guid_set = new Gee.TreeSet<string> ();
 
             this.box.add (placeholder_requests);
 
@@ -211,9 +213,11 @@ namespace Proximity {
                 return;
             }
 
+            var guid = request.get_string_member ("GUID");
+
             Gtk.TreeIter iter;
             liststore.insert_with_values (out iter, -1,
-                Column.GUID,          request.get_string_member ("GUID"),
+                Column.GUID,          guid,
                 Column.TIME,          request.get_int_member ("Time"),
                 Column.URL,           request.get_string_member ("URL"),
                 Column.RESPONSE_SIZE, request.get_int_member ("ResponseSize"),
@@ -224,6 +228,8 @@ namespace Proximity {
                 Column.ERROR,         request.get_string_member ("Error"),
                 Column.NOTES,         request.get_string_member ("Notes")
             );
+
+            guid_set.add (guid);
 
             if (label_no_requests.visible || placeholder_requests.visible) {
                 show_controls (1);
@@ -250,6 +256,7 @@ namespace Proximity {
 
         private void get_requests () {
             label_no_requests.visible = false;
+            guid_set.clear ();
             var url = "http://" + application_window.core_address + "/project/requests?exclude_resources=" + (exclude_resources ? "true" : "false");
 
             if (search_query != null && search_query != "") {
@@ -378,34 +385,32 @@ namespace Proximity {
 
             var scroll_to_bottom = ((request_list.vadjustment.value + request_list.vadjustment.page_size + 200.0) > request_list.vadjustment.upper);
 
-            var found = false;
             var request_guid = request.get_string_member ("GUID");
 
-            // if it already exists in the table, update it
-            liststore.@foreach ((model, path, iter) => {
-                Value guid;
-                model.get_value (iter, Column.GUID, out guid);
-
-                if (request_guid == guid.get_string ()) {
-                    liststore.set_value (iter, Column.TIME,          request.get_int_member("Time"));
-                    liststore.set_value (iter, Column.URL,           request.get_string_member("URL"));
-                    liststore.set_value (iter, Column.RESPONSE_SIZE, request.get_int_member("ResponseSize"));
-                    liststore.set_value (iter, Column.DURATION,      request.get_int_member("ResponseTime"));
-                    liststore.set_value (iter, Column.VERB,          request.get_string_member("Verb"));
-                    liststore.set_value (iter, Column.STATUS,        request.get_int_member("ResponseStatusCode"));
-                    liststore.set_value (iter, Column.PAYLOADS,      request.get_string_member("Payloads"));
-                    liststore.set_value (iter, Column.ERROR,         request.get_string_member("Error"));
-                    liststore.set_value (iter, Column.NOTES,         request.get_string_member("Notes"));
-
-                    found = true;
-                    return true;
-                }
-
-                return false; // continue iterating
-            });
-
-            if(found == false) {
+            if (!guid_set.contains (request_guid)) {
                 add_request_to_table (request);
+            } else {
+                // if it already exists in the table, update it
+                liststore.@foreach ((model, path, iter) => {
+                    Value guid;
+                    model.get_value (iter, Column.GUID, out guid);
+
+                    if (request_guid == guid.get_string ()) {
+                        liststore.set_value (iter, Column.TIME,          request.get_int_member("Time"));
+                        liststore.set_value (iter, Column.URL,           request.get_string_member("URL"));
+                        liststore.set_value (iter, Column.RESPONSE_SIZE, request.get_int_member("ResponseSize"));
+                        liststore.set_value (iter, Column.DURATION,      request.get_int_member("ResponseTime"));
+                        liststore.set_value (iter, Column.VERB,          request.get_string_member("Verb"));
+                        liststore.set_value (iter, Column.STATUS,        request.get_int_member("ResponseStatusCode"));
+                        liststore.set_value (iter, Column.PAYLOADS,      request.get_string_member("Payloads"));
+                        liststore.set_value (iter, Column.ERROR,         request.get_string_member("Error"));
+                        liststore.set_value (iter, Column.NOTES,         request.get_string_member("Notes"));
+
+                        return true;
+                    }
+
+                    return false; // continue iterating
+                });
             }
 
             // automatically scroll to the bottom if needed
@@ -435,7 +440,7 @@ namespace Proximity {
             liststore.get_value (iter, Column.GUID, out guid);
 
             var session = new Soup.Session ();
-            var message = new Soup.Message ("POST", "http://" + application_window.core_address + "/project/update_request");
+            var message = new Soup.Message ("POST", "http://" + application_window.core_address + "/project/request");
 
             var parameters = "guid=" + guid.get_string () + "&notes=" + Soup.URI.encode (newtext, null);
             message.set_request ("application/x-www-form-urlencoded", Soup.MemoryUse.COPY, parameters.data);

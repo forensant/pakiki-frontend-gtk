@@ -34,7 +34,7 @@ namespace Proximity {
             button_run = new Gtk.Button ();
             button_run.label = "_Run";
             button_run.use_underline = true;
-            button_run.activate.connect (on_run_clicked);
+            button_run.clicked.connect (on_run_clicked);
             button_run.show ();
 
             spinner = new Gtk.Spinner ();
