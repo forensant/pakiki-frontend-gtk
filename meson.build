@@ -26,4 +26,4 @@ sources += import( 'gnome' ).compile_resources(
 subdir('data')
 subdir('src')
 
-executable('proximity', sources, dependencies: dependencies, install: true)
+executable('com.forensant.proximity', sources, dependencies: dependencies, install: true)

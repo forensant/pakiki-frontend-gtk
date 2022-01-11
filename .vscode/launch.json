@@ -8,8 +8,8 @@
             "type": "lldb",
             "request": "launch",
             "name": "Debug",
-            "program": "${workspaceFolder}/builddir/proximity",
-            "args": [],
+            "program": "${workspaceFolder}/builddir/com.forensant.proximity",
+            "args": ["--core=127.0.0.1:10101", "--preview-proxy=10111"],
             "cwd": "${workspaceFolder}",
             "env": {
                 "GSETTINGS_SCHEMA_DIR": "builddir/src/",

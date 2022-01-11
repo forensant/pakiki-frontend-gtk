@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=Proximity
-Icon=../src/resources/Logo.svg
+Icon=com.forensant.proximity
 StartupNotify=true
-Exec=proximity
+Exec=com.forensant.proximity
 X-GNOME-UsesNotifications=true
