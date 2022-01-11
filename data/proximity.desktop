@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Proximity
+Icon=../src/resources/Logo.svg
+StartupNotify=true
+Exec=proximity
+X-GNOME-UsesNotifications=true

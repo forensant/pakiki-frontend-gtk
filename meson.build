@@ -23,6 +23,7 @@ sources += import( 'gnome' ).compile_resources(
     source_dir: 'src/resources',
 )
 
+subdir('data')
 subdir('src')
 
 executable('proximity', sources, dependencies: dependencies, install: true)

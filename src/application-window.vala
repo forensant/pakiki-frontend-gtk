@@ -82,7 +82,7 @@ namespace Proximity {
             var menu = (MenuModel) builder.get_object ("menu");
             gears.menu_model = menu;
 
-            Notify.init ("Proximity");
+            Notify.init ("com.forensant.proximity");
 
             WebKit.WebContext.get_default ().set_sandbox_enabled (true);
 
