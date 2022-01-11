@@ -51,9 +51,10 @@ You'll require the following dependencies to develop Proximity:
  * libjson-glib
  * libwebkit2-gtk
  * libgtksourceview-3
+ * libnotify
 
 On Debian based distributions, these can be downloaded with:
- ```sudo apt install build-essential valac meson libgtk-3-dev libsoup2.4-dev libjson-glib-dev libwebkit2gtk-4.0-dev libgtksourceview-3-dev```
+ ```sudo apt install build-essential valac meson libgtk-3-dev libsoup2.4-dev libjson-glib-dev libwebkit2gtk-4.0-dev libgtksourceview-3-dev libnotify-dev```
 
 If you're going to be building/packaging Proximity, you'll also require the Flatpak dependencies:
 ```
