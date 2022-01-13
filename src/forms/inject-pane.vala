@@ -161,7 +161,7 @@ namespace Proximity {
             pane_changed ();
         }
 
-        public void on_search (string query, bool exclude_resources) {
+        public void on_search (string query, bool exclude_resources, string protocol) {
             inject_underway_form.on_search (query, exclude_resources);
         }
 

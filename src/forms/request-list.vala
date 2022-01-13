@@ -26,6 +26,7 @@ namespace Proximity {
         private PlaceholderRequests placeholder_requests;
         private RequestDetails request_details;
         private string[] scan_ids;
+        private string search_protocol;
         private string search_query;
         private bool updating;
         private string url_filter;
@@ -59,6 +60,7 @@ namespace Proximity {
             this.exclude_resources = true;
             this.updating = false;
             this.placeholder_requests = new PlaceholderRequests (application_window);
+            this.search_protocol = "";
             this.search_query = "";
             this.url_filter = "";
             this._process_actions = true;
@@ -93,8 +95,8 @@ namespace Proximity {
 
             /*columns*/
             request_list.insert_column_with_attributes (-1, "GUID",
-                                                    new Gtk.CellRendererText(), "text",
-                                                    Column.GUID);
+                                                    new Gtk.CellRendererText(),
+                                                    "text", Column.GUID);
 
             request_list.insert_column_with_attributes (-1, "Time",
                                                     time_cell_renderer,
@@ -180,6 +182,7 @@ namespace Proximity {
 
             for (int i = 0; i < request_list.get_n_columns(); i++) {
                 request_list.get_column(i).resizable = true;
+                request_list.get_column(i).reorderable = true;
             }
 
             request_list.get_column(Column.TIME).sort_column_id          = Column.TIME;
@@ -238,7 +241,7 @@ namespace Proximity {
 
         private void show_controls (uint request_count) {
             if (request_count == 0 && scan_ids.length == 0) {
-                if (search_query != "" || url_filter != "") {
+                if (search_query != "" || url_filter != "" || (search_protocol != "" && search_protocol != "all")) {
                     label_no_requests.visible = true;
                 } else {
                     placeholder_requests.show ();
@@ -270,6 +273,10 @@ namespace Proximity {
 
             if (url_filter != "") {
                 url += "&url_filter=" + Soup.URI.encode("://" + url_filter, null);
+            }
+
+            if (search_protocol != "" && search_protocol != "all") {
+                url += "&protocol=" + search_protocol;
             }
 
             var session = new Soup.Session ();
@@ -387,6 +394,13 @@ namespace Proximity {
                 return;
             }
 
+            if (search_protocol != "" && search_protocol != "all") {
+                var protocol = request.get_string_member ("Protocol").down ();
+                if (protocol != search_protocol.down ()) {
+                    return;
+                }
+            }
+
             var scroll_to_bottom = ((request_list.vadjustment.value + request_list.vadjustment.page_size + 200.0) > request_list.vadjustment.upper);
 
             var request_guid = request.get_string_member ("GUID");
@@ -417,6 +431,11 @@ namespace Proximity {
                 });
             }
 
+            // if the websocket packets have been updated, let the request details form know to update the list
+            if (request_details.guid == request_guid && request.get_string_member ("Protocol") == "Websocket") {
+                request_details.set_request (request_guid, true);
+            }
+
             // automatically scroll to the bottom if needed
             if(scroll_to_bottom) {
                 request_list.vadjustment.value = request_list.vadjustment.upper;
@@ -430,7 +449,9 @@ namespace Proximity {
 
             var guid = get_selected_guid ();
             if (guid != "") {
+                var pos = this.position;
                 request_details.set_request (guid);
+                this.position = pos;
                 
                 request_selected (guid);
             }
@@ -455,9 +476,10 @@ namespace Proximity {
             guid.unset ();
         }
 
-        public void on_search (string query, bool exclude_resources) {
+        public void on_search (string query, bool exclude_resources, string protocol = "") {
             this.search_query = query;
             this.exclude_resources = exclude_resources;
+            this.search_protocol = protocol;
             get_requests ();
         }
 
@@ -575,7 +597,7 @@ namespace Proximity {
             return "";
         }
 
-        private string response_time (DateTime time) {
+        public static string response_time (DateTime time) {
             var now = new DateTime.now ();
             var isToday = (time.get_day_of_year () == now.get_day_of_year () && time.get_year () ==  now.get_year ());
 

@@ -6,6 +6,10 @@ namespace Proximity {
             return false;
         }
 
+        public virtual bool can_filter_protocols () {
+            return false;
+        }
+
         public virtual bool can_search () {
             return true;
         }
@@ -24,7 +28,7 @@ namespace Proximity {
         public virtual void on_new_clicked () {
         }
 
-        public virtual void on_search (string text, bool exclude_resources) {
+        public virtual void on_search (string text, bool exclude_resources, string protocol) {
         }
 
         public abstract void reset_state ();

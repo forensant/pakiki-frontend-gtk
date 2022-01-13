@@ -91,6 +91,7 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="receives_default">False</property>
+            <signal name="toggled" handler="on_button_search_toggled" swapped="no"/>
             <child>
               <object class="GtkImage" id="search-icon">
                 <property name="visible">True</property>
@@ -130,10 +131,12 @@
                   <object class="GtkSearchEntry" id="searchentry">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="width_chars">40</property>
+                    <property name="placeholder_text" translatable="yes">Search Requests</property>
                     <signal name="search-changed" handler="search_text_changed" swapped="no"/>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
+                    <property name="expand">True</property>
                     <property name="fill">True</property>
                     <property name="position">0</property>
                   </packing>
@@ -152,6 +155,26 @@
                     <property name="expand">False</property>
                     <property name="fill">True</property>
                     <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkComboBoxText" id="combobox_search_protocols">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="active">0</property>
+                    <property name="active_id">all</property>
+                    <items>
+                      <item id="all" translatable="yes">All Protocols</item>
+                      <item id="HTTP/1.1" translatable="yes">HTTP</item>
+                      <item id="Websocket" translatable="yes">Websockets</item>
+                      <item id="Out of Band" translatable="yes">Out of Band</item>
+                    </items>
+                    <signal name="changed" handler="search_text_changed" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
               </object>

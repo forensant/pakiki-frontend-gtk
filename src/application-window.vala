@@ -16,6 +16,8 @@ namespace Proximity {
         [GtkChild]
         private unowned Gtk.CheckButton check_button_exclude_resources;
         [GtkChild]
+        private unowned Gtk.ComboBoxText combobox_search_protocols;
+        [GtkChild]
         private unowned Gtk.MenuButton gears;
         [GtkChild]
         private unowned Gtk.InfoBar info_bar_bind_error;
@@ -179,6 +181,11 @@ namespace Proximity {
         }
 
         [GtkCallback]
+        public void on_button_search_toggled () {
+            combobox_search_protocols.visible = selected_pane ().can_filter_protocols ();
+        }
+
+        [GtkCallback]
         public void on_info_bar_bind_error_close () {
             info_bar_bind_error.revealed = false;
         }
@@ -219,6 +226,7 @@ namespace Proximity {
 
             var can_search = pane.can_search ();
             button_search.sensitive = can_search;
+            combobox_search_protocols.visible = selected_pane ().can_filter_protocols ();
 
             if (searchbar.visible && !can_search) {
                 searchbar.visible = false;
@@ -309,7 +317,10 @@ namespace Proximity {
 
         [GtkCallback]
         public void search_text_changed () {
-            selected_pane ().on_search (searchentry.get_text (), check_button_exclude_resources.get_active ());
+            selected_pane ().on_search (searchentry.get_text (),
+                check_button_exclude_resources.get_active (),
+                combobox_search_protocols.get_active_id ()
+            );
         }
 
         private MainApplicationPane selected_pane () {

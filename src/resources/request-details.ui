@@ -3,6 +3,22 @@
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <requires lib="webkit2gtk" version="2.12"/>
+  <object class="GtkListStore" id="liststore_websocket_packets">
+    <columns>
+      <!-- column-name id -->
+      <column type="gint"/>
+      <!-- column-name time -->
+      <column type="gint"/>
+      <!-- column-name direction -->
+      <column type="gchararray"/>
+      <!-- column-name opcode -->
+      <column type="gchararray"/>
+      <!-- column-name modified -->
+      <column type="gchararray"/>
+      <!-- column-name data -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <template class="ProximityRequestDetails" parent="GtkNotebook">
     <property name="visible">True</property>
     <property name="can_focus">True</property>
@@ -53,11 +69,44 @@
       </packing>
     </child>
     <child>
-      <object class="WebKitWebView" id="webkit_preview">
-        <property name="visible">True</property>
+      <object class="GtkPaned" id="pane_websocket">
         <property name="can_focus">True</property>
+        <property name="position">350</property>
         <child>
-          <placeholder/>
+          <object class="GtkScrolledWindow">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="min_content_height">10</property>
+            <property name="propagate_natural_width">True</property>
+            <property name="propagate_natural_height">True</property>
+            <child>
+              <object class="GtkTreeView" id="treeview_websocket_packets">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="model">liststore_websocket_packets</property>
+                <child internal-child="selection">
+                  <object class="GtkTreeSelection"/>
+                </child>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="resize">True</property>
+            <property name="shrink">True</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkScrolledWindow" id="scroll_window_websocket_request">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
+            <property name="resize">True</property>
+            <property name="shrink">True</property>
+          </packing>
         </child>
       </object>
       <packing>
@@ -68,11 +117,35 @@
       <object class="GtkLabel">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">_Preview</property>
+        <property name="label" translatable="yes">_Websocket</property>
         <property name="use_underline">True</property>
       </object>
       <packing>
         <property name="position">2</property>
+        <property name="tab_fill">False</property>
+      </packing>
+    </child>
+    <child>
+      <object class="WebKitWebView" id="webkit_preview">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+      <packing>
+        <property name="position">3</property>
+      </packing>
+    </child>
+    <child type="tab">
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">_Preview</property>
+        <property name="use_underline">True</property>
+      </object>
+      <packing>
+        <property name="position">3</property>
         <property name="tab_fill">False</property>
       </packing>
     </child>

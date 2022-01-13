@@ -55,6 +55,10 @@ namespace Proximity {
             }
         }
 
+        public bool can_filter_protocols () {
+            return true;
+        }
+
         public bool can_search () {
             return requests_loaded;
         }
@@ -81,8 +85,8 @@ namespace Proximity {
             return launch_successful;
         }
 
-        public void on_search (string text, bool exclude_resources) {
-            request_list.on_search (text, exclude_resources);
+        public void on_search (string text, bool exclude_resources, string protocol) {
+            request_list.on_search (text, exclude_resources, protocol);
         }
 
         public void reset_state () {
