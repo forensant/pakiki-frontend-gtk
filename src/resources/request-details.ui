@@ -5,8 +5,8 @@
   <requires lib="webkit2gtk" version="2.12"/>
   <object class="GtkListStore" id="liststore_websocket_packets">
     <columns>
-      <!-- column-name id -->
-      <column type="gint"/>
+      <!-- column-name guid -->
+      <column type="gchararray"/>
       <!-- column-name time -->
       <column type="gint"/>
       <!-- column-name direction -->

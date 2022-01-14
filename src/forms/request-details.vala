@@ -25,13 +25,14 @@ namespace Proximity {
 
         private ApplicationWindow application_window;
         public string guid;
+        private Gee.HashMap<string, string> modified_websocket_data;
 
         private RequestTextView text_view_orig_request;
         private RequestTextView text_view_request;
         private RequestTextView text_view_websocket_request;
 
         enum WebsocketColumn {
-            ID,
+            GUID,
             TIME,
             DIRECTION,
             OPCODE,
@@ -52,6 +53,7 @@ namespace Proximity {
 
         public RequestDetails (ApplicationWindow application_window) {
             this.application_window = application_window;
+            modified_websocket_data = new Gee.HashMap<string, string> ();
             ended = false;
             guid = "";
 
@@ -79,9 +81,9 @@ namespace Proximity {
 
             var time_cell_renderer = new Gtk.CellRendererText();
 
-            treeview_websocket_packets.insert_column_with_attributes (-1, "ID",
+            treeview_websocket_packets.insert_column_with_attributes (-1, "GUID",
                                                     new Gtk.CellRendererText(),
-                                                    "text", WebsocketColumn.ID);
+                                                    "text", WebsocketColumn.GUID);
 
             treeview_websocket_packets.insert_column_with_attributes (-1, "Time",
                                                     time_cell_renderer,
@@ -103,7 +105,7 @@ namespace Proximity {
                                                     new Gtk.CellRendererText(),
                                                     "text", WebsocketColumn.DATA);
 
-            treeview_websocket_packets.get_column(WebsocketColumn.ID).visible = false;
+            treeview_websocket_packets.get_column(WebsocketColumn.GUID).visible = false;
             treeview_websocket_packets.get_column(WebsocketColumn.DATA).visible = false;
 
             var time_column = treeview_websocket_packets.get_column(WebsocketColumn.TIME);
@@ -141,12 +143,39 @@ namespace Proximity {
             var selection = treeview_websocket_packets.get_selection ();
             Gtk.TreeModel model;
             Gtk.TreeIter iter;
+
+            string guid;
             string data;
     
             if (selection.get_selected (out model, out iter)) {
+                model.get (iter, WebsocketColumn.GUID, out guid);
                 model.get (iter, WebsocketColumn.DATA, out data);
-                
-                var decoded_data = Base64.decode (data.to_string ());
+
+                uchar[] decoded_data = new uchar[0];
+
+                if (modified_websocket_data.has_key (guid)) {
+                    decoded_data = (uchar[])"Original:\n".data;
+                }
+
+                var orig_data = Base64.decode (data.to_string ());
+                for (int i = 0; i < orig_data.length; i++) {
+                    decoded_data += orig_data[i];
+                }
+
+                if (modified_websocket_data.has_key (guid)) {
+                    var title = (uchar[])"\n\nModified:\n".data;
+                    for (int i = 0; i < title.length; i++) {
+                        decoded_data += title[i];
+                    }
+
+                    var modified_data = Base64.decode (modified_websocket_data[guid]);
+                    for (int i = 0; i < modified_data.length; i++) {
+                        decoded_data += modified_data[i];
+                    }
+                }
+
+                decoded_data += '\0';
+
                 uchar[] response_data = {'\0'};
                 text_view_websocket_request.set_request_response (decoded_data, response_data);
             }
@@ -155,6 +184,9 @@ namespace Proximity {
         private void populate_http_data (Json.Object root_obj) {
             var original_request = Base64.decode (root_obj.get_string_member ("Request"));
             var original_response = Base64.decode (root_obj.get_string_member ("Response"));
+
+            original_request += '\0';
+            original_response += '\0';
 
             var modified_request = Base64.decode (root_obj.get_string_member ("ModifiedRequest"));
             var modified_response = Base64.decode (root_obj.get_string_member ("ModifiedResponse"));
@@ -167,10 +199,14 @@ namespace Proximity {
 
                 if (modified_request.length == 0) {
                     modified_request = original_request;
+                } else {
+                    modified_request += '\0';
                 }
 
                 if (modified_response.length == 0) {
                     modified_response = original_response;
+                } else {
+                    modified_response += '\0';
                 }
 
                 text_view_request.set_request_response (modified_request, modified_response);
@@ -195,7 +231,7 @@ namespace Proximity {
 
             for (int i = 0; i < packets.get_length (); i++) {
                 var packet_obj = packets.get_object_element (i);
-                var packet_id = packet_obj.get_int_member ("ID");
+                var packet_guid = packet_obj.get_string_member ("GUID");
                 var packet_time = packet_obj.get_int_member ("Time");
                 var packet_direction = packet_obj.get_string_member ("Direction");
                 var packet_display_data = packet_obj.get_string_member ("DisplayData");
@@ -224,11 +260,22 @@ namespace Proximity {
 
                 var found = false;
                 liststore_websocket_packets.@foreach ((model, path, iter) => {
-                    Value id;
-                    model.get_value (iter, WebsocketColumn.ID, out id);
+                    Value guid;
+                    model.get_value (iter, WebsocketColumn.GUID, out guid);
 
-                    if (id.get_int () == packet_id) {
+                    if (guid.get_string () == packet_guid) {
                         found = true;
+
+                        if (packet_modified) {
+                            liststore_websocket_packets.set_value (
+                                iter,
+                                WebsocketColumn.MODIFIED,
+                                "Yes"
+                            );
+
+                            modified_websocket_data[packet_guid] = packet_data;
+                        }
+                        
                         return true;
                     }
 
@@ -241,7 +288,7 @@ namespace Proximity {
 
                 Gtk.TreeIter iter;
                 liststore_websocket_packets.insert_with_values (out iter, -1,
-                                                WebsocketColumn.ID, packet_id,
+                                                WebsocketColumn.GUID, packet_guid,
                                                 WebsocketColumn.TIME, packet_time,
                                                 WebsocketColumn.DIRECTION, packet_direction,
                                                 WebsocketColumn.OPCODE, packet_opcode,
@@ -360,6 +407,7 @@ namespace Proximity {
         }
 
         public void reset_state () {
+            modified_websocket_data.clear ();
             text_view_request.reset_state ();
             text_view_orig_request.reset_state ();
             text_view_websocket_request.reset_state ();

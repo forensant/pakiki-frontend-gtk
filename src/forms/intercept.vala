@@ -28,7 +28,9 @@ namespace Proximity {
         private WebsocketConnection websocket;
 
         enum Column {
-            GUID,
+            REQUEST_GUID,
+            DATA_PACKET_GUID,
+            PROTOCOL,
             DIRECTION,
             URL,
             BODY
@@ -36,16 +38,21 @@ namespace Proximity {
         
         public Intercept (ApplicationWindow application_window) {
             this.application_window = application_window;
-            liststore_requests = new Gtk.ListStore (4, typeof (string), typeof (string), typeof (string), typeof (string));
+            liststore_requests = new Gtk.ListStore (6, typeof(string), typeof(string), typeof (string), typeof (string), typeof (string), typeof (string));
             list_requests.set_model (liststore_requests);
 
-            list_requests.insert_column_with_attributes (-1, "GUID", new CellRendererText (), "text", Column.GUID);
+            list_requests.insert_column_with_attributes (-1, "GUID", new CellRendererText (), "text", Column.REQUEST_GUID);
+            list_requests.insert_column_with_attributes (-1, "Data Packet GUID", new CellRendererText (), "text", Column.DATA_PACKET_GUID);
+            list_requests.insert_column_with_attributes (-1, "Protocol", new CellRendererText (), "text", Column.PROTOCOL);
             list_requests.insert_column_with_attributes (-1, "Direction", new CellRendererText (), "text", Column.DIRECTION);
             list_requests.insert_column_with_attributes (-1, "URL", new CellRendererText (), "text", Column.URL);
             list_requests.insert_column_with_attributes (-1, "Body", new CellRendererText (), "text", Column.BODY);
 
-            var guidColumn = list_requests.get_column(Column.GUID);
+            var guidColumn = list_requests.get_column(Column.REQUEST_GUID);
             guidColumn.visible = false;
+
+            var idColumn = list_requests.get_column(Column.DATA_PACKET_GUID);
+            idColumn.visible = false;
 
             var bodyColumn = list_requests.get_column(Column.BODY);
             bodyColumn.visible = false;
@@ -58,20 +65,24 @@ namespace Proximity {
             selection.mode = Gtk.SelectionMode.MULTIPLE;
         }
 
-        private void add_request_to_table (Json.Object requestData) {
-            var action = requestData.get_string_member ("RecordAction");
-            var request = requestData.get_object_member ("Request");
+        private void add_request_to_table (Json.Object request_data) {
+            var action = request_data.get_string_member ("RecordAction");
+            var request = request_data.get_object_member ("Request");
             var list_selection = list_requests.get_selection ();
 
             if (action == "delete") {
-                var guidToRemove = request.get_string_member ("GUID");
+                var request_guid_to_remove = request.get_string_member ("GUID");
+                var data_guid_to_remove = request_data.get_string_member ("GUID");
                 var select_next = false;
                 
                 liststore_requests.@foreach ((model, path, iter) => {
-                    Value rowGuid;
-                    model.get_value (iter, Column.GUID, out rowGuid);
+                    Value request_guid;
+                    Value data_packet_guid;
+                    model.get_value (iter, Column.REQUEST_GUID, out request_guid);
+                    model.get_value (iter, Column.DATA_PACKET_GUID, out data_packet_guid);
 
-                    if (rowGuid == guidToRemove) {
+                    if ((data_packet_guid.get_string () != "" && data_packet_guid.get_string () == data_guid_to_remove) ||
+                        (data_packet_guid.get_string () == "" && request_guid.get_string () == request_guid_to_remove)) {
                         if (list_selection.iter_is_selected (iter)) {
                             select_next = true;
                         }
@@ -90,13 +101,15 @@ namespace Proximity {
                 }
             } else {
                 // add to the table
-                var guid = request.get_string_member ("GUID");
-                var direction = requestData.get_string_member ("Direction");
+                var request_guid = request.get_string_member ("GUID");
+                var data_packet_guid = request_data.get_string_member ("GUID");
+                var protocol = request.get_string_member ("Protocol");
+                var direction = request_data.get_string_member ("Direction");
                 var url = request.get_string_member ("URL");
-                var body = requestData.get_string_member ("Body");
+                var body = request_data.get_string_member ("Body");
 
                 // check if it's a binary request we can't handle
-                if (skip_request_if_required (guid, body, direction)) {
+                if (skip_request_if_required (request_guid, data_packet_guid, body, direction)) {
                     return;
                 }
 
@@ -108,7 +121,9 @@ namespace Proximity {
 
                 Gtk.TreeIter iter;
                 liststore_requests.insert_with_values (out iter, -1,
-                    Column.GUID, guid,
+                    Column.REQUEST_GUID, request_guid,
+                    Column.DATA_PACKET_GUID, data_packet_guid,
+                    Column.PROTOCOL, protocol,
                     Column.DIRECTION, direction,
                     Column.URL, url,
                     Column.BODY, body
@@ -251,14 +266,16 @@ namespace Proximity {
                 if (selection_count == 1) {
                     string body;
                     string direction;
+                    string protocol;
                     model.get (iter, Column.BODY, out body);
                     model.get (iter, Column.DIRECTION, out direction);
+                    model.get (iter, Column.PROTOCOL, out protocol);
                     text_view_request.buffer.text = (string) Base64.decode (body);
 
                     var is_request = (direction == "Browser to server");
                     button_forward.sensitive = true;
                     button_drop.sensitive = is_request;
-                    button_intercept_response.sensitive = is_request;
+                    button_intercept_response.sensitive = is_request && (protocol != "Websocket");
                 } else {
                     text_view_request.buffer.text = "(Multiple requests/responses selected)";
                     button_forward.sensitive = true;
@@ -293,14 +310,16 @@ namespace Proximity {
             add_request_to_table (request);
         }
 
-        private void send_individual_request_response (string guid, string action, string direction, string body) {
+        private void send_individual_request_response (string request_guid, string data_packet_guid, string action, string direction, string body) {
             var session = new Soup.Session ();
             var message = new Soup.Message ("PUT", "http://" + application_window.core_address + "/proxy/set_intercepted_response");
 
             Json.Builder builder = new Json.Builder ();
             builder.begin_object ();
-            builder.set_member_name ("GUID");
-            builder.add_string_value (guid);
+            builder.set_member_name ("RequestGUID");
+            builder.add_string_value (request_guid);
+            builder.set_member_name ("DataPacketGUID");
+            builder.add_string_value (data_packet_guid);
             builder.set_member_name ("Body");
             builder.add_string_value (body);
             builder.set_member_name ("Direction");
@@ -325,10 +344,12 @@ namespace Proximity {
             var selection_count = list_selection.get_selected_rows (null).length ();
 
             list_selection.selected_foreach ((model, path, iter) => {
-                string guid;
+                string request_guid;
+                string data_packet_guid;
                 string body;
                 string direction;
-                model.get (iter, Column.GUID, out guid);
+                model.get (iter, Column.REQUEST_GUID, out request_guid);
+                model.get (iter, Column.DATA_PACKET_GUID, out data_packet_guid);
                 model.get (iter, Column.DIRECTION, out direction);
                 model.get (iter, Column.BODY, out body);
 
@@ -342,7 +363,7 @@ namespace Proximity {
                     direction = "server_to_browser";
                 }
 
-                send_individual_request_response (guid, action, direction, body);
+                send_individual_request_response (request_guid, data_packet_guid, action, direction, body);
             });
 
             list_selection.unselect_all ();
@@ -371,11 +392,11 @@ namespace Proximity {
             session.queue_message (message, null);
         }
 
-        private bool skip_request_if_required (string guid, string base64_body, string direction) {
+        private bool skip_request_if_required (string request_guid, string data_packet_guid, string base64_body, string direction) {
             var body = (string)Base64.decode (base64_body);
 
             if (body.make_valid () != body) {
-                send_individual_request_response (guid, "forward", direction, base64_body);
+                send_individual_request_response (request_guid, data_packet_guid, "forward", direction, base64_body);
                 return true;
             }
 
