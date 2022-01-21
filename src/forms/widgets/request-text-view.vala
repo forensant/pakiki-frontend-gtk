@@ -36,6 +36,19 @@ namespace Proximity {
                 text_view_ascii.editable = value;
             }
         }
+
+        private bool _scroll = true;
+        public bool scroll {
+            get { return _scroll; }
+            set { 
+                _scroll = value;
+                var vertical_policy = value ? Gtk.PolicyType.AUTOMATIC : Gtk.PolicyType.NEVER;
+                scrolled_window_source_view.vscrollbar_policy = vertical_policy;
+                scrolled_window_hex_count.vscrollbar_policy = vertical_policy;
+                scrolled_window_hex.vscrollbar_policy = vertical_policy;
+                scrolled_window_ascii.vscrollbar_policy = vertical_policy;
+            }
+        }
         
         public RequestTextView () {
             setting_selection = false;
@@ -174,6 +187,10 @@ namespace Proximity {
             set_hex_ascii (full_hex_text);
         }
 
+        public void set_request(uchar[] request) {
+            set_request_response (request, new uchar[1] { 0 });
+        }
+
         public void set_request_response (uchar[] request, uchar[] response) {
             var str_request = (string)request;
             var str_response = (string)response;
@@ -214,7 +231,8 @@ namespace Proximity {
         private void set_text (string request, string response) {
             show_hex (false);
             set_sourceview_language (request);
-            source_buffer.text = request.make_valid () + "\n\n" + response.make_valid ();
+            var newlines = _scroll ? "\n\n" : "";
+            source_buffer.text = request.make_valid () + newlines + response.make_valid ();
         }
 
         private void show_hex (bool show) {

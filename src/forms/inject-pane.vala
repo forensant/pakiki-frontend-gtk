@@ -98,6 +98,9 @@ namespace Proximity {
                 try {
                     websocket = session.websocket_connect_async.end(res);
                     websocket.message.connect(on_websocket_message);
+                    websocket.error.connect ((err) => {
+                        stdout.printf("Websocket error: %s\n", err.message);
+                    });
                 }
                 catch (Error err) {
                     stdout.printf ("Error, ending websocket connection: %s\n", err.message);

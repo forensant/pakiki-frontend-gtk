@@ -19,6 +19,8 @@ namespace Proximity {
         private unowned Gtk.TreeView request_list;
         [GtkChild]
         private unowned Gtk.ScrolledWindow scrolled_window_requests;
+        [GtkChild]
+        private unowned Gtk.Spinner spinner;
 
         private ApplicationWindow application_window;
         private bool exclude_resources;
@@ -43,6 +45,7 @@ namespace Proximity {
         
         enum Column {
             GUID,
+            PROTOCOL,
             TIME,
             URL,
             RESPONSE_SIZE,
@@ -77,7 +80,8 @@ namespace Proximity {
             time_cell_renderer.ellipsize_set = true;
 
             var response_size_renderer = new Gtk.CellRendererText();
-            var duration_renderer     = new Gtk.CellRendererText();
+            var duration_renderer      = new Gtk.CellRendererText();
+            var status_renderer        = new Gtk.CellRendererText();
 
             var payload_renderer = new Gtk.CellRendererText();
             payload_renderer.ellipsize = Pango.EllipsizeMode.END;
@@ -97,6 +101,10 @@ namespace Proximity {
             request_list.insert_column_with_attributes (-1, "GUID",
                                                     new Gtk.CellRendererText(),
                                                     "text", Column.GUID);
+
+            request_list.insert_column_with_attributes (-1, "Protocol",
+                                                    new Gtk.CellRendererText(),
+                                                    "text", Column.PROTOCOL);
 
             request_list.insert_column_with_attributes (-1, "Time",
                                                     time_cell_renderer,
@@ -119,7 +127,7 @@ namespace Proximity {
                                                     "text", Column.VERB);
 
             request_list.insert_column_with_attributes (-1, "Status",
-                                                    new Gtk.CellRendererText (),
+                                                    status_renderer,
                                                     "text", Column.STATUS);
 
             request_list.insert_column_with_attributes (-1, "Payloads",
@@ -137,6 +145,9 @@ namespace Proximity {
             
             var guid_column = request_list.get_column(Column.GUID);
             guid_column.visible = false;
+
+            var protocol_column = request_list.get_column(Column.PROTOCOL);
+            protocol_column.visible = false;
 
             var url_column = request_list.get_column(Column.URL);
             url_column.expand = true;
@@ -164,6 +175,20 @@ namespace Proximity {
                 Value val;
                 tree_model.get_value(iter, Column.DURATION, out val);
                 ((Gtk.CellRendererText)cell).text = response_duration(val.get_int ());
+                val.unset();
+            });
+
+            var status_column = request_list.get_column(Column.STATUS);
+            status_column.set_cell_data_func(status_renderer, (cell_layout, cell, tree_model, iter) => {
+                Value val;
+                tree_model.get_value(iter, Column.STATUS, out val);
+
+                if (val.get_int() == 0) {
+                    ((Gtk.CellRendererText)cell).text = "";
+                } else {
+                    ((Gtk.CellRendererText)cell).text = val.get_int ().to_string ();
+                }
+                
                 val.unset();
             });
 
@@ -221,6 +246,7 @@ namespace Proximity {
             Gtk.TreeIter iter;
             liststore.insert_with_values (out iter, -1,
                 Column.GUID,          guid,
+                Column.PROTOCOL,      request.get_string_member ("Protocol"),
                 Column.TIME,          request.get_int_member ("Time"),
                 Column.URL,           request.get_string_member ("URL"),
                 Column.RESPONSE_SIZE, request.get_int_member ("ResponseSize"),
@@ -259,7 +285,20 @@ namespace Proximity {
 
         private void get_requests () {
             label_no_requests.visible = false;
+            this.updating = true;
             guid_set.clear ();
+            request_details.reset_state ();
+            liststore.clear ();
+            this.updating = false;
+
+            bool fetched_data = false;
+            Timeout.add (200, () => {
+                if (!fetched_data) {
+                    spinner.active = true;
+                }
+                return GLib.Source.REMOVE;
+            });
+
             var url = "http://" + application_window.core_address + "/project/requests?exclude_resources=" + (exclude_resources ? "true" : "false");
 
             if (search_query != null && search_query != "") {
@@ -283,8 +322,10 @@ namespace Proximity {
             var message = new Soup.Message ("GET", url);
 
             session.queue_message (message, (sess, mess) => {
-                liststore.clear ();
                 this.updating = true;
+                fetched_data = true;
+                liststore.clear ();
+                spinner.active = false;
                 var parser = new Json.Parser ();
                 try {
                     if (message.status_code != 200) {
@@ -341,17 +382,21 @@ namespace Proximity {
             });
         }
 
-        private string get_selected_guid () {
+        private string get_selected_field (Column col) {
             var selection = request_list.get_selection ();
             Gtk.TreeModel model;
             Gtk.TreeIter iter;
-            string guid;
+            string val;
     
             if (selection.get_selected (out model, out iter)) {
-                model.get (iter, Column.GUID, out guid);
-                return guid;
+                model.get (iter, col, out val);
+                return val;
             }
             return "";
+        }
+
+        private string get_selected_guid () {
+            return get_selected_field (Column.GUID);
         }
 
         private void on_websocket_message (int type, Bytes message) {
@@ -487,8 +532,12 @@ namespace Proximity {
         public bool on_request_list_button_press_event (Gdk.EventButton event) {         
             if (event.type == Gdk.EventType.@2BUTTON_PRESS) {
                 var guid = get_selected_guid ();
-
                 if (guid == "") {
+                    return false;
+                }
+
+                var protocol = get_selected_field (Column.PROTOCOL);
+                if (protocol != "HTTP/1.1") {
                     return false;
                 }
 
@@ -507,6 +556,11 @@ namespace Proximity {
             if (event.type == Gdk.EventType.BUTTON_RELEASE && event.button == 3 && process_actions) {
                 // right click
                 var menu = new Gtk.Menu ();
+
+                var protocol = get_selected_field (Column.PROTOCOL);
+                if (protocol != "HTTP/1.1") {
+                    return false;
+                }
             
                 var item_new_request = new Gtk.MenuItem.with_label ("New Request");
                 item_new_request.activate.connect ( () => {
@@ -527,6 +581,21 @@ namespace Proximity {
                 });
                 item_inject.show ();
                 menu.append (item_inject);
+
+                var open_browser_inject = new Gtk.MenuItem.with_label ("Open in Browser");
+                open_browser_inject.activate.connect ( () => {
+                    var guid = get_selected_guid ();
+                    var url = get_selected_field (Column.URL);
+                    if (guid != "" && url != "") {
+                        try {
+                            AppInfo.launch_default_for_uri (url, null);
+                        } catch (Error err) {
+                            stdout.printf ("Could not launch browser: %s\n", err.message);
+                        }
+                    }
+                });
+                open_browser_inject.show ();
+                menu.append (open_browser_inject);
 
                 menu.popup_at_pointer (event);
             }
@@ -566,6 +635,10 @@ namespace Proximity {
         }
 
         private string response_duration (int64 duration) {
+            if (duration == 0) {
+                return "";
+            }
+
             if (duration > 5000) {
                 return ((float)(duration/1000.0)).to_string ("%.2f s");
             }
@@ -573,8 +646,12 @@ namespace Proximity {
             return duration.to_string () + " ms";
         }
 
-        private string response_size_to_string (int64 responseSize) {
-            var bytes = (float)responseSize;
+        private string response_size_to_string (int64 response_size) {
+            if (response_size == 0) {
+                return "";
+            }
+
+            var bytes = (float)response_size;
             if (bytes < 1024) {
                 return bytes.to_string() + " B";
             }

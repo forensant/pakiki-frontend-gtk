@@ -38,7 +38,7 @@ namespace Proximity {
             label_title.set_text_with_mnemonic ("_Title");
             label_title.mnemonic_widget = entry_title;
             
-            this.show_all ();
+            this.show ();
         }
 
         public void set_inject_operation (InjectOperation operation) {
@@ -128,6 +128,10 @@ namespace Proximity {
 
         [GtkCallback]
         public void on_title_changed () {
+            if (entry_title.text == operation.title) {
+                return;
+            }
+            
             var session = new Soup.Session ();
             var message = new Soup.Message ("PUT", "http://" + application_window.core_address + "/inject_operation");
 

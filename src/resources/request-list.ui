@@ -6,6 +6,8 @@
     <columns>
       <!-- column-name GUID -->
       <column type="gchararray"/>
+      <!-- column-name Protocol -->
+      <column type="gchararray"/>
       <!-- column-name Time -->
       <column type="gint"/>
       <!-- column-name URL -->
@@ -31,7 +33,7 @@
     <property name="can_focus">False</property>
     <property name="margin_left">18</property>
     <property name="margin_right">18</property>
-    <property name="margin_top">18</property>
+    <property name="margin_top">2</property>
     <property name="margin_bottom">18</property>
     <property name="hexpand">True</property>
     <property name="vexpand">True</property>
@@ -42,14 +44,38 @@
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkLabel" id="label_no_requests">
+          <object class="GtkBox">
+            <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="margin_top">18</property>
-            <property name="label" translatable="yes">No requests were found with the given criteria</property>
-            <property name="yalign">0</property>
-            <attributes>
-              <attribute name="style" value="italic"/>
-            </attributes>
+            <child>
+              <object class="GtkLabel" id="label_no_requests">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="margin_top">18</property>
+                <property name="label" translatable="yes">No requests were found with the given criteria</property>
+                <property name="yalign">0</property>
+                <attributes>
+                  <attribute name="style" value="italic"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSpinner" id="spinner">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="pack_type">end</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>

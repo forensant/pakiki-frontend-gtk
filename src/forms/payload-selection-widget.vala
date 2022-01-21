@@ -237,6 +237,18 @@ namespace Proximity {
         [GtkCallback]
         private void on_entry_fuzzdb_search_search_changed () {
             treeview_model_filter.refilter ();
+
+            if (entry_fuzzdb_search.text == "") {
+                return;
+            }
+
+            treeview_model_filter.@foreach ((model, path, iter) => {
+                if (!treeview_model_filter.iter_has_child (iter) && treeview_model_filter.visible (model, iter)) {
+                    treeview_fuzzdb.expand_to_path (path);
+                }
+
+                return false;
+            });
         }
 
         private void on_fuzzdb_toggled (string path) {

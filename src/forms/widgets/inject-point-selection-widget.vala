@@ -21,9 +21,10 @@ namespace Proximity {
         [GtkChild]
         private unowned Gtk.Label label_title;
         [GtkChild]
-        private unowned Gtk.TextView text_view_request;
-
+        private unowned Gtk.ScrolledWindow scrolled_window_text_view_request;
+        
         private ApplicationWindow application_window;
+        private RequestTextEditor text_view_request;
 
         public string hostname {
             get {
@@ -74,6 +75,10 @@ namespace Proximity {
             combobox_protocol.pack_start (renderer_text, true);
             combobox_protocol.add_attribute (renderer_text, "text", 0);
             combobox_protocol.set_active (0);
+
+            text_view_request = new RequestTextEditor (application_window);
+            scrolled_window_text_view_request.add (text_view_request);
+            text_view_request.key_release_event.connect (on_text_view_request_key_release_event);
 
             text_view_request.buffer.create_tag ("selection", "background", "yellow");
 
@@ -243,7 +248,6 @@ namespace Proximity {
             correct_separators_and_tag ();
         }
 
-        [GtkCallback]
         private bool on_text_view_request_key_release_event (Gdk.EventKey event) {
             correct_separators_and_tag ();
             return false;

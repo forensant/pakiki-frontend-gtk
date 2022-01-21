@@ -7,6 +7,8 @@ namespace Proximity {
     class RequestDetails : Gtk.Notebook {
 
         [GtkChild]
+        private unowned Gtk.MenuButton button_send_to;
+        [GtkChild]
         private unowned Gtk.ListStore liststore_websocket_packets;
         [GtkChild]
         private unowned Gtk.Paned pane_websocket;
@@ -15,17 +17,22 @@ namespace Proximity {
         [GtkChild]
         private unowned Gtk.ScrolledWindow scroll_window_text;
         [GtkChild]
+        private unowned Gtk.ScrolledWindow scroll_window_out_of_band_interaction;
+        [GtkChild]
         private unowned Gtk.ScrolledWindow scroll_window_websocket_request;
         [GtkChild]
         private unowned Gtk.TreeView treeview_websocket_packets;
         [GtkChild]
-        private WebKit.WebView webkit_preview;
+        private unowned Gtk.Viewport viewport_out_of_band_interaction;
         [GtkChild]
-        private unowned Gtk.MenuButton button_send_to;
+        private WebKit.WebView webkit_preview;
+        
 
         private ApplicationWindow application_window;
         public string guid;
         private Gee.HashMap<string, string> modified_websocket_data;
+        private OutOfBandDisplay out_of_band_display;
+        private string url;
 
         private RequestTextView text_view_orig_request;
         private RequestTextView text_view_request;
@@ -56,6 +63,7 @@ namespace Proximity {
             modified_websocket_data = new Gee.HashMap<string, string> ();
             ended = false;
             guid = "";
+            show_send_to = true;
 
             text_view_request = new RequestTextView ();
             text_view_orig_request = new RequestTextView ();
@@ -78,6 +86,9 @@ namespace Proximity {
             webkit_preview.hide ();
 
             webkit_preview.decide_policy.connect (on_link_clicked);
+
+            out_of_band_display = new OutOfBandDisplay ();
+            scroll_window_out_of_band_interaction.add (out_of_band_display);
 
             var time_cell_renderer = new Gtk.CellRendererText();
 
@@ -191,7 +202,7 @@ namespace Proximity {
             var modified_request = Base64.decode (root_obj.get_string_member ("ModifiedRequest"));
             var modified_response = Base64.decode (root_obj.get_string_member ("ModifiedResponse"));
 
-            var url = root_obj.get_string_member ("URL");
+            url = root_obj.get_string_member ("URL");
             var mimetype = root_obj.get_string_member ("MimeType");
             
             if (modified_request.length != 0 || modified_response.length != 0) {
@@ -329,10 +340,14 @@ namespace Proximity {
 
                     var protocol = root_obj.get_string_member ("Protocol");
 
-                    set_controls_visible (protocol == "HTTP/1.1", protocol == "Websocket");
+                    set_controls_visible (protocol == "HTTP/1.1", protocol == "Websocket", protocol == "Out of Band");
 
                     if (protocol == "Websocket") {
                         populate_websocket_data (root_obj, request_updated);
+                    }
+                    else if (protocol == "Out of Band") {
+                        var packets = root_obj.get_array_member ("DataPackets");
+                        out_of_band_display.render_interaction (packets);
                     } else {
                         populate_http_data (root_obj);
                     }
@@ -344,11 +359,18 @@ namespace Proximity {
             });
         }
 
-        private void set_controls_visible (bool http, bool websocket) {
+        private void set_controls_visible (bool http, bool websocket, bool out_of_band) {
             scroll_window_text.visible = http;
             scroll_window_original_text.visible = http;
             webkit_preview.visible = http;
             pane_websocket.visible = websocket;
+            viewport_out_of_band_interaction.visible = out_of_band;
+
+            if (!http) {
+                button_send_to.set_visible (false);
+            } else if (_show_send_to) {
+                button_send_to.set_visible (true);
+            }
         }
 
         private void set_send_to_popup () {
@@ -371,6 +393,19 @@ namespace Proximity {
             });
             item_inject.show ();
             menu.append (item_inject);
+
+            var open_browser_inject = new Gtk.MenuItem.with_label ("Open in Browser");
+            open_browser_inject.activate.connect ( () => {
+                if (guid != "" && url != "") {
+                    try {
+                        AppInfo.launch_default_for_uri (url, null);
+                    } catch (Error err) {
+                        stdout.printf ("Could not launch browser: %s\n", err.message);
+                    }
+                }
+            });
+            open_browser_inject.show ();
+            menu.append (open_browser_inject);
 
             button_send_to.set_popup (menu);
         }
@@ -416,6 +451,7 @@ namespace Proximity {
             scroll_window_original_text.hide ();
             webkit_preview.hide ();
             pane_websocket.hide ();
+            viewport_out_of_band_interaction.hide ();
             this.page = 0;
         }
     }

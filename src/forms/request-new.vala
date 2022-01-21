@@ -12,16 +12,15 @@ namespace Proximity {
         [GtkChild]
         private unowned Gtk.Label label_error;
         [GtkChild]
-        private unowned Gtk.Label label_host;
-        [GtkChild]
         private unowned Gtk.Label label_request;
         [GtkChild]
-        private unowned Gtk.Spinner spinner;
+        private unowned Gtk.ScrolledWindow scrolled_window_text_view_request;
         [GtkChild]
-        private unowned Gtk.TextView text_view_request;
+        private unowned Gtk.Spinner spinner;
 
         private ApplicationWindow application_window;
         private RequestDetails request_details;
+        private RequestTextEditor request_text_editor;
 
         public RequestNew (ApplicationWindow application_window) {
             this.application_window = application_window;
@@ -30,11 +29,18 @@ namespace Proximity {
             combobox_protocol.add_attribute (renderer_text, "text", 0);
             combobox_protocol.set_active (0);
 
-            label_host.set_text_with_mnemonic ("_Host");
-            label_host.mnemonic_widget = combobox_protocol;
+            request_text_editor = new RequestTextEditor (application_window);
+            scrolled_window_text_view_request.add (request_text_editor);
+            request_text_editor.long_running_task.connect ( (running) => {
+                if (running) {
+                    spinner.start ();
+                } else {
+                    spinner.stop ();
+                }
+            });
 
             label_request.set_text_with_mnemonic ("_Request");
-            label_request.mnemonic_widget = text_view_request;
+            label_request.mnemonic_widget = request_text_editor;
 
             request_details = new RequestDetails (application_window);
             this.add2 (request_details);
@@ -66,7 +72,7 @@ namespace Proximity {
             builder.set_member_name ("ssl");
             builder.add_boolean_value (combobox_protocol.get_active() == 0);
             builder.set_member_name ("request");
-            builder.add_string_value (Base64.encode (text_view_request.buffer.text.data));
+            builder.add_string_value (Base64.encode (request_text_editor.buffer.text.data));
             builder.end_object ();
 
             Json.Generator generator = new Json.Generator ();
@@ -103,38 +109,6 @@ namespace Proximity {
             });
         }
 
-        [GtkCallback]
-        private void on_text_view_request_populate_popup (Gtk.Menu menu) {
-            Gtk.TextIter selection_start, selection_end;
-            var text_selected = text_view_request.buffer.get_selection_bounds (out selection_start, out selection_end);
-
-            if (!text_selected) {
-                return;
-            }
-
-            var separator = new Gtk.SeparatorMenuItem ();
-            separator.show ();
-            menu.append (separator);
-
-            var selected_text = text_view_request.buffer.get_slice (selection_start, selection_end, true);
-
-            var menu_item_encode = new Gtk.MenuItem.with_label ("URL Encode");
-            menu_item_encode.activate.connect ( () => {
-                var encoded_text = Soup.URI.encode (selected_text, null);
-                this.replace_selected_text (encoded_text);
-            });
-            menu_item_encode.show ();
-            menu.append (menu_item_encode);
-
-            var menu_item_decode = new Gtk.MenuItem.with_label ("URL Decode");
-            menu_item_decode.activate.connect ( () => {
-                var decoded_text = Soup.URI.decode (selected_text);
-                this.replace_selected_text (decoded_text);
-            });
-            menu_item_decode.show ();
-            menu.append (menu_item_decode);
-        }
-
         public void populate_request (string guid) {
             var url = "http://" + application_window.core_address + "/project/request?guid=" + guid;
 
@@ -153,7 +127,7 @@ namespace Proximity {
 
                     entry_hostname.set_text (rootObj.get_string_member ("Hostname"));
                     combobox_protocol.set_active (rootObj.get_string_member ("Protocol") == "https://" ? 0 : 1);
-                    text_view_request.buffer.set_text (requestData);
+                    request_text_editor.buffer.set_text (requestData);
                     request_details.reset_state ();
                     
                 } catch (Error err) {
@@ -162,23 +136,12 @@ namespace Proximity {
             });
         }
 
-        private void replace_selected_text (string new_text) {            
-            text_view_request.buffer.delete_selection (true, true);
-            text_view_request.buffer.insert_at_cursor (new_text, new_text.length);
-
-            // now highlight the newly inserted text
-            Gtk.TextIter selection_start, selection_end;
-            text_view_request.buffer.get_selection_bounds (out selection_start, out selection_end);
-            selection_start.backward_chars (new_text.length);
-            text_view_request.buffer.select_range (selection_start, selection_end);
-        }
-
         public void reset_state () {
             combobox_protocol.set_active (0);
             entry_hostname.set_text ("");
             spinner.stop ();
             spinner.hide ();
-            text_view_request.buffer.set_text ("");
+            request_text_editor.buffer.set_text ("");
             label_error.visible = false;
             request_details.reset_state ();
         }
