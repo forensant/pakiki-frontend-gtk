@@ -57,7 +57,7 @@ namespace Proximity {
             NOTES
         }
         
-        public RequestList (ApplicationWindow application_window, bool load_requests = true, string[] scan_ids = {}) {
+        public RequestList (ApplicationWindow application_window, string[] scan_ids = {}) {
             this.application_window = application_window;
             this.scan_ids = scan_ids;
             this.exclude_resources = true;
@@ -224,11 +224,11 @@ namespace Proximity {
             request_details.hide ();
             this.add2 (request_details);
             
-            if (load_requests) {
-                get_requests();
-            }
-
             scrolled_window_requests.hide ();
+
+            if (scan_ids.length != 0) {
+                get_requests ();
+            }
 
             var selection = request_list.get_selection();
             selection.changed.connect(this.on_changed);
@@ -704,6 +704,9 @@ namespace Proximity {
         public void set_processed_launched (bool successful) {
             if (!successful) {
                 placeholder_requests.set_error (application_window.core_address);
+            } else {
+                placeholder_requests.update_proxy_address ();
+                get_requests();
             }
         }
     }

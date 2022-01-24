@@ -325,7 +325,7 @@ namespace Proximity {
             var message = new Soup.Message ("GET", "http://" + application_window.core_address + "/project/requestresponse?guid=" + guid);
 
             session.queue_message (message, (sess, mess) => {
-                if (ended) {
+                if (ended || mess.status_code != 200) {
                     return;
                 }
 

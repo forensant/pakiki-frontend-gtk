@@ -1,5 +1,5 @@
 namespace Proximity {
-    class ProxySettings {
+    public class ProxySettings {
 
         private ApplicationWindow application_window;
         private string certificate;

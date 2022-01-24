@@ -7,27 +7,25 @@ namespace Proximity {
         public signal void request_selected (string guid);
         
         private ApplicationWindow application_window;
-        private bool launch_successful;
         private RequestList request_list;
         private bool requests_loaded;
 
         private SitemapWidget sitemap_widget;
+        private Gtk.ScrolledWindow scrolled_window_site_map;
 
         public bool process_actions {
             get { return request_list.process_actions; }
             set { request_list.process_actions = value; }
         }
 
-        public RequestsPane (ApplicationWindow application_window, bool launch_successful) {
+        public RequestsPane (ApplicationWindow application_window) {
             requests_loaded = false;
             this.application_window = application_window;
-            this.launch_successful = launch_successful;
-            request_list = new RequestList (application_window, launch_successful);
+            request_list = new RequestList (application_window);
             request_list.requests_loaded.connect (on_requests_loaded);
             request_list.request_selected.connect ( (guid) => { this.request_selected (guid); } );
             request_list.request_double_clicked.connect ( (guid) => { this.request_double_clicked (guid); } );
             request_list.show ();
-            request_list.set_processed_launched (launch_successful);
 
             sitemap_widget = new SitemapWidget (application_window);
             sitemap_widget.border_width = 0;
@@ -39,20 +37,13 @@ namespace Proximity {
             position = 0;
             wide_handle = false;
 
-            if (launch_successful) {
-                var scrolled_window_site_map = new Gtk.ScrolledWindow (null, null);
-                scrolled_window_site_map.expand = true;
-                scrolled_window_site_map.shadow_type = Gtk.ShadowType.NONE;
-                scrolled_window_site_map.add (sitemap_widget);
-                scrolled_window_site_map.show_all ();
+            scrolled_window_site_map = new Gtk.ScrolledWindow (null, null);
+            scrolled_window_site_map.expand = true;
+            scrolled_window_site_map.shadow_type = Gtk.ShadowType.NONE;
+            scrolled_window_site_map.add (sitemap_widget);
 
-                this.add1 (scrolled_window_site_map);
-                this.add2 (request_list);
-                
-                sitemap_widget.populate_sitemap ();
-            } else {
-                this.add1 (request_list);
-            }
+            this.add1 (scrolled_window_site_map);
+            this.add2 (request_list);
         }
 
         public bool can_filter_protocols () {
@@ -65,6 +56,10 @@ namespace Proximity {
 
         public string new_tooltip_text () {
             return "New Request";
+        }
+
+        public bool new_visible () {
+            return true;
         }
 
         public void on_new_clicked () {
@@ -81,12 +76,19 @@ namespace Proximity {
             }
         }
 
-        public bool new_visible () {
-            return launch_successful;
-        }
-
         public void on_search (string text, bool exclude_resources, string protocol) {
             request_list.on_search (text, exclude_resources, protocol);
+        }
+
+        public void process_launch_successful (bool success) {
+            if (success) {
+                scrolled_window_site_map.show_all ();
+            }
+            else {
+                scrolled_window_site_map.hide ();
+            }
+
+            request_list.set_processed_launched (success);
         }
 
         public void reset_state () {

@@ -87,7 +87,7 @@ namespace Proximity {
                 show_appropriate_labels ();
             });
 
-            if(websocket != null) {
+            if (websocket != null && websocket.state == Soup.WebsocketState.OPEN) {
                 websocket.close(Soup.WebsocketCloseCode.NO_STATUS, null);
             }
 

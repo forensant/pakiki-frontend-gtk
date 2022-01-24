@@ -23,8 +23,6 @@ namespace Proximity {
         
         public PlaceholderRequests (ApplicationWindow application_window) {
             this.application_window = application_window;
-
-            update_proxy_address ();
         }
 
         [GtkCallback]
@@ -32,10 +30,9 @@ namespace Proximity {
             proxy_settings.save_certificate (application_window);
         }
 
-        void update_proxy_address () {
-            proxy_settings = new ProxySettings (application_window);
-            if (proxy_settings.successful) {
-                label_setup_proxy.label = label_setup_proxy.label.replace ("PROXYADDRESS", "http://localhost" + proxy_settings.proxy_address);
+        public void update_proxy_address () {
+            if (application_window.proxy_settings.successful) {
+                label_setup_proxy.label = label_setup_proxy.label.replace ("PROXYADDRESS", "http://localhost" + application_window.proxy_settings.proxy_address);
             }
             else {
                 set_error (application_window.core_address);
@@ -43,7 +40,6 @@ namespace Proximity {
         }
 
         public void set_error (string core_address) {
-            application_window.hide_controls ();
             if (core_address == "") {
                 label_error.set_text ("An error has occurred when launching the core. Ensure that 'proximitycore' is in the directory next to Proximity.");
             } else {

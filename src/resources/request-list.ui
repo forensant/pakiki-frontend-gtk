@@ -49,7 +49,6 @@
             <property name="can_focus">False</property>
             <child>
               <object class="GtkLabel" id="label_no_requests">
-                <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="margin_top">18</property>
                 <property name="label" translatable="yes">No requests were found with the given criteria</property>
