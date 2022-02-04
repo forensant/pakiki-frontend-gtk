@@ -91,7 +91,7 @@ namespace Proximity {
                 websocket.close(Soup.WebsocketCloseCode.NO_STATUS, null);
             }
 
-            url = "http://" + application_window.core_address + "/project/notifications";
+            url = CoreProcess.websocket_url (application_window.core_address, "Inject Operation");
             
             var wsmessage = new Soup.Message("GET", url);
             session.websocket_connect_async.begin(wsmessage, "localhost", null, null, (obj, res) => {
@@ -185,11 +185,6 @@ namespace Proximity {
             }
 
             var operation = parser.get_root ().get_object ();
-                
-            if(operation.get_string_member("ObjectType") != "Inject Operation") {
-                return;
-            }
-
             parse_inject_object (operation);
             show_appropriate_labels ();
         }

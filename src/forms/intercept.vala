@@ -210,7 +210,7 @@ namespace Proximity {
                 websocket.close (Soup.WebsocketCloseCode.NO_STATUS, null);
             }
 
-            url = "http://" + application_window.core_address + "/project/notifications";
+            url = CoreProcess.websocket_url (application_window.core_address, "Intercepted Request");
 
             var wsmessage = new Soup.Message ("GET", url);
             session.websocket_connect_async.begin (wsmessage, "localhost", null, null, (obj, res) => {
@@ -302,11 +302,6 @@ namespace Proximity {
             }
 
             var request = parser.get_root ().get_object ();
-                
-            if (request.get_string_member ("ObjectType") != "Intercepted Request") {
-                return;
-            }
-
             add_request_to_table (request);
         }
 

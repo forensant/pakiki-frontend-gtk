@@ -47,6 +47,8 @@ namespace Proximity {
                 scrolled_window_hex_count.vscrollbar_policy = vertical_policy;
                 scrolled_window_hex.vscrollbar_policy = vertical_policy;
                 scrolled_window_ascii.vscrollbar_policy = vertical_policy;
+
+                scrolled_window_source_view.shadow_type = value ? Gtk.ShadowType.NONE : Gtk.ShadowType.IN;
             }
         }
         

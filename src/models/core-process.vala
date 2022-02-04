@@ -243,5 +243,29 @@ namespace Proximity {
             dialog.set_modal (true);
             dialog.set_do_overwrite_confirmation (true);
         }
+
+        public static string websocket_url(string core_address, string object_type, Gee.HashMap<string, string> filters = new Gee.HashMap<string, string> ()) {
+            var url = "http://" + core_address + "/project/notifications";
+
+            filters["ObjectType"] = object_type;
+            
+            Json.Builder builder = new Json.Builder ();
+            builder.begin_object ();
+            foreach (var entry in filters.entries) {
+                builder.set_member_name (entry.key);
+                builder.add_string_value (entry.value);
+            }
+            builder.end_object ();
+
+            Json.Generator generator = new Json.Generator ();
+            Json.Node root = builder.get_root ();
+            generator.set_root (root);
+
+            string json_str = generator.to_data (null);
+
+            url += "?objectfieldfilter=" + Soup.URI.encode (json_str, null);
+            
+            return url;
+        }
     }
 }

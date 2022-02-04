@@ -204,11 +204,6 @@ namespace Proximity {
             }
 
             var path = parser.get_root ().get_object ();
-                
-            if(path.get_string_member("ObjectType") != "Site Map Path") {
-                return;
-            }
-
             add_path_to_sitemap (path.get_string_member ("Path"));
         }
 
@@ -254,7 +249,7 @@ namespace Proximity {
                 websocket.close(Soup.WebsocketCloseCode.NO_STATUS, null);
             }
 
-            url = "http://" + application_window.core_address + "/project/notifications";
+            url = CoreProcess.websocket_url (application_window.core_address, "Site Map Path");
             
             var wsmessage = new Soup.Message("GET", url);
             session.websocket_connect_async.begin(wsmessage, "localhost", null, null, (obj, res) => {

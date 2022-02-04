@@ -344,6 +344,9 @@ namespace Proximity {
                         add_request_to_table (request);
                     }
 
+                    // scroll to the bottom
+                    request_list.vadjustment.value = request_list.vadjustment.upper;
+
                     this.requests_loaded (rootArray.get_length () > 0);
 
                 } catch (Error err) {
@@ -357,7 +360,20 @@ namespace Proximity {
                 websocket.close (Soup.WebsocketCloseCode.NO_STATUS, null);
             }
 
-            url = "http://" + application_window.core_address + "/project/notifications";
+            var notification_filters = new Gee.HashMap<string, string> ();
+
+            if (scan_ids.length == 0) {
+                notification_filters["ScanID"] = "";
+            } else if (scan_ids.length == 1) {
+                notification_filters["ScanID"] = scan_ids[0];
+            }
+           
+            if (search_protocol != "" && search_protocol != "all") {
+
+                notification_filters["Protocol"] = search_protocol;
+            }
+
+            url = CoreProcess.websocket_url (application_window.core_address, "HTTP Request", notification_filters);
             string filter = "";
             if (exclude_resources) {
                 filter += "exclude_resources:true";
@@ -368,7 +384,7 @@ namespace Proximity {
             }
 
             if (filter != "") {
-                url += "?filter=" + filter;
+                url += "&filter=" + filter;
             }
 
             var wsmessage = new Soup.Message ("GET", url);
@@ -401,47 +417,34 @@ namespace Proximity {
 
         private void on_websocket_message (int type, Bytes message) {
             var parser = new Json.Parser ();
-            var jsonData = (string)message.get_data();
+            var json_data = (string)message.get_data();
             
-            if (jsonData == "") {
+            if (json_data == "") {
                 return;
             }
             
             try {
-                parser.load_from_data (jsonData, -1);
+                parser.load_from_data (json_data, -1);
             }
             catch(Error e) {
-                stdout.printf ("Could not parse JSON data, error: %s\nData: %s\n", e.message, jsonData);
+                stdout.printf ("Could not parse JSON data, error: %s\nData: %s\n", e.message, json_data);
                 return;
             }
 
             var request = parser.get_root ().get_object ();
-                
-            if (request.get_string_member ("ObjectType") != "HTTP Request") {
-                return;
-            }
 
-            var scan_id = request.get_string_member ("ScanID");
-            var scan_id_found = false;
-
-            for (int i = 0; i < scan_ids.length; i++) {
-                if (scan_ids[i] == scan_id) {
-                    scan_id_found = true;
-                    break;
+            if (scan_ids.length > 1) {
+                var scan_id = request.get_string_member ("ScanID");
+                var scan_id_found = false;
+    
+                for (int i = 0; i < scan_ids.length; i++) {
+                    if (scan_ids[i] == scan_id) {
+                        scan_id_found = true;
+                        break;
+                    }
                 }
-            }
-
-            if (scan_id_found == false && scan_ids.length != 0) {
-                return;
-            }
-
-            if (scan_ids.length == 0 && scan_id != "") {
-                return;
-            }
-
-            if (search_protocol != "" && search_protocol != "all") {
-                var protocol = request.get_string_member ("Protocol").down ();
-                if (protocol != search_protocol.down ()) {
+                
+                if (!scan_id_found) {
                     return;
                 }
             }
