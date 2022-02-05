@@ -1,5 +1,5 @@
 namespace Proximity {   
-    class RequestTextEditor : Gtk.TextView {
+    class RequestTextEditor : Gtk.SourceView {
         public signal void long_running_task (bool running);
 
         private ApplicationWindow application_window;

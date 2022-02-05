@@ -44,6 +44,16 @@ namespace Proximity {
 
             request_details = new RequestDetails (application_window);
             this.add2 (request_details);
+
+            var accel_group = new Gtk.AccelGroup ();
+            accel_group.connect ('s', Gdk.ModifierType.CONTROL_MASK, 0, (group, accel, keyval, modifier) => {
+                if (application_window.selected_pane_name () != "NewRequest" || this.visible == false) {
+                    return false;
+                }
+                on_send_clicked ();
+                return true;
+            });
+            application_window.add_accel_group (accel_group);
         }
 
         public bool back_visible () {
@@ -140,7 +150,6 @@ namespace Proximity {
             combobox_protocol.set_active (0);
             entry_hostname.set_text ("");
             spinner.stop ();
-            spinner.hide ();
             request_text_editor.buffer.set_text ("");
             label_error.visible = false;
             request_details.reset_state ();

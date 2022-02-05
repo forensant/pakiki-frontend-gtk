@@ -62,13 +62,14 @@ namespace Proximity {
             this.scan_ids = scan_ids;
             this.exclude_resources = true;
             this.updating = false;
-            this.placeholder_requests = new PlaceholderRequests (application_window);
             this.search_protocol = "";
             this.search_query = "";
             this.url_filter = "";
             this._process_actions = true;
             guid_set = new Gee.TreeSet<string> ();
 
+            this.placeholder_requests = new PlaceholderRequests (application_window);
+            placeholder_requests.hide ();
             this.box.add (placeholder_requests);
 
             var url_renderer = new Gtk.CellRendererText();
@@ -344,8 +345,10 @@ namespace Proximity {
                         add_request_to_table (request);
                     }
 
-                    // scroll to the bottom
-                    request_list.vadjustment.value = request_list.vadjustment.upper;
+                    GLib.Idle.add_full (GLib.Priority.DEFAULT_IDLE, () => {
+                        scroll_to_bottom ();
+                        return GLib.Source.REMOVE;
+                    });
 
                     this.requests_loaded (rootArray.get_length () > 0);
 
@@ -449,7 +452,7 @@ namespace Proximity {
                 }
             }
 
-            var scroll_to_bottom = ((request_list.vadjustment.value + request_list.vadjustment.page_size + 200.0) > request_list.vadjustment.upper);
+            var should_scroll_to_bottom = ((request_list.vadjustment.value + request_list.vadjustment.page_size + 200.0) > request_list.vadjustment.upper);
 
             var request_guid = request.get_string_member ("GUID");
 
@@ -485,8 +488,8 @@ namespace Proximity {
             }
 
             // automatically scroll to the bottom if needed
-            if(scroll_to_bottom) {
-                request_list.vadjustment.value = request_list.vadjustment.upper;
+            if(should_scroll_to_bottom) {
+                scroll_to_bottom ();
             }
         }
 
@@ -522,13 +525,6 @@ namespace Proximity {
 
             liststore.set_value (iter, Column.NOTES, newtext);
             guid.unset ();
-        }
-
-        public void on_search (string query, bool exclude_resources, string protocol = "") {
-            this.search_query = query;
-            this.exclude_resources = exclude_resources;
-            this.search_protocol = protocol;
-            get_requests ();
         }
 
         [GtkCallback]
@@ -604,6 +600,13 @@ namespace Proximity {
             }
 
             return false; // allow other event handlers to also be run
+        }
+
+        public void on_search (string query, bool exclude_resources, string protocol = "") {
+            this.search_query = query;
+            this.exclude_resources = exclude_resources;
+            this.search_protocol = protocol;
+            get_requests ();
         }
 
         private string payloads_to_string (string str) {
@@ -692,6 +695,10 @@ namespace Proximity {
         public void reset_state () {
             get_requests ();
             request_details.reset_state ();
+        }
+
+        private void scroll_to_bottom () {
+            request_list.vadjustment.value = request_list.vadjustment.upper;
         }
 
         public void set_scan_ids (string[] guids) {

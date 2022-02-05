@@ -309,6 +309,10 @@ namespace Proximity {
             return (MainApplicationPane) stack.visible_child;
         }
 
+        public string selected_pane_name () {
+            return stack.visible_child_name;
+        }
+
         public void send_to_inject (string guid) {
             stack.visible_child = inject_pane;
             inject_pane.on_new_inject_operation (guid);

@@ -141,13 +141,15 @@ namespace Proximity {
             }
 
             var decision = (NavigationPolicyDecision)policy_decision;
+            var navigation_type = decision.get_navigation_action ().get_navigation_type ();
 
-            if (decision.get_navigation_action ().get_navigation_type () == WebKit.NavigationType.LINK_CLICKED) {
-                decision.ignore ();
-                return true;
+            if (navigation_type == WebKit.NavigationType.OTHER) {
+                return false;
             }
 
-            return false;
+            // ignore form submissions, link clicks, etc.
+            decision.ignore ();
+            return true;
         }
 
         private void on_websocket_packet_selected () {
@@ -310,9 +312,6 @@ namespace Proximity {
 
         public void set_request (string guid, bool request_updated = false) {
             this.guid = guid;
-            if (!request_updated) {
-                reset_state ();
-            }
             if (_show_send_to) {
                 button_send_to.set_visible (true);
             }
@@ -430,7 +429,7 @@ namespace Proximity {
                 return;
             }
 
-            GLib.Bytes body = new GLib.Bytes (bytes[end_of_headers + 4:bytes.length]);
+            GLib.Bytes body = new GLib.Bytes (bytes[end_of_headers + 4:bytes.length - 1]);
 
             if (body.length == 0) {
                 webkit_preview.hide ();

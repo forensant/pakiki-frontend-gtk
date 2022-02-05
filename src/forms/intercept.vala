@@ -20,11 +20,12 @@ namespace Proximity {
         [GtkChild]
         private unowned Gtk.TreeView list_requests;
         [GtkChild]
-        private unowned Gtk.TextView text_view_request;
-      
+        private unowned Gtk.ScrolledWindow scrolled_window_request;
+
         private ApplicationWindow application_window;
         private Gtk.ListStore liststore_requests;
         private bool updating;
+        private RequestTextEditor text_view_request;
         private WebsocketConnection websocket;
 
         enum Column {
@@ -41,12 +42,20 @@ namespace Proximity {
             liststore_requests = new Gtk.ListStore (6, typeof(string), typeof(string), typeof (string), typeof (string), typeof (string), typeof (string));
             list_requests.set_model (liststore_requests);
 
+            var url_renderer = new Gtk.CellRendererText();
+            url_renderer.ellipsize = Pango.EllipsizeMode.MIDDLE;
+            url_renderer.ellipsize_set = true;
+
             list_requests.insert_column_with_attributes (-1, "GUID", new CellRendererText (), "text", Column.REQUEST_GUID);
             list_requests.insert_column_with_attributes (-1, "Data Packet GUID", new CellRendererText (), "text", Column.DATA_PACKET_GUID);
             list_requests.insert_column_with_attributes (-1, "Protocol", new CellRendererText (), "text", Column.PROTOCOL);
             list_requests.insert_column_with_attributes (-1, "Direction", new CellRendererText (), "text", Column.DIRECTION);
-            list_requests.insert_column_with_attributes (-1, "URL", new CellRendererText (), "text", Column.URL);
+            list_requests.insert_column_with_attributes (-1, "URL", url_renderer, "text", Column.URL);
             list_requests.insert_column_with_attributes (-1, "Body", new CellRendererText (), "text", Column.BODY);
+
+            var url_column = list_requests.get_column(Column.URL);
+            url_column.expand = true;
+            url_column.min_width = 200;
 
             var guidColumn = list_requests.get_column(Column.REQUEST_GUID);
             guidColumn.visible = false;
@@ -56,6 +65,10 @@ namespace Proximity {
 
             var bodyColumn = list_requests.get_column(Column.BODY);
             bodyColumn.visible = false;
+
+            text_view_request = new RequestTextEditor (application_window);
+            text_view_request.show ();
+            scrolled_window_request.add (text_view_request);
 
             get_intercept_settings ();
             get_requests ();
@@ -81,8 +94,10 @@ namespace Proximity {
                     model.get_value (iter, Column.REQUEST_GUID, out request_guid);
                     model.get_value (iter, Column.DATA_PACKET_GUID, out data_packet_guid);
 
-                    if ((data_packet_guid.get_string () != "" && data_packet_guid.get_string () == data_guid_to_remove) ||
-                        (data_packet_guid.get_string () == "" && request_guid.get_string () == request_guid_to_remove)) {
+                    bool remove_data_guid = (data_packet_guid.get_string () != "" && data_packet_guid.get_string () == data_guid_to_remove);
+                    bool remove_request_guid = (data_packet_guid.get_string () == "" && request_guid.get_string () == request_guid_to_remove);
+
+                    if (remove_data_guid || remove_request_guid) {
                         if (list_selection.iter_is_selected (iter)) {
                             select_next = true;
                         }
@@ -361,7 +376,6 @@ namespace Proximity {
                 send_individual_request_response (request_guid, data_packet_guid, action, direction, body);
             });
 
-            list_selection.unselect_all ();
             clear_gui ();
         }
 
