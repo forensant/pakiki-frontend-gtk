@@ -82,7 +82,21 @@ namespace Proximity {
             button_search.bind_property ("active", searchbar, "visible",
                                   GLib.BindingFlags.BIDIRECTIONAL);
 
+            button_search.clicked.connect (() => {
+                searchentry.grab_focus ();
+            });
+
             searchbar.visible = false;
+
+            var accel_group = new Gtk.AccelGroup ();
+            accel_group.connect ('f', Gdk.ModifierType.CONTROL_MASK, 0, (group, accel, keyval, modifier) => {
+                searchbar.visible = !searchbar.visible;
+                if (searchbar.visible) {
+                    searchentry.grab_focus ();
+                }
+                return true;
+            });
+            add_accel_group (accel_group);
 
             var builder = new Gtk.Builder.from_resource ("/com/forensant/proximity/app-menu.ui");
             var menu = (MenuModel) builder.get_object ("menu");

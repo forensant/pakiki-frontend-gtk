@@ -37,6 +37,16 @@ namespace Proximity {
             button_run.clicked.connect (on_run_clicked);
             button_run.show ();
 
+            var accel_group = new Gtk.AccelGroup ();
+            accel_group.connect ('r', Gdk.ModifierType.CONTROL_MASK, 0, (group, accel, keyval, modifier) => {
+                if (application_window.selected_pane_name () != "Inject" || this.visible == false) {
+                    return false;
+                }
+                on_run_clicked ();
+                return true;
+            });
+            application_window.add_accel_group (accel_group);
+
             spinner = new Gtk.Spinner ();
             spinner.margin_end = 12;
             spinner.show ();
