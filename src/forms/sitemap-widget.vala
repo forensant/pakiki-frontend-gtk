@@ -211,7 +211,7 @@ namespace Proximity {
             tree_store_site_map.clear ();
             var url = "http://" + application_window.core_address + "/project/sitemap";
 
-            var session = new Soup.Session ();
+            var session = application_window.http_session;
             var message = new Soup.Message ("GET", url);
 
             session.queue_message (message, (sess, mess) => {
@@ -249,7 +249,7 @@ namespace Proximity {
                 websocket.close(Soup.WebsocketCloseCode.NO_STATUS, null);
             }
 
-            url = CoreProcess.websocket_url (application_window.core_address, "Site Map Path");
+            url = CoreProcess.websocket_url (application_window, "Site Map Path");
             
             var wsmessage = new Soup.Message("GET", url);
             session.websocket_connect_async.begin(wsmessage, "localhost", null, null, (obj, res) => {

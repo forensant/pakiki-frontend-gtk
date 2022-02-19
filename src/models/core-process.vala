@@ -3,14 +3,16 @@ namespace Proximity {
         public signal void core_started (string location);
         public signal void listener_error (string warning);
 
+        private string api_key;
         private ApplicationWindow application_window;
         private Pid child_pid;
         private string path;
         private bool temporary_file;
 
-        public CoreProcess (ApplicationWindow parent) {
+        public CoreProcess (ApplicationWindow parent, string api_key) {
             this.application_window = parent;
             child_pid = 0;
+            this.api_key = api_key;
         }
 
         private string? get_temporary_file_path () {
@@ -67,7 +69,13 @@ namespace Proximity {
             
             foreach (string core_exe_path in paths) {
                 try {
-                    string[] spawn_args = {core_exe_path + "proximitycore", "-project", path, "-parentpid", pid.to_string ()};
+                    string[] spawn_args = {
+                        core_exe_path + "proximitycore",
+                        "-project", path, 
+                        "-parentpid", pid.to_string (),
+                        "-api-key", api_key
+                    };
+
                     string[] spawn_env = Environ.get ();
                     Pid child_pid;
 
@@ -244,8 +252,8 @@ namespace Proximity {
             dialog.set_do_overwrite_confirmation (true);
         }
 
-        public static string websocket_url(string core_address, string object_type, Gee.HashMap<string, string> filters = new Gee.HashMap<string, string> ()) {
-            var url = "http://" + core_address + "/project/notifications";
+        public static string websocket_url(ApplicationWindow application_window, string object_type, Gee.HashMap<string, string> filters = new Gee.HashMap<string, string> ()) {
+            var url = "http://" + application_window.core_address + "/project/notifications";
 
             filters["ObjectType"] = object_type;
             
@@ -264,6 +272,8 @@ namespace Proximity {
             string json_str = generator.to_data (null);
 
             url += "?objectfieldfilter=" + Soup.URI.encode (json_str, null);
+
+            url += "&api_key=" + application_window.api_key;
             
             return url;
         }

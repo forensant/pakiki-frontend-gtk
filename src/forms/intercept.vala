@@ -168,10 +168,9 @@ namespace Proximity {
         private void get_intercept_settings () {
             var url = "http://" + application_window.core_address + "/proxy/intercept_settings";
 
-            var session = new Soup.Session ();
             var message = new Soup.Message ("GET", url);
 
-            session.queue_message (message, (sess, mess) => {
+            application_window.http_session.queue_message (message, (sess, mess) => {
                 if (mess.status_code != 200) {
                     return;
                 }
@@ -195,7 +194,7 @@ namespace Proximity {
         private void get_requests () {
             var url = "http://" + application_window.core_address + "/proxy/intercepted_requests";
 
-            var session = new Soup.Session ();
+            var session = application_window.http_session;
             var message = new Soup.Message ("GET", url);
 
             session.queue_message (message, (sess, mess) => {
@@ -225,7 +224,7 @@ namespace Proximity {
                 websocket.close (Soup.WebsocketCloseCode.NO_STATUS, null);
             }
 
-            url = CoreProcess.websocket_url (application_window.core_address, "Intercepted Request");
+            url = CoreProcess.websocket_url (application_window, "Intercepted Request");
 
             var wsmessage = new Soup.Message ("GET", url);
             session.websocket_connect_async.begin (wsmessage, "localhost", null, null, (obj, res) => {
@@ -321,7 +320,6 @@ namespace Proximity {
         }
 
         private void send_individual_request_response (string request_guid, string data_packet_guid, string action, string direction, string body) {
-            var session = new Soup.Session ();
             var message = new Soup.Message ("PUT", "http://" + application_window.core_address + "/proxy/set_intercepted_response");
 
             Json.Builder builder = new Json.Builder ();
@@ -345,7 +343,7 @@ namespace Proximity {
 
             message.set_request("application/json", Soup.MemoryUse.COPY, parameters.data);
             
-            session.queue_message (message, null);
+            application_window.http_session.queue_message (message, null);
         }
 
         private void send_request_response (string action) {
@@ -380,7 +378,6 @@ namespace Proximity {
         }
 
         private void set_intercept () {
-            var session = new Soup.Session ();
             var message = new Soup.Message ("PUT", "http://" + application_window.core_address + "/proxy/intercept_settings");
 
             Json.Builder builder = new Json.Builder ();
@@ -398,7 +395,7 @@ namespace Proximity {
 
             message.set_request("application/json", Soup.MemoryUse.COPY, parameters.data);
             
-            session.queue_message (message, null);
+            application_window.http_session.queue_message (message, null);
         }
 
         private bool skip_request_if_required (string request_guid, string data_packet_guid, string base64_body, string direction) {

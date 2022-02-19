@@ -18,10 +18,9 @@ namespace Proximity {
 
             var url = "http://" + application_window.core_address + "/proxy/out_of_band/url";
 
-            var session = new Soup.Session ();
             var message = new Soup.Message ("GET", url);
 
-            session.queue_message (message, (sess, mess) => {
+            application_window.http_session.queue_message (message, (sess, mess) => {
                 if (message.status_code == 200) {
                     var domain = (string) message.response_body.flatten ().data;
                     buffer.insert_at_cursor (domain, domain.length);

@@ -320,10 +320,9 @@ namespace Proximity {
                 return;
             }
 
-            var session = new Soup.Session ();
             var message = new Soup.Message ("GET", "http://" + application_window.core_address + "/project/requestresponse?guid=" + guid);
 
-            session.queue_message (message, (sess, mess) => {
+            application_window.http_session.queue_message (message, (sess, mess) => {
                 if (ended || mess.status_code != 200) {
                     return;
                 }

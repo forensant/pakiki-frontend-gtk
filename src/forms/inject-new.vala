@@ -91,7 +91,6 @@ namespace Proximity {
         }
 
         private void on_run_clicked () {
-            var session = new Soup.Session ();
             var message = new Soup.Message ("POST", "http://" + application_window.core_address + "/inject_operations/run");
 
             button_run.sensitive = false;
@@ -123,7 +122,7 @@ namespace Proximity {
 
             message.set_request("application/json", Soup.MemoryUse.COPY, parameters.data);
 
-            session.queue_message (message, (sess, mess) => {
+            application_window.http_session.queue_message (message, (sess, mess) => {
                 var parser = new Json.Parser ();
                 var jsonData = (string)mess.response_body.flatten().data;
                 try {

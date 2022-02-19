@@ -37,27 +37,39 @@ namespace Proximity {
             get { return _core_address; }
         }
 
+        public string api_key;
+        public Soup.Session http_session;
         public string preview_proxy_address;
         public ProxySettings proxy_settings;
 
-        private Application proximity_application;
+        private bool authentication_displayed;
         private bool controls_hidden;
         private CoreProcess core_process;
         private InjectPane inject_pane;
         private Intercept intercept;
         private Gtk.Label label_connection_lost;
         private RequestNew new_request;
+        private Application proximity_application;
         private RequestsPane requests_pane;
         private GLib.Settings settings;
 
         private Notify.Notification notification;
 
-        public ApplicationWindow (Application application, string core_address, string preview_proxy_address) {
+        public ApplicationWindow (Application application, string core_address, string preview_proxy_address, string api_key) {
             GLib.Object (application: application);
-            core_process = new CoreProcess (this);
+            this.api_key = api_key;
+            if (api_key == "") {
+                generate_api_key ();
+            }
+
+            core_process = new CoreProcess (this, this.api_key);
+            this.authentication_displayed = false;
             this.proximity_application = application;
             this._core_address = core_address;
             this.preview_proxy_address = preview_proxy_address;
+
+            set_window_icon (this);
+            create_http_session ();
 
             var process_launched = true;
             if (core_address == "") {
@@ -145,6 +157,47 @@ namespace Proximity {
             }
         }
 
+        private void authenticate_user () {
+            if (authentication_displayed) {
+                return;
+            }
+
+            authentication_displayed = true;
+            var auth_dlg = new AuthenticationDialog ();
+            set_window_icon (auth_dlg);
+            var response = auth_dlg.run ();
+            auth_dlg.close ();
+
+            if (response != Gtk.ResponseType.OK) {
+                // if we can't authenticate, then there's not much more we can do
+                application.quit ();
+                return;
+            }
+            else if (response == Gtk.ResponseType.OK) {
+                authentication_displayed = false;
+                api_key = auth_dlg.api_key;
+                label_connection_lost.hide ();
+                on_core_started (core_address);
+            }
+        }
+
+        private void create_http_session () {
+            http_session = new Soup.Session ();
+
+            http_session.request_queued.connect ((msg) => {
+                msg.got_headers.connect (() => {
+                    if (msg.status_code == 401) {
+                        authenticate_user ();
+                    }
+                });
+
+                var HEADER_FIELD = "X-API-Key";
+                if (api_key != "" && msg.request_headers != null && msg.request_headers.get_one (HEADER_FIELD) == null) {
+                    msg.request_headers.append (HEADER_FIELD, api_key);
+                }
+            });
+        }
+
         public void change_pane (string name) {
             stack.set_visible_child_name (name);
         }
@@ -166,6 +219,36 @@ namespace Proximity {
                 notification.show ();
             } catch (Error e) {
                 stdout.printf("Error displaying notification: %s\n", e.message);
+            }
+        }
+
+        private void generate_api_key () {
+            FileStream stream = FileStream.open ("/dev/urandom", "r");
+            uint8[] key_bytes = new uint8[32];
+            bool generate_insecure = false;
+
+            if (stream == null) {
+                generate_insecure = true;
+            }
+
+            if (!generate_insecure) {
+                size_t read = stream.read (key_bytes, 1);
+                if (read != 32) {
+                    generate_insecure = true;
+                }
+            }
+
+            if (generate_insecure) {
+                stderr.printf ("WARNING: Generating insecure API key using non-cryptographic number generator\n");
+                for (var i = 0; i < key_bytes.length; i++) {
+                    key_bytes[i] = (uint8) Random.int_range(0,255);
+                }
+            }
+            
+            api_key = "";
+
+            for (var i = 0; i < key_bytes.length; i++) {
+                api_key += key_bytes[i].to_string ("%02X");
             }
         }
 
@@ -199,7 +282,10 @@ namespace Proximity {
         private void on_core_started (string address) {
             this._core_address = address;
             this.proxy_settings = new ProxySettings (this);
-            render_controls (proxy_settings.successful);
+
+            if (!proxy_settings.unauthenticated) { // the dialog will be shown and will then refresh once it's been authenticated
+                render_controls (proxy_settings.successful);
+            }
         }
 
         [GtkCallback]
@@ -335,6 +421,23 @@ namespace Proximity {
         public void send_to_new_request (string guid) {
             stack.visible_child = new_request;
             new_request.populate_request (guid);
+        }
+
+        private void set_window_icon (Gtk.Window window) {
+            var icons = new List<Gdk.Pixbuf> ();
+            try {
+                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/proximity/Logo256.png"));
+                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/proximity/Logo128.png"));
+                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/proximity/Logo64.png"));
+                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/proximity/Logo48.png"));
+                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/proximity/Logo32.png"));
+                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/proximity/Logo16.png"));
+            } catch (Error err) {
+                stdout.printf ("Could not create icon pack");
+                return;
+            }
+
+            window.set_icon_list (icons);
         }
     }
 }

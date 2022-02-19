@@ -109,7 +109,6 @@ namespace Proximity {
                 return;
             }
 
-            var session = new Soup.Session ();
             var message = new Soup.Message ("PUT", "http://" + application_window.core_address + uri);
 
             var parameters = "guid=" + operation.guid;
@@ -117,7 +116,7 @@ namespace Proximity {
                 parameters += ("&archive=" + archive);
             }
             message.set_request ("application/x-www-form-urlencoded", Soup.MemoryUse.COPY, parameters.data);
-            session.send_async.begin (message);
+            application_window.http_session.send_async.begin (message);
         }
 
         public void on_search (string query, bool exclude_resources) {
@@ -132,7 +131,6 @@ namespace Proximity {
                 return;
             }
             
-            var session = new Soup.Session ();
             var message = new Soup.Message ("PUT", "http://" + application_window.core_address + "/inject_operation");
 
             Json.Builder builder = new Json.Builder ();
@@ -149,7 +147,7 @@ namespace Proximity {
             string parameters = generator.to_data (null);
 
             message.set_request ("application/json", Soup.MemoryUse.COPY, parameters.data);
-            session.send_async.begin (message);
+            application_window.http_session.send_async.begin (message);
         }
     }
 }

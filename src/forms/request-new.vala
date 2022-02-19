@@ -72,7 +72,6 @@ namespace Proximity {
         public void on_send_clicked () {
             spinner.start ();
             label_error.visible = false;
-            var session = new Soup.Session ();
             var message = new Soup.Message ("POST", "http://" + application_window.core_address + "/proxy/make_request");
 
             Json.Builder builder = new Json.Builder ();
@@ -92,7 +91,7 @@ namespace Proximity {
 
             message.set_request("application/json", Soup.MemoryUse.COPY, parameters.data);
             
-            session.queue_message (message, (sess, mess) => {
+            application_window.http_session.queue_message (message, (sess, mess) => {
                 if (mess.status_code != 200) {
                     label_error.visible = true;
                     label_error.label = (string)mess.response_body.flatten().data;
@@ -122,10 +121,9 @@ namespace Proximity {
         public void populate_request (string guid) {
             var url = "http://" + application_window.core_address + "/project/request?guid=" + guid;
 
-            var session = new Soup.Session ();
             var message = new Soup.Message ("GET", url);
 
-            session.queue_message (message, (sess, mess) => {
+            application_window.http_session.queue_message (message, (sess, mess) => {
                 var parser = new Json.Parser ();
 
                 try {

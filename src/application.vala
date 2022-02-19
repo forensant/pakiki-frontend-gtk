@@ -1,7 +1,7 @@
 namespace Proximity {
     public class Application : Gtk.Application {
+        private string? api_key;
         private string? core_address;
-        private List<Gdk.Pixbuf> icons;
         private string? preview_proxy_address;
         private ApplicationWindow window;
 
@@ -9,18 +9,6 @@ namespace Proximity {
             application_id = "com.forensant.proximity";
             flags |= GLib.ApplicationFlags.HANDLES_COMMAND_LINE;
             GLib.Environment.set_prgname("Proximity");
-
-            icons = new List<Gdk.Pixbuf> ();
-            try {
-                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/proximity/Logo256.png"));
-                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/proximity/Logo128.png"));
-                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/proximity/Logo64.png"));
-                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/proximity/Logo48.png"));
-                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/proximity/Logo32.png"));
-                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/proximity/Logo16.png"));
-            } catch (Error err) {
-                stdout.printf ("Could not create icon pack");
-            }
         }
 
         private void about () {
@@ -58,9 +46,8 @@ namespace Proximity {
 
         public override void activate () {
             if (window == null) {
-                window = new ApplicationWindow (this, core_address, preview_proxy_address);
+                window = new ApplicationWindow (this, core_address, preview_proxy_address, api_key);
             }
-            window.set_icon_list (icons);
             window.present ();
 
             Gtk.CssProvider css_provider = new Gtk.CssProvider ();
@@ -83,10 +70,11 @@ namespace Proximity {
         private int _command_line (ApplicationCommandLine command_line) {
             bool version = false;
     
-            OptionEntry[] options = new OptionEntry[3];
+            OptionEntry[] options = new OptionEntry[4];
             options[0] = { "version", 0, 0, OptionArg.NONE, ref version, "Display version number", null };
             options[1] = { "core", 0, 0, OptionArg.STRING, ref core_address, "Address for a running Proximity Core instance to connect to", "HOST:PORT" };
             options[2] = { "preview-proxy", 0, 0, OptionArg.STRING, ref preview_proxy_address, "Address for a running Proximity Core's preview proxy instance to connect to", "HOST:PORT" };
+            options[3] = { "api-key", 0, 0, OptionArg.STRING, ref api_key, "The API Key when connecting to an external Proximity Core instance", null };
     
             // We have to make an extra copy of the array, since .parse assumes
             // that it can remove strings from the array without freeing them.
@@ -118,9 +106,15 @@ namespace Proximity {
                 return 0;
             }
 
+            if (core_address != null && api_key == null) {
+                command_line.print ("If a core address is specified, an API Key should also be specified\n");
+                return 0;
+            }
+
             if (core_address == null) {
                 core_address = "";
                 preview_proxy_address = "";
+                api_key = "";
             }
             
             activate ();

@@ -256,10 +256,9 @@ namespace Proximity {
         public void populate_request (string guid) {
             var url = "http://" + application_window.core_address + "/project/request?guid=" + guid;
 
-            var session = new Soup.Session ();
             var message = new Soup.Message ("GET", url);
 
-            session.queue_message (message, (sess, mess) => {
+            application_window.http_session.queue_message (message, (sess, mess) => {
                 var parser = new Json.Parser ();
                 try {
                     parser.load_from_data ((string) message.response_body.flatten ().data, -1);

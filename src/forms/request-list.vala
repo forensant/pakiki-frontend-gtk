@@ -319,10 +319,9 @@ namespace Proximity {
                 url += "&protocol=" + search_protocol;
             }
 
-            var session = new Soup.Session ();
             var message = new Soup.Message ("GET", url);
 
-            session.queue_message (message, (sess, mess) => {
+            application_window.http_session.queue_message (message, (sess, mess) => {
                 this.updating = true;
                 fetched_data = true;
                 liststore.clear ();
@@ -376,7 +375,7 @@ namespace Proximity {
                 notification_filters["Protocol"] = search_protocol;
             }
 
-            url = CoreProcess.websocket_url (application_window.core_address, "HTTP Request", notification_filters);
+            url = CoreProcess.websocket_url (application_window, "HTTP Request", notification_filters);
             string filter = "";
             if (exclude_resources) {
                 filter += "exclude_resources:true";
@@ -390,10 +389,12 @@ namespace Proximity {
                 url += "&filter=" + filter;
             }
 
+            url += "&api_key=" + application_window.api_key;
+
             var wsmessage = new Soup.Message ("GET", url);
-            session.websocket_connect_async.begin (wsmessage, "localhost", null, null, (obj, res) => {
+            application_window.http_session.websocket_connect_async.begin (wsmessage, "localhost", null, null, (obj, res) => {
                 try {
-                    websocket = session.websocket_connect_async.end (res);
+                    websocket = application_window.http_session.websocket_connect_async.end (res);
                     websocket.message.connect (on_websocket_message);
                 } catch (Error err) {
                     stdout.printf ("Error connecting to websocket %s, error message: %s\n", url, err.message);
@@ -515,13 +516,12 @@ namespace Proximity {
             Value guid;
             liststore.get_value (iter, Column.GUID, out guid);
 
-            var session = new Soup.Session ();
             var message = new Soup.Message ("POST", "http://" + application_window.core_address + "/project/request");
 
             var parameters = "guid=" + guid.get_string () + "&notes=" + Soup.URI.encode (newtext, null);
             message.set_request ("application/x-www-form-urlencoded", Soup.MemoryUse.COPY, parameters.data);
             
-            session.send_async.begin (message);
+            application_window.http_session.send_async.begin (message);
 
             liststore.set_value (iter, Column.NOTES, newtext);
             guid.unset ();

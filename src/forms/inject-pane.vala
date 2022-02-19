@@ -51,7 +51,7 @@ namespace Proximity {
         private void get_inject_operations () {
             var url = "http://" + application_window.core_address + "/inject_operations";
 
-            var session = new Soup.Session ();
+            var session = application_window.http_session;
             var message = new Soup.Message ("GET", url);
 
             session.queue_message (message, (sess, mess) => {
@@ -91,7 +91,7 @@ namespace Proximity {
                 websocket.close(Soup.WebsocketCloseCode.NO_STATUS, null);
             }
 
-            url = CoreProcess.websocket_url (application_window.core_address, "Inject Operation");
+            url = CoreProcess.websocket_url (application_window, "Inject Operation");
             
             var wsmessage = new Soup.Message("GET", url);
             session.websocket_connect_async.begin(wsmessage, "localhost", null, null, (obj, res) => {

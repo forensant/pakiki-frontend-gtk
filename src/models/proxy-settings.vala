@@ -6,10 +6,12 @@ namespace Proximity {
         public string proxy_address;
         public string upstream_proxy_address;
         public bool successful;
+        public bool unauthenticated;
         
         public ProxySettings (ApplicationWindow application_window) {
             this.application_window = application_window;
             successful = true;
+            unauthenticated = false;
             download_settings ();
             download_certificate ();
         }
@@ -17,13 +19,10 @@ namespace Proximity {
         void download_certificate () {
             var url = "http://" + application_window.core_address + "/proxy/ca_certificate.pem";
             try {
-                // Create a session:
-                Soup.Session session = new Soup.Session ();
-        
                 // Request a file:
-                Soup.Request request = session.request (url);
+                Soup.Request request = application_window.http_session.request (url);
                 InputStream stream = request.send ();
-        
+
                 // Print the content:
                 DataInputStream data_stream = new DataInputStream (stream);
         
@@ -43,11 +42,8 @@ namespace Proximity {
         void download_settings () {
             var url = "http://" + application_window.core_address + "/proxy/settings";
             try {
-                // Create a session:
-                Soup.Session session = new Soup.Session ();
-        
                 // Request a file:
-                Soup.Request request = session.request (url);
+                Soup.Request request = application_window.http_session.request (url);
                 InputStream stream = request.send ();
         
                 // Print the content:
@@ -57,6 +53,11 @@ namespace Proximity {
                 var proxy_settings = "";
                 while ((line = data_stream.read_line ()) != null) {
                     proxy_settings += line;
+                }
+
+                if (proxy_settings == "Invalid API Key") {
+                    unauthenticated = true;
+                    return;
                 }
 
                 var parser = new Json.Parser ();
@@ -75,7 +76,6 @@ namespace Proximity {
         }
 
         public string save () {
-            var session = new Soup.Session ();
             var message = new Soup.Message ("PUT", "http://" + application_window.core_address + "/proxy/settings");
 
             Json.Builder builder = new Json.Builder ();
@@ -92,7 +92,7 @@ namespace Proximity {
             string parameters = generator.to_data (null);
 
             message.set_request("application/json", Soup.MemoryUse.COPY, parameters.data);
-            session.send_message(message);
+            application_window.http_session.send_message(message);
 
             if (message.status_code == 500) {
                 return (string)message.response_body.data;
