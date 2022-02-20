@@ -50,8 +50,13 @@ namespace Proximity {
 
             var child_count = tree_store_site_map.iter_n_children (parent);
 
-            // start at 1, so that "All" stays at the top
-            for (int i = 1; i < child_count; i++) {
+            // start at 1 if it's the top-level so that "All" stays at the top
+            var first_element = 0;
+            if (parent == null) {
+                first_element = 1;
+            }
+
+            for (int i = first_element; i < child_count; i++) {
                 if (tree_store_site_map.iter_nth_child (out current_iter, parent, i)) {
                     Value path_value;
                     tree_store_site_map.get_value (current_iter, 0, out path_value);

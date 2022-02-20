@@ -263,12 +263,31 @@ namespace Proximity {
                 try {
                     parser.load_from_data ((string) message.response_body.flatten ().data, -1);
 
-                    var rootObj = parser.get_root().get_object();
+                    var root_obj = parser.get_root().get_object();
 
                     reset_state ();
-                    entry_hostname.text = rootObj.get_string_member ("Hostname");
-                    combobox_protocol.active = (rootObj.get_string_member ("Protocol") == "https://" ? 0 : 1);
-                    text_view_request.buffer.text = (string) Base64.decode (rootObj.get_string_member ("RequestData"));
+                    entry_hostname.text = root_obj.get_string_member ("Hostname");
+                    combobox_protocol.active = (root_obj.get_string_member ("Protocol") == "https://" ? 0 : 1);
+
+                    var request_parts = root_obj.get_array_member ("SplitRequest");
+
+                    if (request_parts.get_length () == 0) {
+                        text_view_request.buffer.text = (string) Base64.decode (root_obj.get_string_member ("RequestData"));
+                    } else {
+                        text_view_request.buffer.text = "";
+                        for (int i = 0; i < request_parts.get_length (); i++) {
+                            var part = request_parts.get_element (i).get_object ();
+                            var text = (string) Base64.decode (part.get_string_member ("RequestPart"));
+                            if (part.get_boolean_member ("Inject")) {
+                                text = "»" + text + "«";
+                            }
+
+                            text_view_request.buffer.text += text;
+                        }
+
+                        correct_separators_and_tag ();
+                    }
+                    
                 } catch (Error err) {
                     stdout.printf("Error retrieving request details: %s\n", err.message);
                 }
