@@ -14,10 +14,6 @@ finish-args:
   - --talk-name=org.freedesktop.secrets
   # to allow notifications to be sent to the desktop
   - --talk-name=org.freedesktop.Notifications
-
-  # TODO: I'm not happy with this. Some sandboxing is better than none, but if we could use portals that'd be ideal
-  # see the notes at: https://github.com/pipeline/proximity-frontend-gtk/issues/6
-  - --filesystem=host
   
 modules:
   - name: GtkSourceView
@@ -49,8 +45,8 @@ modules:
     sources:
 #manual_ifdef production
       - type: archive
-        url: https://github.com/pipeline/proximity-core/releases/download/v0.4-alpha/ProximityCore-Linux.zip
-        sha256: a56bd7e0ee2312d049af9b396fa65ac9dbe29d1a3f1b6edbdcb876d20d17c178
+        url: https://github.com/pipeline/proximity-core/releases/download/v0.5-alpha/ProximityCore-Linux.zip
+        sha256: 7aa6fcb9cc5c78d9307217b1ff3be5fb1782931ea1871f6386ed9f0779cd8454
 #manual_ifdef local
 #      - type: dir
 #        path: /home/user/Coding/proximity-core/build/
