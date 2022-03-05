@@ -47,11 +47,12 @@ namespace Proximity {
         private CoreProcess core_process;
         private InjectPane inject_pane;
         private Intercept intercept;
-        private Gtk.Label label_connection_lost;
+        private Gtk.Label label_overlay;
         private RequestNew new_request;
         private Application proximity_application;
         private RequestsPane requests_pane;
         private GLib.Settings settings;
+        private bool timeout_started;
 
         private Notify.Notification notification;
 
@@ -67,6 +68,7 @@ namespace Proximity {
             this.proximity_application = application;
             this._core_address = core_address;
             this.preview_proxy_address = preview_proxy_address;
+            timeout_started = false;
 
             set_window_icon (this);
             create_http_session ();
@@ -82,9 +84,9 @@ namespace Proximity {
                 }
             });
 
-            label_connection_lost = new Gtk.Label ("Connection to Proximity Core lost. Retrying...\n\nOnce the connection is re-established, the data will be reloaded.");
-            label_connection_lost.name = "lbl_connection_lost";
-            overlay.add_overlay (label_connection_lost);
+            label_overlay = new Gtk.Label ("");
+            label_overlay.name = "lbl_overlay";
+            overlay.add_overlay (label_overlay);
             
             settings = new GLib.Settings ("com.forensant.proximity");
             
@@ -148,13 +150,19 @@ namespace Proximity {
                 label_proxy_bind_error.label = message.strip () + "  —  Requests are not being intercepted.";
             });
 
-            if (process_launched == true) {
-                Timeout.add_full (Priority.DEFAULT, 5000, monitor_core_connection);
-            }
-            else {
+            core_process.copying_file.connect ((started) => {
+                if (started) {
+                    label_overlay.label = "Saving and copying project file. This may take a few minutes for large projects...";
+                }
+                label_overlay.visible = started;
+            });
+
+            if (!process_launched) {
                 stdout.printf("Core didn't start\n");
                 render_controls (false);
             }
+
+            stdout.printf("Proximity started\n");
         }
 
         private void authenticate_user () {
@@ -176,7 +184,7 @@ namespace Proximity {
             else if (response == Gtk.ResponseType.OK) {
                 authentication_displayed = false;
                 api_key = auth_dlg.api_key;
-                label_connection_lost.hide ();
+                label_overlay.hide ();
                 on_core_started (core_address);
             }
         }
@@ -258,15 +266,16 @@ namespace Proximity {
 
             session.queue_message (message, (sess, mess) => {
                 if (mess.status_code == 200) {
-                    if (label_connection_lost.visible == true || proxy_settings.successful == false) {
-                        label_connection_lost.hide ();
+                    if (label_overlay.visible == true || proxy_settings.successful == false) {
+                        label_overlay.hide ();
                         on_core_started (core_address);
                     }
                 }
                 else {
                     // if the proxy settings haven't been successfully loaded, there will be another message already displayed to the user
-                    if (label_connection_lost.visible == false && proxy_settings.successful) {
-                        label_connection_lost.show ();
+                    if (label_overlay.visible == false && proxy_settings.successful) {
+                        label_overlay.label = "Connection to Proximity Core lost. Retrying...\n\nOnce the connection is re-established, the data will be reloaded.";
+                        label_overlay.show ();
                     }
                 }
             });
@@ -282,6 +291,11 @@ namespace Proximity {
         private void on_core_started (string address) {
             this._core_address = address;
             this.proxy_settings = new ProxySettings (this);
+
+            if (!timeout_started) {
+                timeout_started = true;
+                Timeout.add_full (Priority.DEFAULT, 5000, monitor_core_connection);
+            }
 
             if (!proxy_settings.unauthenticated) { // the dialog will be shown and will then refresh once it's been authenticated
                 render_controls (proxy_settings.successful);
@@ -342,6 +356,12 @@ namespace Proximity {
 
             // special case
             button_intercept.visible = (stack.visible_child == requests_pane);
+        }
+
+        public void on_quit () {
+            if (core_process != null) {
+                core_process.quit ();
+            }
         }
 
         public void on_save_project () {

@@ -1,12 +1,14 @@
 namespace Proximity {
     class CoreProcess : Object {
+        public signal void copying_file (bool start);
         public signal void core_started (string location);
         public signal void listener_error (string warning);
-
+        
         private string api_key;
         private ApplicationWindow application_window;
         private Pid child_pid;
         private string path;
+        private FileStream process_stdin;
         private bool temporary_file;
 
         public CoreProcess (ApplicationWindow parent, string api_key) {
@@ -15,11 +17,24 @@ namespace Proximity {
             this.api_key = api_key;
         }
 
+        private void copy_and_open_file (string from, string to) {
+            File file1 = File.new_for_path (from);
+            File file2 = File.new_for_path (to);
+
+            try {
+                file1.copy (file2, FileCopyFlags.OVERWRITE, null, null);
+            } catch (Error e) {
+                print ("Error: %s\n", e.message);
+            }
+
+            open (to);
+        }
+
         private string? get_temporary_file_path () {
             FileIOStream iostream;
             File file;
             try {
-                file = File.new_tmp ("proximity-XXXXXX.px", out iostream);
+                file = File.new_tmp ("proximity-XXXXXX.prx", out iostream);
             } catch (Error err) {
                 stdout.printf ("Error getting temporary path, using /tmp/proximity_temp instead (%s)\n", err.message);
                 return "/tmp/proximity_temp";
@@ -87,15 +102,21 @@ namespace Proximity {
                         core_exe_path = "/";
                     }
 
-                    Process.spawn_async_with_pipes (core_exe_path,
+                    var launch_success = Process.spawn_async_with_pipes (core_exe_path,
                         spawn_args,
                         spawn_env,
-                        SpawnFlags.SEARCH_PATH,
+                        SpawnFlags.SEARCH_PATH | SpawnFlags.DO_NOT_REAP_CHILD,
                         null,
                         out child_pid,
                         out standard_input,
                         out standard_output,
                         out standard_error);
+
+                    if (!launch_success) {
+                        continue;
+                    }
+
+                    process_stdin = FileStream.fdopen (standard_input, "w");
 
                     // stdout:
                     IOChannel output = new IOChannel.unix_new (standard_output);
@@ -113,7 +134,6 @@ namespace Proximity {
                     ChildWatch.add (child_pid, (pid, status) => {
                         // Triggered when the child indicated by child_pid exits
                         stdout.printf("Proximity core closed with status %d\n", status);
-                        this.child_pid = 0;
                         Process.close_pid (pid);
                     });
 
@@ -130,6 +150,21 @@ namespace Proximity {
             return false;
         }
 
+        void handle_open_project_response (Gtk.FileChooserNative open_dialog, int response_id, bool new_file) {
+            switch (response_id) {
+                case Gtk.ResponseType.ACCEPT: // open the file
+                    var file = open_dialog.get_file();
+                    var filename = file.get_path ();
+                    open (filename);
+
+                    break;
+    
+                case Gtk.ResponseType.CANCEL:
+                    break;
+            }
+            open_dialog.destroy ();
+        }
+
         public void open_project () {
             var dialog = new Gtk.FileChooserNative ("Pick a file",
                 application_window,
@@ -140,22 +175,6 @@ namespace Proximity {
             set_common_file_dialog_properties (dialog);
             var res = dialog.run ();
             handle_open_project_response (dialog, res, false);
-        }
-
-        void handle_open_project_response (Gtk.FileChooserNative open_dialog, int response_id, bool new_file) {
-            switch (response_id) {
-                case Gtk.ResponseType.ACCEPT: // open the file
-                    var file = open_dialog.get_file();
-                    var filename = file.get_path ();
-                    open (filename);
-                    //application_window.on_new_project_open ();
-
-                    break;
-    
-                case Gtk.ResponseType.CANCEL:
-                    break;
-            }
-            open_dialog.destroy ();
         }
 
         public void new_project () {
@@ -201,6 +220,31 @@ namespace Proximity {
                     this.listener_error (warning_message);
                 }
 
+                if (line.contains ("A previous project was not closed properly")) {
+                    var dlg = new Gtk.MessageDialog (null,
+                        Gtk.DialogFlags.MODAL,
+                        Gtk.MessageType.WARNING,
+                        Gtk.ButtonsType.YES_NO,
+                        line.replace ("(y/n)", ""));
+
+                    var res = dlg.run ();
+                    var chr = "n";
+                    switch (res)
+                    {
+                    case Gtk.ResponseType.YES:
+                        chr = "y";
+                        break;
+                    default:
+                        // do_nothing_since_dialog_was_cancelled ();
+                        break;
+                    }
+                    chr += "\n";
+                    process_stdin.write (chr.data);
+                    process_stdin.flush ();
+
+                    dlg.destroy ();
+                }
+
             } catch (IOChannelError e) {
                 print ("%s: IOChannelError: %s\n", stream_name, e.message);
                 return false;
@@ -210,6 +254,14 @@ namespace Proximity {
             }
         
             return true;
+        }
+
+        public void quit () {
+            if (child_pid != 0) {
+                Posix.kill (child_pid, Posix.Signal.TERM);
+                int status;
+                Posix.waitpid (child_pid, out status, 0);
+            }
         }
 
         public void save_project () {
@@ -225,21 +277,19 @@ namespace Proximity {
             if (response_id == Gtk.ResponseType.ACCEPT) {
                 var selected_file = dialog.get_file();
                 var filename = selected_file.get_path ();
+                copying_file (true);
                 if (child_pid != 0) {
                     Posix.kill (child_pid, Posix.Signal.TERM);
+                    ChildWatch.add (child_pid, (pid, status) => {
+                        copy_and_open_file (this.path, filename);
+                        copying_file (false);
+                    });
                     child_pid = 0;
                 }
-
-                File file1 = File.new_for_path (this.path);
-                File file2 = File.new_for_path (filename);
-
-                try {
-                    file1.copy (file2, FileCopyFlags.OVERWRITE, null, null);
-                } catch (Error e) {
-                    print ("Error: %s\n", e.message);
+                else {
+                    copy_and_open_file (this.path, filename);
+                    copying_file (false);
                 }
-
-                open (filename);
             }
 
             dialog.destroy ();

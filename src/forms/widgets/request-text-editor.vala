@@ -66,7 +66,7 @@ namespace Proximity {
 
             var menu_item_encode = new Gtk.MenuItem.with_label ("URL Encode");
             menu_item_encode.activate.connect ( () => {
-                var encoded_text = Soup.URI.encode (selected_text, null);
+                var encoded_text = Soup.URI.encode (selected_text, "&+");
                 this.replace_selected_text (encoded_text);
             });
             menu_item_encode.show ();

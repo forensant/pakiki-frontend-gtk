@@ -135,6 +135,11 @@ namespace Proximity {
             prefs.present ();
         }
 
+        public override void shutdown () {
+            window.on_quit ();
+            base.shutdown ();
+        }
+
         public override void startup () {
             base.startup ();
 
