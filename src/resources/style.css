@@ -14,3 +14,23 @@ scrolledwindow#scrolled_window_hex_count {
 textview#text_view_hex_count text {
     background-color: rgba(0,0,0,0.05);
 }
+
+.hex {
+	font-family: Monospace;
+	font-feature-settings: "tnum";
+	color: @theme_text_color;
+	background-color: @theme_base_color;
+}
+
+.hex-background {
+    background-color: mix(@theme_text_color, @theme_base_color, 0.95);
+}
+
+.hex-border {
+    background-color: mix(@theme_text_color, @theme_base_color, 0.70);
+}
+
+.hex-selected {
+    color: @theme_selected_fg_color;
+    background-color: @theme_selected_bg_color;
+}

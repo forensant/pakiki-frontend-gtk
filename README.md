@@ -12,7 +12,9 @@ This repository contains the GTK (Linux) user interface which proxies traffic. I
 
 One of the reasons for developing this is to give back to the community. I want to help people who are new to pentesting, while still having 99% of what experienced pentesters need day to day.
 
-Given it is still under heavy development, the file formats (both projects and settings) may change, and there may be many bugs in the pre-release builds. Early feedback would be greatly appreciated though.
+Given this is still under development, bugs should be expected, although any feedback is greatly appreciated.
+
+Please only use this against applications that you have permission to test.
 
 ## Installation
 Download from the latest release from [https://github.com/pipeline/proximity-frontend-gtk/releases](https://github.com/pipeline/proximity-frontend-gtk/releases)
