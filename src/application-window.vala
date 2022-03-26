@@ -157,6 +157,13 @@ namespace Proximity {
                 label_overlay.visible = started;
             });
 
+            core_process.opening_file.connect ((started) => {
+                if (started) {
+                    label_overlay.label = "Opening project file. This may take a few minutes for large projects...";
+                }
+                label_overlay.visible = started;
+            });
+
             if (!process_launched) {
                 stdout.printf("Core didn't start\n");
                 render_controls (false);

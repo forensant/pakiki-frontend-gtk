@@ -65,7 +65,12 @@ namespace Proximity {
             get { return _buffer; }
             set {
                 _buffer = value;
+                buffer.length_changed.connect ( () => {
+                    set_vadjustment_properties ();
+                });
                 set_vadjustment_properties ();
+                vadjustment.set_value (0);
+                selection_start_charidx = selection_end_charidx = -1;
                 queue_draw ();
             }
         }
@@ -153,15 +158,15 @@ namespace Proximity {
 
             var text_to_set = new StringBuilder ();
 
-            var first_line = (int) vadjustment.value;
+            var first_line = (int64) vadjustment.value;
             var last_line = first_line + lines_to_display;
 
             if (last_line > line_count ()) {
-                last_line = (int) line_count ();
+                last_line = (int64) line_count ();
             }
 
-            for (int i = first_line; i < last_line; i++) {
-                var formatted_string = ("%0" + OFFSET_CHARACTERS.to_string() + "d\n").printf(i * 16);
+            for (int64 i = first_line; i < last_line; i++) {
+                var formatted_string = ("%0" + OFFSET_CHARACTERS.to_string() + "llu\n").printf(i * 16);
                 text_to_set.append (formatted_string);
             }
 
@@ -205,7 +210,7 @@ namespace Proximity {
             return false;
         }
 
-        private int draw_ascii_lines (Cairo.Context cr, int line_from, int line_to, int x_offset) {
+        private int draw_ascii_lines (Cairo.Context cr, int64 line_from, int64 line_to, int x_offset) {
             // TODO: This works basically the same as draw_hex_lines, so we can probably use function pointers to extract out the commonalities
             var style = get_style_context ();
             style.add_class ("hex-background");
@@ -299,7 +304,7 @@ namespace Proximity {
             return render_selection (cr, x_offset, buffers[0].str, buffers[1].str, buffers[2].str);
         }
 
-        private int draw_hex_lines (Cairo.Context cr, int line_from, int line_to, int x_offset) {
+        private int draw_hex_lines (Cairo.Context cr, int64 line_from, int64 line_to, int x_offset) {
             // there are 3 different buffers, one before selection, one during selection, one after selection
             // then all three are rendered on top of each other
 
@@ -559,7 +564,7 @@ namespace Proximity {
             return (int)((double)get_allocated_height () / (double)get_line_height ());
         }
 
-        private int64 line_count () {
+        private uint64 line_count () {
             var lines = buffer.length () / 16;
             if (lines * 16 < buffer.length ()) {
                 lines++;

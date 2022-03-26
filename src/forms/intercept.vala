@@ -413,6 +413,7 @@ namespace Proximity {
             liststore_requests.clear ();
             clear_gui ();
             get_intercept_settings ();
+            get_requests ();
         }
     }
 }

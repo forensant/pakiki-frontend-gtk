@@ -65,9 +65,9 @@ namespace Proximity {
             guid = "";
             show_send_to = true;
 
-            text_view_request = new RequestTextView ();
-            text_view_orig_request = new RequestTextView ();
-            text_view_websocket_request = new RequestTextView ();
+            text_view_request = new RequestTextView (application_window);
+            text_view_orig_request = new RequestTextView (application_window);
+            text_view_websocket_request = new RequestTextView (application_window);
 
             text_view_request.editable = false;
             text_view_orig_request.editable = false;
@@ -87,7 +87,7 @@ namespace Proximity {
 
             webkit_preview.decide_policy.connect (on_link_clicked);
 
-            out_of_band_display = new OutOfBandDisplay ();
+            out_of_band_display = new OutOfBandDisplay (application_window);
             scroll_window_out_of_band_interaction.add (out_of_band_display);
 
             var time_cell_renderer = new Gtk.CellRendererText();
@@ -206,8 +206,12 @@ namespace Proximity {
 
             url = root_obj.get_string_member ("URL");
             var mimetype = root_obj.get_string_member ("MimeType");
+
+            var large_response = root_obj.get_boolean_member ("LargeResponse");
+            var modified = root_obj.get_boolean_member ("Modified");
+            var combined_content_length = root_obj.get_int_member ("CombinedContentLength");
             
-            if (modified_request.length != 0 || modified_response.length != 0) {
+            if (modified) {
                 scroll_window_original_text.show ();
 
                 if (modified_request.length == 0) {
@@ -222,15 +226,28 @@ namespace Proximity {
                     modified_response += '\0';
                 }
 
-                text_view_request.set_request_response (modified_request, modified_response);
-                text_view_orig_request.set_request_response (original_request, original_response);
-                set_webview (modified_response, mimetype, url);
+                if (large_response) {
+                    text_view_request.set_large_request (guid, combined_content_length);
+                    text_view_orig_request.set_request_response (original_request, "Response too large to display".data);
+                    webkit_preview.hide ();
+                }
+                else {
+                    text_view_request.set_request_response (modified_request, modified_response);
+                    text_view_orig_request.set_request_response (original_request, original_response);
+                    set_webview (modified_response, mimetype, url);
+                }
                 
             } else {
                 scroll_window_original_text.hide ();
 
-                text_view_request.set_request_response (original_request, original_response);
-                set_webview (original_response, mimetype, url);
+                if (large_response) {
+                    text_view_request.set_large_request (guid, combined_content_length);
+                    webkit_preview.hide ();
+                }
+                else {
+                    text_view_request.set_request_response (original_request, original_response);
+                    set_webview (original_response, mimetype, url);
+                }
             }
         }
 
@@ -437,6 +454,10 @@ namespace Proximity {
 
             webkit_preview.show ();
             webkit_preview.load_bytes (body, mimetype, null, url);
+        }
+
+        public void update_content_length (int64 combined_content_length) {
+            text_view_request.set_large_request (guid, combined_content_length);
         }
 
         public void reset_state () {

@@ -3,6 +3,7 @@ namespace Proximity {
         public signal void copying_file (bool start);
         public signal void core_started (string location);
         public signal void listener_error (string warning);
+        public signal void opening_file (bool start);
         
         private string api_key;
         private ApplicationWindow application_window;
@@ -155,6 +156,7 @@ namespace Proximity {
                 case Gtk.ResponseType.ACCEPT: // open the file
                     var file = open_dialog.get_file();
                     var filename = file.get_path ();
+                    this.opening_file (true);
                     open (filename);
 
                     break;
@@ -205,6 +207,7 @@ namespace Proximity {
                     var host_idx = line.index_of ("/", scheme_idx + 4);
                     var host = line.substring (scheme_idx + 3, host_idx - scheme_idx - 3);
                     this.core_started (host);
+                    this.opening_file (false);
                 }
 
                 if (line.contains ("Preview proxy is available at:")) {

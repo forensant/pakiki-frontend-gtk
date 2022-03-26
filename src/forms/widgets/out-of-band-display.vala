@@ -1,6 +1,9 @@
 namespace Proximity {   
     class OutOfBandDisplay : Gtk.Grid {
-        public OutOfBandDisplay() {
+        private ApplicationWindow application_window;
+
+        public OutOfBandDisplay(ApplicationWindow application_window) {
+            this.application_window = application_window;
             margin = 18;
 
             row_spacing = 6;
@@ -79,7 +82,7 @@ namespace Proximity {
             request_label.halign = Gtk.Align.END;
             this.attach (request_label, 0, row, 1, 1);
             var request_data = Base64.decode(request_packet.get_string_member ("Data"));
-            var request_text_view = new RequestTextView ();
+            var request_text_view = new RequestTextView (application_window);
             request_text_view.scroll = false;
             request_text_view.set_request (request_data);
             this.attach (request_text_view, 1, row, 1, 1);
@@ -94,7 +97,7 @@ namespace Proximity {
             response_label.halign = Gtk.Align.END;
             this.attach (response_label, 0, row, 1, 1);
             var response_data = Base64.decode(response_packet.get_string_member ("Data"));
-            var response_text_view = new RequestTextView ();
+            var response_text_view = new RequestTextView (application_window);
             response_text_view.scroll = false;
             response_text_view.set_request (response_data);
             this.attach (response_text_view, 1, row, 1, 1);

@@ -167,7 +167,7 @@ namespace Proximity {
             response_size_column.set_cell_data_func(response_size_renderer, (cell_layout, cell, tree_model, iter) => {
                 Value val;
                 tree_model.get_value(iter, Column.RESPONSE_SIZE, out val);
-                ((Gtk.CellRendererText)cell).text = response_size_to_string(val.get_int ());
+                ((Gtk.CellRendererText)cell).text = response_size_to_string(val.get_int64 ());
                 val.unset();
             });
 
@@ -453,7 +453,7 @@ namespace Proximity {
                 }
             }
 
-            var should_scroll_to_bottom = ((request_list.vadjustment.value + request_list.vadjustment.page_size + 200.0) > request_list.vadjustment.upper);
+            var should_scroll_to_bottom = ((request_list.vadjustment.value + request_list.vadjustment.page_size + 150.0) > request_list.vadjustment.upper);
 
             var request_guid = request.get_string_member ("GUID");
 
@@ -483,9 +483,14 @@ namespace Proximity {
                 });
             }
 
-            // if the websocket packets have been updated, let the request details form know to update the list
-            if (request_details.guid == request_guid && request.get_string_member ("Protocol") == "Websocket") {
-                request_details.set_request (request_guid, true);
+            // the currently highlighted request has been updated
+            if (request_details.guid == request_guid) {
+                if (request.get_string_member ("Protocol") == "Websocket") {
+                    request_details.set_request (request_guid, true);
+                } else {
+                    int64 content_length = request.get_int_member ("ResponseSize") + request.get_int_member ("RequestSize");
+                    request_details.update_content_length (content_length);
+                }
             }
 
             // automatically scroll to the bottom if needed

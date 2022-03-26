@@ -32,7 +32,6 @@ sources += files(
     'models/core-process.vala',
     'models/inject-operation.vala',
     'models/proxy-settings.vala'
-
 )
 
 schemas_dir = get_option('prefix') / get_option('datadir') / 'glib-2.0' / 'schemas'

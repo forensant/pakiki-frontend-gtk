@@ -28,7 +28,7 @@ namespace Proximity {
             }
         }
         
-        public uint8[] data (int from, int to) {
+        public uint8[] data (uint64 from, uint64 to) {
             if (to > buffer.length) {
                 to = buffer.length;
             }
@@ -42,11 +42,11 @@ namespace Proximity {
             return buffer[from:to];
         }
 
-        public bool data_cached (int from, int to) {
+        public bool data_cached (uint64 from, uint64 to) {
             return true;
         }
 
-        public int64 length () {
+        public uint64 length () {
             return buffer.length;
         }
     }

@@ -12,11 +12,11 @@ namespace Proximity {
         [GtkChild]
         private unowned Gtk.ScrolledWindow scrolled_window_hex_view;
 
-
         // for the requests/responses where we can render them
         private Gtk.SourceLanguageManager language_manager;
         private Gtk.SourceBuffer source_buffer;
 
+        private ApplicationWindow application_window;
         private bool setting_selection;
 
         private bool _editable;
@@ -44,7 +44,8 @@ namespace Proximity {
             }
         }
         
-        public RequestTextView () {
+        public RequestTextView (ApplicationWindow application_window) {
+            this.application_window = application_window;
             setting_selection = false;
             language_manager = Gtk.SourceLanguageManager.get_default ();
             var lang = language_manager.get_language ("xml");
@@ -92,6 +93,19 @@ namespace Proximity {
             source_buffer.text = "";
             hex_editor.buffer = new HexStaticBuffer ();
             show_hex (false);
+        }
+
+        public void set_large_request (string guid, int64 content_length) {
+            show_hex (true);
+            if (hex_editor.buffer is HexRemoteBuffer) {
+                var buf = hex_editor.buffer as HexRemoteBuffer;
+                if (buf.guid == guid) {
+                    buf.content_length = content_length;
+                    return;
+                }
+            }
+
+            hex_editor.buffer = new HexRemoteBuffer (application_window, guid, content_length);
         }
 
         private void set_hex_text (uchar[] request, uchar[] response) {

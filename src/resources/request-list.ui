@@ -13,7 +13,7 @@
       <!-- column-name URL -->
       <column type="gchararray"/>
       <!-- column-name size -->
-      <column type="gint"/>
+      <column type="gint64"/>
       <!-- column-name duration -->
       <column type="gint"/>
       <!-- column-name verb -->
