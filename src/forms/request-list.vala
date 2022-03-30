@@ -23,9 +23,11 @@ namespace Proximity {
         private unowned Gtk.Spinner spinner;
 
         private ApplicationWindow application_window;
+        private Gtk.Box box_request_details;
         private bool exclude_resources;
         private Gee.Set<string> guid_set;
         private PlaceholderRequests placeholder_requests;
+        private RequestCompare request_compare;
         private RequestDetails request_details;
         private string[] scan_ids;
         private string search_protocol;
@@ -221,9 +223,18 @@ namespace Proximity {
             request_list.get_column(Column.ERROR).sort_column_id         = Column.ERROR;
             request_list.get_column(Column.NOTES).sort_column_id         = Column.NOTES;
 
+
+            box_request_details = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
+
             request_details = new RequestDetails (application_window);
             request_details.hide ();
-            this.add2 (request_details);
+            box_request_details.add (request_details);
+
+            request_compare = new RequestCompare (application_window);
+            request_compare.hide ();
+            box_request_details.add (request_compare);
+
+            this.add2 (box_request_details);
             
             scrolled_window_requests.hide ();
 
@@ -232,7 +243,8 @@ namespace Proximity {
             }
 
             var selection = request_list.get_selection();
-            selection.changed.connect(this.on_changed);
+            selection.mode = Gtk.SelectionMode.MULTIPLE;
+            selection.changed.connect(this.on_selection_changed);
         }
 
         private void add_request_to_table (Json.Object request) {
@@ -274,12 +286,16 @@ namespace Proximity {
                     placeholder_requests.show ();
                 }
                 scrolled_window_requests.hide ();
+                box_request_details.hide ();
                 request_details.hide ();
+                request_compare.hide ();
             } else {
                 label_no_requests.visible = false;
                 placeholder_requests.hide ();
                 scrolled_window_requests.show ();
+                box_request_details.show ();
                 request_details.show ();
+                request_compare.hide ();
                 this.requests_loaded (true);
             }
         }
@@ -402,21 +418,30 @@ namespace Proximity {
             });
         }
 
-        private string get_selected_field (Column col) {
+        private string[] get_selected_fields (Column col) {
             var selection = request_list.get_selection ();
             Gtk.TreeModel model;
-            Gtk.TreeIter iter;
-            string val;
-    
-            if (selection.get_selected (out model, out iter)) {
-                model.get (iter, col, out val);
-                return val;
+            string[] vals = {};
+
+            var selected_rows = selection.get_selected_rows (out model);
+            foreach (var path in selected_rows) {
+                Gtk.TreeIter iter;
+
+                if (!model.get_iter (out iter, path)) {
+                    continue;
+                }
+
+                GLib.Value val;
+                model.get_value (iter, (int) col, out val);
+
+                vals += val.get_string ();
             }
-            return "";
+
+            return vals;
         }
 
-        private string get_selected_guid () {
-            return get_selected_field (Column.GUID);
+        private string[] get_selected_guids () {
+            return get_selected_fields (Column.GUID);
         }
 
         private void on_websocket_message (int type, Bytes message) {
@@ -499,21 +524,6 @@ namespace Proximity {
             }
         }
 
-        private void on_changed (Gtk.TreeSelection selection) {
-            if(updating) {
-                return;
-            }
-
-            var guid = get_selected_guid ();
-            if (guid != "") {
-                var pos = this.position;
-                request_details.set_request (guid);
-                this.position = pos;
-                
-                request_selected (guid);
-            }
-        }
-
         private void on_notes_updated (string path, string newtext) {
             Gtk.TreeIter iter;
             liststore.get_iter (out iter, new Gtk.TreePath.from_string(path));
@@ -535,13 +545,17 @@ namespace Proximity {
         [GtkCallback]
         public bool on_request_list_button_press_event (Gdk.EventButton event) {         
             if (event.type == Gdk.EventType.@2BUTTON_PRESS) {
-                var guid = get_selected_guid ();
-                if (guid == "") {
+                var guids = get_selected_guids ();
+                if (guids.length != 1) {
                     return false;
                 }
+                var guid = guids[0];
 
-                var protocol = get_selected_field (Column.PROTOCOL);
-                if (protocol != "HTTP/1.1") {
+                var protocols = get_selected_fields (Column.PROTOCOL);
+                if (protocols.length != 1) {
+                    return false;
+                }
+                if (protocols[0] != "HTTP/1.1") {
                     return false;
                 }
 
@@ -561,41 +575,46 @@ namespace Proximity {
                 // right click
                 var menu = new Gtk.Menu ();
 
-                var protocol = get_selected_field (Column.PROTOCOL);
-                if (protocol != "HTTP/1.1") {
+                var protocols = get_selected_fields (Column.PROTOCOL);
+                if (protocols.length != 1) {
                     return false;
                 }
+                if (protocols[0] != "HTTP/1.1") {
+                    return false;
+                }
+
+                var guids = get_selected_guids ();
+                if (guids.length != 1 || guids[0] == "") {
+                    return false;
+                }
+                var guid = guids[0];
             
                 var item_new_request = new Gtk.MenuItem.with_label ("New Request");
                 item_new_request.activate.connect ( () => {
-                    var guid = get_selected_guid ();
-                    if (guid != "") {
-                        application_window.send_to_new_request (guid);
-                    }
+                    application_window.send_to_new_request (guid);
                 });
                 item_new_request.show ();
                 menu.append (item_new_request);
     
                 var item_inject = new Gtk.MenuItem.with_label ("Inject");
                 item_inject.activate.connect ( () => {
-                    var guid = get_selected_guid ();
-                    if (guid != "") {
-                        application_window.send_to_inject (guid);
-                    }
+                    application_window.send_to_inject (guid);
                 });
                 item_inject.show ();
                 menu.append (item_inject);
 
                 var open_browser_inject = new Gtk.MenuItem.with_label ("Open in Browser");
                 open_browser_inject.activate.connect ( () => {
-                    var guid = get_selected_guid ();
-                    var url = get_selected_field (Column.URL);
-                    if (guid != "" && url != "") {
-                        try {
-                            AppInfo.launch_default_for_uri (url, null);
-                        } catch (Error err) {
-                            stdout.printf ("Could not launch browser: %s\n", err.message);
-                        }
+                    var urls = get_selected_fields (Column.URL);
+                    if (urls.length != 1 || urls[0] == "") {
+                        return;
+                    }
+
+                    var url = urls[0];
+                    try {
+                        AppInfo.launch_default_for_uri (url, null);
+                    } catch (Error err) {
+                        stdout.printf ("Could not launch browser: %s\n", err.message);
                     }
                 });
                 open_browser_inject.show ();
@@ -612,6 +631,37 @@ namespace Proximity {
             this.exclude_resources = exclude_resources;
             this.search_protocol = protocol;
             get_requests ();
+        }
+
+        private void on_selection_changed (Gtk.TreeSelection selection) {
+            if(updating) {
+                return;
+            }
+
+            var guids = get_selected_guids ();
+            
+            if (guids.length == 0) {
+                return;
+            }
+            
+            if (guids.length == 1 && guids[0] != "") {
+                var guid = guids[0];
+
+                var pos = this.position;
+                request_details.set_request (guid);
+                this.position = pos;
+                
+                request_selected (guid);
+                request_details.show ();
+                request_compare.hide ();
+            }
+            else {
+                request_compare.compare_requests (guids[0], guids[1]);
+                request_details.guid = "";
+
+                request_compare.show ();
+                request_details.hide ();
+            }
         }
 
         private string payloads_to_string (string str) {
@@ -700,6 +750,8 @@ namespace Proximity {
         public void reset_state () {
             get_requests ();
             request_details.reset_state ();
+            request_compare.hide ();
+            request_details.hide ();
         }
 
         private void scroll_to_bottom () {

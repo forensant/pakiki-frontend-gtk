@@ -24,14 +24,12 @@ namespace Proximity {
         private unowned Gtk.TreeView treeview_websocket_packets;
         [GtkChild]
         private unowned Gtk.Viewport viewport_out_of_band_interaction;
-        [GtkChild]
-        private WebKit.WebView webkit_preview;
-        
 
         private ApplicationWindow application_window;
         public string guid;
         private Gee.HashMap<string, string> modified_websocket_data;
         private OutOfBandDisplay out_of_band_display;
+        private RequestPreview request_preview;
         private string url;
 
         private RequestTextView text_view_orig_request;
@@ -83,9 +81,10 @@ namespace Proximity {
 
             set_send_to_popup ();
             scroll_window_original_text.hide ();
-            webkit_preview.hide ();
 
-            webkit_preview.decide_policy.connect (on_link_clicked);
+            request_preview = new RequestPreview (application_window);
+            this.append_page (request_preview, new Gtk.Label.with_mnemonic ("_Preview"));
+            request_preview.hide ();
 
             out_of_band_display = new OutOfBandDisplay (application_window);
             scroll_window_out_of_band_interaction.add (out_of_band_display);
@@ -133,23 +132,6 @@ namespace Proximity {
 
         ~RequestDetails () {
             ended = true;
-        }
-
-        private bool on_link_clicked (PolicyDecision policy_decision, PolicyDecisionType type) {
-            if (type != WebKit.PolicyDecisionType.NAVIGATION_ACTION) {
-                return false;
-            }
-
-            var decision = (NavigationPolicyDecision)policy_decision;
-            var navigation_type = decision.get_navigation_action ().get_navigation_type ();
-
-            if (navigation_type == WebKit.NavigationType.OTHER) {
-                return false;
-            }
-
-            // ignore form submissions, link clicks, etc.
-            decision.ignore ();
-            return true;
         }
 
         private void on_websocket_packet_selected () {
@@ -229,12 +211,13 @@ namespace Proximity {
                 if (large_response) {
                     text_view_request.set_large_request (guid, combined_content_length);
                     text_view_orig_request.set_request_response (original_request, "Response too large to display".data);
-                    webkit_preview.hide ();
+                    request_preview.hide ();
                 }
                 else {
                     text_view_request.set_request_response (modified_request, modified_response);
                     text_view_orig_request.set_request_response (original_request, original_response);
-                    set_webview (modified_response, mimetype, url);
+                    var data_load_success = request_preview.set_content (modified_response, mimetype, url);
+                    request_preview.visible = data_load_success;
                 }
                 
             } else {
@@ -242,11 +225,12 @@ namespace Proximity {
 
                 if (large_response) {
                     text_view_request.set_large_request (guid, combined_content_length);
-                    webkit_preview.hide ();
+                    request_preview.hide ();
                 }
                 else {
                     text_view_request.set_request_response (original_request, original_response);
-                    set_webview (original_response, mimetype, url);
+                    var data_load_success = request_preview.set_content (original_response, mimetype, url);
+                    request_preview.visible = data_load_success;
                 }
             }
         }
@@ -377,7 +361,7 @@ namespace Proximity {
         private void set_controls_visible (bool http, bool websocket, bool out_of_band) {
             scroll_window_text.visible = http;
             scroll_window_original_text.visible = http;
-            webkit_preview.visible = http;
+            request_preview.visible = http;
             pane_websocket.visible = websocket;
             viewport_out_of_band_interaction.visible = out_of_band;
 
@@ -425,37 +409,6 @@ namespace Proximity {
             button_send_to.set_popup (menu);
         }
 
-        private void set_webview (uchar[] bytes, string mimetype, string url) {
-            if ( mimetype.index_of ("application/") == 0) {
-                webkit_preview.hide ();
-                return;
-            }
-
-            var proxy_settings = new WebKit.NetworkProxySettings ("http://" + application_window.preview_proxy_address + "/", null);
-            var web_context = webkit_preview.get_context ();
-            web_context.clear_cache ();
-            web_context.set_tls_errors_policy (WebKit.TLSErrorsPolicy.IGNORE);
-            web_context.set_network_proxy_settings (WebKit.NetworkProxyMode.CUSTOM, proxy_settings);
-
-            var bytes_str = (string)bytes;
-            var end_of_headers = bytes_str.index_of ("\r\n\r\n");
-
-            if (end_of_headers == -1) {
-                webkit_preview.hide ();
-                return;
-            }
-
-            GLib.Bytes body = new GLib.Bytes (bytes[end_of_headers + 4:bytes.length - 1]);
-
-            if (body.length == 0) {
-                webkit_preview.hide ();
-                return;
-            }
-
-            webkit_preview.show ();
-            webkit_preview.load_bytes (body, mimetype, null, url);
-        }
-
         public void update_content_length (int64 combined_content_length) {
             text_view_request.set_large_request (guid, combined_content_length);
         }
@@ -465,10 +418,10 @@ namespace Proximity {
             text_view_request.reset_state ();
             text_view_orig_request.reset_state ();
             text_view_websocket_request.reset_state ();
-            webkit_preview.load_uri ("about:blank");
+            request_preview.load_uri ("about:blank");
             liststore_websocket_packets.clear ();
             scroll_window_original_text.hide ();
-            webkit_preview.hide ();
+            request_preview.hide ();
             pane_websocket.hide ();
             viewport_out_of_band_interaction.hide ();
             this.page = 0;
