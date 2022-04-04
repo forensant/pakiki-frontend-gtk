@@ -46,8 +46,34 @@ namespace Proximity {
             return true;
         }
 
+        public void insert (uint64 at, uint8[] data) {
+            Array<uint8> new_buffer = new Array<uint8> (false);
+            new_buffer.append_vals (buffer[0:at], (uint)at);
+            new_buffer.append_vals (data, data.length);
+            new_buffer.append_vals (buffer[at:buffer.length], (uint)(buffer.length - at));
+
+            this.buffer = (owned) new_buffer.data;
+            length_changed ();
+        }
+
         public uint64 length () {
             return buffer.length;
+        }
+
+        public bool pos_in_headers (uint64 pos) {
+            var str = (string)data;
+            return str.index_of ("\x0a\x0d\x0a\x0d") > pos;
+        }
+
+        public void remove (uint64 from, uint64 to) {
+            Array<uint8> new_buffer = new Array<uint8> (false);
+            if (from != 0) {
+                new_buffer.append_vals (buffer[0:from], (uint)from);
+            }
+            new_buffer.append_vals (buffer[to + 1:buffer.length], (uint)(buffer.length - to - 1));
+
+            this.buffer = (owned) new_buffer.data;
+            length_changed ();
         }
     }
 }
