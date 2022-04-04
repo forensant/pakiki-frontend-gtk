@@ -274,7 +274,7 @@ namespace Proximity {
         }
 
         private void populate_payloads () {
-            var message = new Soup.Message ("PUT", "http://" + application_window.core_address + "/inject_operations/payloads");
+            var message = new Soup.Message ("GET", "http://" + application_window.core_address + "/inject_operations/payloads");
 
             application_window.http_session.queue_message (message, (sess, mess) => {
                 if (mess.status_code != 200) {
@@ -315,6 +315,7 @@ namespace Proximity {
             liststore_custom_files.clear ();
             entry_from.text = "0";
             entry_to.text = "0";
+            populate_payloads ();
         }
 
         private void set_fuzzdb_child_status (Gtk.TreeIter iter, string value_to_set) {

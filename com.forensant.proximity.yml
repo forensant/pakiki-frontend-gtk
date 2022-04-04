@@ -45,12 +45,12 @@ modules:
       - ls -lah
       - cp -r lib /app/bin/python39/
       # if testing locally, use this instead:
-      #- cp -r python39 /app/bin/
+#      - cp -r python39 /app/bin/
     sources:
 #manual_ifdef production
       - type: archive
-        url: https://github.com/pipeline/proximity-core/releases/download/v0.4-alpha/ProximityCore-Linux.zip
-        sha256: a56bd7e0ee2312d049af9b396fa65ac9dbe29d1a3f1b6edbdcb876d20d17c178
+        url: https://github.com/pipeline/proximity-core/releases/download/v0.6-alpha/ProximityCore-Linux.zip
+        sha256: a5c3d3c517695f71b48c9685d883f1ef7108f524c34ffa441654dbd59142f32c
 #manual_ifdef local
 #      - type: dir
-#        path: /home/user/Coding/proximity-core/build/
+#        path: /home/parallels/Coding/proximity-core/build/
