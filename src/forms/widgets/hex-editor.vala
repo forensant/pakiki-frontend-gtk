@@ -2,12 +2,6 @@ namespace Proximity {
 
     public class HexEditor : Gtk.DrawingArea, Gtk.Scrollable {
 
-        // Phase 2 - editing:
-        //   1. [ ] Typing in input (and updating the buffer)
-        //   2. [ ] Undo/redo
-        //   3. [ ] Copy/paste
-        //   4. [ ] Selection with keyboard shortcuts (including page up/page down)
-
         const int OFFSET_CHARACTERS = 8;
         const int PADDING_BETWEEN_SECTIONS = 32;
         const int TOP_BORDER = 6;
@@ -380,240 +374,6 @@ namespace Proximity {
             return render_selection (cr, x_offset, buffers[0].str, buffers[1].str, buffers[2].str, insertion_offset);
         }
 
-        /*private int draw_ascii_lines (Cairo.Context cr, int64 line_from, int64 line_to, int x_offset) {
-            // TODO: This works basically the same as draw_hex_lines, so we can probably use function pointers to extract out the commonalities
-            // TODO: Extract out
-            var style = get_style_context ();
-            style.add_class ("hex-background");
-            var ascii_width = get_char_width () * 17; // 1 extra for the space in the middle
-            style.render_background (cr, x_offset - 6, 0, ascii_width + 12, get_allocated_height ());
-            style.remove_class ("hex-background");
-            
-            // this works the same way as the draw_hex_lines function
-            StringBuilder[] buffers = new StringBuilder[3];
-            buffers[0] = new StringBuilder ();
-            buffers[1] = new StringBuilder ();
-            buffers[2] = new StringBuilder ();
-
-            var insertion_offset = -1;
-
-            var start_idx = selection_start_charidx;
-            var end_idx = selection_end_charidx;
-            if (start_idx > end_idx) {
-                var tmp = start_idx;
-                start_idx = end_idx;
-                end_idx = tmp;
-            }
-
-            var from = line_from * 16;
-            var bytes = buffer.data (from, line_to * 16);
-
-            var start_of_selection = -1;
-            var length = 0;
-
-            for (var i = 0; i < bytes.length; i++) {
-                var hex_char = bytes[i];
-                if (hex_char < 32 || hex_char > 126) {
-                    hex_char = '.';
-                }
-
-                var formatted_string = "%c".printf (hex_char);
-
-                var blank_string = " ";
-                var end_selection = (((i + from) == end_idx) && selecting);
-
-                if (selecting && (i + from + 1) == buffer.length () && end_idx >= buffer.length () && start_of_selection != -1) {
-                    end_selection = true;
-                }
-                
-                if (i % 16 == 15) {
-                    formatted_string += "\n";
-                    blank_string = " \n";
-                    if (start_of_selection != -1 && selecting) {
-                        end_selection = true;
-                    }
-                } else if (i % 8 == 7) {
-                    formatted_string += " ";
-                    blank_string = "  ";
-                }
-
-                if ((from + i) == start_idx) {
-                    start_of_selection = i % 16;
-                }
-                if (start_of_selection == -1 && i % 16 == 0 && (from + i) >= start_idx && (from + i) <= end_idx) {
-                    start_of_selection = i % 16;
-                }
-                
-                // draw the background for selected text
-                if (end_selection) {
-                    var x = get_char_ascii_x_offset (start_of_selection, x_offset, false);
-                    var y = ((i / 16) * get_line_height ()) + TOP_BORDER;
-                    var rect = Gdk.Rectangle() {
-                        x = x,
-                        y = y,
-                        width = get_char_ascii_x_offset ((i % 16) + 1, x_offset, true) - x,
-                        height = (((i/16)+1) * get_line_height ())-y + TOP_BORDER
-                    };
-
-                    style.add_class ("hex-selected");
-                    style.render_background (cr, rect.x, rect.y, rect.width, rect.height);
-                    style.remove_class ("hex-selected");
-                    
-                    start_of_selection = -1;
-                }
-
-                if (i + from == start_idx) {
-                    insertion_offset = length;
-                }
-
-                var total_length = buffer.length ();
-                if (i + from == total_length - 1 && start_idx >= total_length) {
-                    insertion_offset = length + 1;
-                }
-
-                length += formatted_string.length;
-                
-                if ((i + from) < start_idx) {
-                    // before selection
-                    buffers[0].append (formatted_string);
-                    buffers[1].append (blank_string);
-                    buffers[2].append (blank_string);
-                } else if ((i + from) >= start_idx && (i + from) <= end_idx && selecting) {
-                    // during selection
-                    buffers[0].append (blank_string);
-                    buffers[1].append (formatted_string);
-                    buffers[2].append (blank_string);
-                } else {
-                    // after selection
-                    buffers[0].append (blank_string);
-                    buffers[1].append (blank_string);
-                    buffers[2].append (formatted_string);
-                }
-            }
-
-            if (insertion_area != Area.ASCII) {
-                insertion_offset = -1;
-            }
-
-            return render_selection (cr, x_offset, buffers[0].str, buffers[1].str, buffers[2].str, insertion_offset);
-        }*/
-
-        /*private int draw_hex_lines (Cairo.Context cr, int64 line_from, int64 line_to, int x_offset) {
-            // there are 3 different buffers, one before selection, one during selection, one after selection
-            // then all three are rendered on top of each other
-
-            // 0 represents before the selection
-            // 1 represents during the selection
-            // 2 represents after the selection
-            StringBuilder[] buffers = new StringBuilder[3];
-            buffers[0] = new StringBuilder ();
-            buffers[1] = new StringBuilder ();
-            buffers[2] = new StringBuilder ();
-
-            var insertion_offset = -1;
-
-            var start_idx = selection_start_charidx;
-            var end_idx = selection_end_charidx;
-            if (start_idx > end_idx) {
-                var tmp = start_idx;
-                start_idx = end_idx;
-                end_idx = tmp;
-            }
-
-            var from = line_from * 16;
-            var bytes = buffer.data (from, line_to * 16);
-
-            var style = this.get_style_context ();
-            var start_of_selection = -1;
-            int length = -1;
-
-            for (var i = 0; i < bytes.length; i++) {
-                var formatted_string = "%02x".printf (bytes[i]);
-                var blank_string = "   ";
-
-                var end_selection = (((i + from) == end_idx || i + from == buffer.length () - 1) && selecting);
-
-                if (selecting && (i + from + 1) == buffer.length () && end_idx >= buffer.length () && start_of_selection != -1) {
-                    end_selection = true;
-                }
-                                
-                if (i % 16 == 15) {
-                    formatted_string += "\n";
-                    blank_string = "  \n";
-                    if (start_of_selection != -1 && selecting) {
-                        end_selection = true;
-                    }
-                } else if (i % 8 == 7) {
-                    formatted_string += "   ";
-                    blank_string = "     ";
-                } else {
-                    formatted_string += " ";
-                }
-
-                if ((from + i) == start_idx) {
-                    start_of_selection = i % 16;
-                }
-                if (start_of_selection == -1 && i % 16 == 0 && (from + i) >= start_idx && (from + i) <= end_idx) {
-                    start_of_selection = i % 16;
-                }
-                
-                // draw the background for selected text
-                if (end_selection) {
-                    var x = get_char_hex_x_offset (start_of_selection, x_offset, false);
-                    var y = ((i / 16) * get_line_height ()) + TOP_BORDER;
-                    var rect = Gdk.Rectangle() {
-                        x = x,
-                        y = y,
-                        width = get_char_hex_x_offset ((i % 16) + 1, x_offset, true) - x,
-                        height = (((i/16)+1) * get_line_height ())-y+ TOP_BORDER
-                    };
-
-                    style.add_class ("hex-selected");
-                    style.render_background (cr, rect.x, rect.y, rect.width, rect.height);
-                    style.remove_class ("hex-selected");
-                    
-                    start_of_selection = -1;
-                }
-
-                if (i + from == start_idx) {
-                    insertion_offset = length + 1;
-                    if (half_selection) {
-                        insertion_offset++;
-                    }
-                }
-
-                var total_length = buffer.length ();
-                if (i + from == total_length - 1 && start_idx >= total_length) {
-                    insertion_offset = length + 1;
-                }
-
-                length += formatted_string.length;
-                
-                if ((i + from) < start_idx) {
-                    // before selection
-                    buffers[0].append (formatted_string);
-                    buffers[1].append (blank_string);
-                    buffers[2].append (blank_string);
-                } else if ((i + from) >= start_idx && (i + from) <= end_idx && start_idx != end_idx) {
-                    // during selection
-                    buffers[0].append (blank_string);
-                    buffers[1].append (formatted_string);
-                    buffers[2].append (blank_string);
-                } else {
-                    // after selection
-                    buffers[0].append (blank_string);
-                    buffers[1].append (blank_string);
-                    buffers[2].append (formatted_string);
-                }
-            }
-
-            if (insertion_area != Area.HEX) {
-                insertion_offset = -1;
-            }
-
-            return render_selection (cr, x_offset, buffers[0].str, buffers[1].str, buffers[2].str, insertion_offset);
-        }*/
-
         private Area get_area_at_position (int x, int y) {
             var char_width = get_char_width ();
             var start_of_hex_chars = (char_width * OFFSET_CHARACTERS) + PADDING_BETWEEN_SECTIONS + 6; // 6 for the initial spacing
@@ -800,7 +560,7 @@ namespace Proximity {
         private void handle_cut () {
             // TODO: Only if not read-only
             handle_copy (insertion_area);
-            // TODO: delete the selected text
+            remove_selected_text (true);
         }
 
         private void handle_paste () {
@@ -809,27 +569,35 @@ namespace Proximity {
             var clipboard = Gtk.Clipboard.get_default (display);
             var text = clipboard.wait_for_text ();
             
+            if (selecting) {
+                remove_selected_text (true);
+            }
+            
+            uint8[] data_to_insert = new uint8[0];
             if (/^[A-F0-9\s]*$/i.match (text)) {
+                // if it's a hex string, let's parse that into bytes
                 try {
                     text = /\s/.replace (text, text.length, 0, "", 0);
                 } catch {}
 
-                for (int i = 0; i < text.length; i += 2) {
-                    // TODO: 
-                    /*var hex_char = text.substr (i, 2);
-                    var byte_val = Convert.ToByte (hex_char, 16);
-                    buffer.insert (buffer.get_iter_at_offset (selection_end_charidx), byte_val);*/
+                if (text.length % 2 == 1) {
+                    text = text + "0";
                 }
-                stdout.printf("Hex string: %s\n", text);
-            }
-            else if (text.is_ascii ()) {
-                stdout.printf("Ascii string: %s\n", text);
+
+                for (int i = 0; i < text.length; i += 2) {
+                    int b;
+                    var success = int.try_parse (text.substring (i, 2), out b, null, 16);
+                    if (success) {
+                        data_to_insert += (uint8)b;
+                    }
+                }
             }
             else {
-                stdout.printf("Non-Ascii String: %s, length: %d\n", text, text.data.length);
-            
+                data_to_insert = text.data;
             }
-            //clipboard.set_text (selected_text, selected_text.length);
+
+            buffer.insert (selection_start_charidx, data_to_insert);
+            selection_start_charidx = selection_end_charidx = selection_start_charidx + data_to_insert.length;
         }
 
         public int lines_per_page () {
@@ -900,6 +668,26 @@ namespace Proximity {
                         selecting = true;
                     }
                     selection_end_charidx = (int64)buffer.length () - 1;
+                } else if (evt.keyval == Gdk.Key.Page_Up) {
+                    if (!selecting) {
+                        selecting = true;
+                    }
+                    var val = vadjustment.value - vadjustment.page_size;
+                    if (val < 0) {
+                        val = 0;
+                    }
+                    vadjustment.value = val;
+                    selection_end_charidx -= (lines_per_page () * 16);
+                } else if (evt.keyval == Gdk.Key.Page_Down) {
+                    if (!selecting) {
+                        selecting = true;
+                    }
+                    var val = vadjustment.value + vadjustment.page_size;
+                    if (val > vadjustment.upper) {
+                        val = vadjustment.upper;
+                    }
+                    vadjustment.value = val;
+                    selection_end_charidx += lines_per_page () * 16;
                 } else {
                     found = false;
                 }
@@ -938,8 +726,18 @@ namespace Proximity {
                         var max = int64.max (selection_start_charidx, selection_end_charidx);
                         selection_end_charidx = selection_start_charidx = max;
                     }
-                //} else if (evt.keyval == Gdk.Key.Page_Up) {
-                //} else if (evt.keyval == Gdk.Key.Page_Down) {
+                } else if (evt.keyval == Gdk.Key.Page_Up) {
+                    var val = vadjustment.value - vadjustment.page_size;
+                    if (val < 0) {
+                        val = 0;
+                    }
+                    vadjustment.value = val;
+                } else if (evt.keyval == Gdk.Key.Page_Down) {
+                    var val = vadjustment.value + vadjustment.page_size;
+                    if (val > vadjustment.upper) {
+                        val = vadjustment.upper;
+                    }
+                    vadjustment.value = val;
                 } else if (evt.keyval == Gdk.Key.Home) {
                     selection_start_charidx = selection_end_charidx = 0;
                     if (selecting) {
@@ -960,8 +758,14 @@ namespace Proximity {
             if (selection_start_charidx < 0) {
                 selection_start_charidx = 0;
             }
+            if (selection_end_charidx < 0) {
+                selection_end_charidx = 0;
+            }
             if (selection_end_charidx >= buffer.length ()) {
                 selection_end_charidx = (int64)buffer.length ();
+            }
+            if (selection_start_charidx >= buffer.length ()) {
+                selection_start_charidx = (int64)buffer.length ();
             }
 
             if (found) {
@@ -1006,8 +810,7 @@ namespace Proximity {
                     }
 
                     if (selecting) {   
-                        buffer.remove (selection_from, selection_to);
-                        selecting = false;
+                        remove_selected_text ();
                     }
 
                     buffer.insert (selection_from, bytes);
@@ -1033,13 +836,37 @@ namespace Proximity {
                 }
 
                 if (evt.keyval == Gdk.Key.Delete) {
-                    buffer.remove (selection_from, selection_to);
+                    remove_selected_text ();
                     selection_end_charidx = selection_start_charidx = selection_from;
-                    selecting = false;
                 }
             }
 
             return false;
+        }
+
+        private void remove_selected_text (bool swap = false) {
+            // swap should be used if this should perminantely swap the selectio if they're "back to front"
+            if (swap && selection_start_charidx > selection_end_charidx) {
+                var tmp = selection_start_charidx;
+                selection_start_charidx = selection_end_charidx;
+                selection_end_charidx = tmp;
+            }
+            
+            var selection_from = selection_start_charidx;
+            var selection_to = selection_end_charidx;
+            if (selection_from > selection_to) {
+                var tmp = selection_from;
+                selection_from = selection_to;
+                selection_to = tmp;
+            }
+
+            if (selection_from == selection_to) {
+                selecting = false;
+                return;
+            }
+            
+            buffer.remove (selection_from, selection_to);
+            selecting = false;
         }
 
         private int render_selection (Cairo.Context cr, int x_offset, string before_selection, string selection, string after_selection, int selection_offset) {
@@ -1118,12 +945,28 @@ namespace Proximity {
 
             var selected_text = get_selected_text (area);
 
+            // TODO: if not read only
+            var cut_item = new Gtk.MenuItem.with_label ("Cut");
+            cut_item.activate.connect ( () => {
+                handle_cut ();
+            });
+            cut_item.show ();
+            menu.append (cut_item);
+
             var copy_item = new Gtk.MenuItem.with_label ("Copy");
             copy_item.activate.connect ( () => {
                 handle_copy (area);
             });
             copy_item.show ();
             menu.append (copy_item);
+
+            // TODO: if not read only
+            var paste_item = new Gtk.MenuItem.with_label ("Paste");
+            paste_item.activate.connect ( () => {
+                handle_paste ();
+            });
+            paste_item.show ();
+            menu.append (paste_item);
 
             var separator = new Gtk.SeparatorMenuItem ();
             separator.show ();
@@ -1142,7 +985,6 @@ namespace Proximity {
             menu_item.show ();
             menu.append (menu_item);
 
-            stdout.printf("Popping menu\n");
             menu.popup_at_pointer (evt);
         }
     }
