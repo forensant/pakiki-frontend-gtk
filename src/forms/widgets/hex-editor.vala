@@ -369,6 +369,8 @@ namespace Proximity {
 
             if (insertion_area != area) {
                 insertion_offset = -1;
+            } else if (area == Area.HEX && half_selection) {
+                insertion_offset++;
             }
 
             return render_selection (cr, x_offset, buffers[0].str, buffers[1].str, buffers[2].str, insertion_offset);
@@ -637,12 +639,21 @@ namespace Proximity {
                 if (evt.keyval == Gdk.Key.Left) {
                     if (!selecting) {
                         selecting = true;
+                        
+                        if (half_selection && insertion_area == Area.HEX) {
+                            half_selection = false;
+                            queue_draw ();
+                            return true;
+                        }
+                        
+                        half_selection = false;
                         selection_start_charidx--;
                     }
                     selection_end_charidx--;
                 } else if (evt.keyval == Gdk.Key.Right) {
                     if (!selecting) {
                         selecting = true;
+                        half_selection = false;
                     }
                     else {
                         selection_end_charidx++;
@@ -650,27 +661,34 @@ namespace Proximity {
                 } else if (evt.keyval == Gdk.Key.Up) {
                     if (!selecting) {
                         selecting = true;
+                        half_selection = false;
                     }
                     selection_end_charidx -= 16;
                 } else if (evt.keyval == Gdk.Key.Down) {
                     if (!selecting) {
                         selecting = true;
+                        half_selection = false;
                     }
                     selection_end_charidx += 16;
                 } else if (evt.keyval == Gdk.Key.Home) {
                     if (!selecting) {
                         selecting = true;
+                        half_selection = false;
                     }
                     selection_end_charidx = 0;
                     selection_start_charidx--;
+                    vadjustment.value = vadjustment.lower;
                 } else if (evt.keyval == Gdk.Key.End) {
                     if (!selecting) {
                         selecting = true;
+                        half_selection = false;
                     }
                     selection_end_charidx = (int64)buffer.length () - 1;
+                    vadjustment.value = vadjustment.upper;
                 } else if (evt.keyval == Gdk.Key.Page_Up) {
                     if (!selecting) {
                         selecting = true;
+                        half_selection = false;
                     }
                     var val = vadjustment.value - vadjustment.page_size;
                     if (val < 0) {
@@ -681,6 +699,7 @@ namespace Proximity {
                 } else if (evt.keyval == Gdk.Key.Page_Down) {
                     if (!selecting) {
                         selecting = true;
+                        half_selection = false;
                     }
                     var val = vadjustment.value + vadjustment.page_size;
                     if (val > vadjustment.upper) {
@@ -694,17 +713,46 @@ namespace Proximity {
             }
             else {
                 if (evt.keyval == Gdk.Key.Left) {
-                    selection_start_charidx--;
-                    selection_end_charidx--;
+                    if (insertion_area == Area.HEX) {
+                        if (selection_start_charidx == 0 && !half_selection) {
+                            return true;
+                        }
 
+                        if (!half_selection) {
+                            selection_start_charidx--;
+                            selection_end_charidx--;
+                        }
+
+                        half_selection = !half_selection;
+                    } else {
+                        // ascii
+                        selection_start_charidx--;
+                        selection_end_charidx--;
+                    }
+                    
                     if (selecting) {
                         selecting = false;
                         var min = int64.min (selection_start_charidx, selection_end_charidx);
                         selection_end_charidx = selection_start_charidx = min;
                     }
                 } else if (evt.keyval == Gdk.Key.Right) {
-                    selection_start_charidx++;
-                    selection_end_charidx++;
+                    if (insertion_area == Area.HEX) {
+                        if (selection_start_charidx == buffer.length ()) {
+                            return true;
+                        }
+
+                        if (half_selection) {
+                            selection_start_charidx++;
+                            selection_end_charidx++;
+                        }
+
+                        half_selection = !half_selection;
+                    } else {
+                        // ascii
+                        selection_start_charidx++;
+                        selection_end_charidx++;
+                    }
+
                     if (selecting) {
                         selecting = false;
                         var max = int64.max (selection_start_charidx, selection_end_charidx);
@@ -743,6 +791,7 @@ namespace Proximity {
                     if (selecting) {
                         selecting = false;
                     }
+                    vadjustment.value = vadjustment.lower;
                 } else if (evt.keyval == Gdk.Key.End) {
                     var len = (int64)buffer.length ();
                     len--;
@@ -750,6 +799,7 @@ namespace Proximity {
                     if (selecting) {
                         selecting = false;
                     }
+                    vadjustment.value = vadjustment.upper;
                 } else {
                     found = false;
                 }
@@ -773,29 +823,91 @@ namespace Proximity {
                 return true;
             }
 
-            /*if (insertion_area == Area.HEX) {
-                if ((evt.keyval >= Gdk.Key.KP_0 && evt.keyval <= Gdk.Key.KP_9) || 
+            // TODO: Ignore insert if read only
+
+            var selection_from = selection_start_charidx;
+            var selection_to = selection_end_charidx;
+            if (selection_from > selection_to) {
+                var tmp = selection_from;
+                selection_from = selection_to;
+                selection_to = tmp;
+            }
+
+            if (insertion_area != Area.NONE) {
+                if (evt.keyval == Gdk.Key.BackSpace) {
+                    if (!selecting) {
+                        selection_from--;
+                        if (selection_from < 0) {
+                            selection_from = 0;
+                        }
+
+                        selection_to--;
+                        if (selection_to < 0) {
+                            selection_to = 0;
+                        }
+                    }
+                    buffer.remove (selection_from, selection_to);
+                    selection_end_charidx = selection_start_charidx = selection_from;
+                    half_selection = false;
+                    selecting = false;
+                }
+
+                if (evt.keyval == Gdk.Key.Delete) {
+                    if (selecting) {
+                        remove_selected_text ();
+                    }
+                    else {
+                        buffer.remove (selection_from, selection_to);
+                    }
+                    half_selection = false;
+                    selection_end_charidx = selection_start_charidx = selection_from;
+                }
+            }
+
+            if (insertion_area == Area.HEX) {
+                if ((evt.keyval >= '0' && evt.keyval <= '9') || 
                     (evt.keyval >= 'A' && evt.keyval <= 'F') ||
                     (evt.keyval >= 'a' && evt.keyval <= 'f')) {
-                    
-                    if (half_selection) {
-                        //...
-                    }
-                    var val = (int)(evt.keyval - Gdk.Key.KP_0);
-                    insert_byte (val);
-                    return true;
+
+                        if (selecting) {
+                            remove_selected_text ();
+                        }
+
+                        string to_insert = "";
+
+                        if (half_selection) {
+                            to_insert = "%02x".printf (buffer.byte_at (selection_from));
+                            to_insert = to_insert[0].to_string () + evt.keyval.to_string ("%c");
+                        }
+                        else {
+                            to_insert = evt.keyval.to_string ("%c") + "0";
+                        }
+
+                        int b;
+                        var success = int.try_parse (to_insert, out b, null, 16);
+                        if (!success) {
+                            return true;
+                        }
+
+                        var bytes = new uint8 [] {
+                            (uint8)b
+                        };
+
+                        if (half_selection) {
+                            buffer.replace_byte (selection_from, (uint8)b);
+                            half_selection = false;
+                            selection_end_charidx = selection_start_charidx = (selection_from + 1);
+                        }
+                        else {
+                            buffer.insert (selection_from, bytes);
+                            half_selection = true;
+                        }
+
+                        return true;
                 }
-            }*/
+            }
 
             if (insertion_area == Area.ASCII) {
-                var selection_from = selection_start_charidx;
-                var selection_to = selection_end_charidx;
-                if (selection_from > selection_to) {
-                    var tmp = selection_from;
-                    selection_from = selection_to;
-                    selection_to = tmp;
-                }
-
                 // regular ASCII characters
                 if ((evt.keyval >= 32 && evt.keyval <= 126) || evt.keyval == Gdk.Key.KP_Enter || evt.keyval == Gdk.Key.Return) {
                     uint8[] bytes = {(uint8)evt.keyval};
@@ -816,28 +928,6 @@ namespace Proximity {
                     buffer.insert (selection_from, bytes);
                     selection_end_charidx = selection_start_charidx = (selection_from + (int64)bytes.length);
                     return true;
-                }
-
-                if (evt.keyval == Gdk.Key.BackSpace) {
-                    if (!selecting) {
-                        selection_from--;
-                        if (selection_from < 0) {
-                            selection_from = 0;
-                        }
-
-                        selection_to--;
-                        if (selection_to < 0) {
-                            selection_to = 0;
-                        }
-                    }
-                    buffer.remove (selection_from, selection_to);
-                    selection_end_charidx = selection_start_charidx = selection_from;
-                    selecting = false;
-                }
-
-                if (evt.keyval == Gdk.Key.Delete) {
-                    remove_selected_text ();
-                    selection_end_charidx = selection_start_charidx = selection_from;
                 }
             }
 
@@ -913,6 +1003,7 @@ namespace Proximity {
             }
 
             selecting = true;
+            half_selection = false;
 
             selection_start_charidx = start_chr;
             selection_end_charidx = end_chr;

@@ -27,6 +27,15 @@ namespace Proximity {
                 print ("Error: %s\n", e.message);
             }
         }
+
+        public uint8 byte_at (uint64 offset) {
+            if (offset >= buffer.length) {
+                return '0';
+            }
+            else {
+                return buffer[offset];
+            }
+        }
         
         public uint8[] data (uint64 from, uint64 to) {
             if (to > buffer.length) {
@@ -74,6 +83,14 @@ namespace Proximity {
 
             this.buffer = (owned) new_buffer.data;
             length_changed ();
+        }
+
+        public void replace_byte (uint64 pos, uint8 byte) {
+            if (pos >= buffer.length) {
+                return;
+            }
+            buffer[pos] = byte;
+            length_changed (); // not technically, but will force a refresh
         }
     }
 }
