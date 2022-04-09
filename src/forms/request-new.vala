@@ -14,11 +14,14 @@ namespace Proximity {
         [GtkChild]
         private unowned Gtk.Label label_request;
         [GtkChild]
+        private unowned Gtk.ScrolledWindow scrolled_window_hex_editor;
+        [GtkChild]
         private unowned Gtk.ScrolledWindow scrolled_window_text_view_request;
         [GtkChild]
         private unowned Gtk.Spinner spinner;
 
         private ApplicationWindow application_window;
+        private HexEditor hex_editor;
         private RequestDetails request_details;
         private RequestTextEditor request_text_editor;
 
@@ -28,6 +31,10 @@ namespace Proximity {
             combobox_protocol.pack_start (renderer_text, true);
             combobox_protocol.add_attribute (renderer_text, "text", 0);
             combobox_protocol.set_active (0);
+
+            hex_editor = new HexEditor ();
+            hex_editor.show ();
+            scrolled_window_hex_editor.add (hex_editor);
 
             request_text_editor = new RequestTextEditor (application_window);
             scrolled_window_text_view_request.add (request_text_editor);
@@ -81,7 +88,14 @@ namespace Proximity {
             builder.set_member_name ("ssl");
             builder.add_boolean_value (combobox_protocol.get_active() == 0);
             builder.set_member_name ("request");
-            builder.add_string_value (Base64.encode (request_text_editor.buffer.text.data));
+            if (scrolled_window_hex_editor.visible) {
+                var buffer = (HexStaticBuffer) hex_editor.buffer;
+                builder.add_string_value (Base64.encode (buffer.get_buffer ()));
+            }
+            else {
+                builder.add_string_value (Base64.encode (request_text_editor.buffer.text.data));
+            }
+            
             builder.end_object ();
 
             Json.Generator generator = new Json.Generator ();
@@ -131,11 +145,27 @@ namespace Proximity {
 
                     var rootObj = parser.get_root().get_object();
 
-                    var requestData = (string) Base64.decode (rootObj.get_string_member ("RequestData"));
+                    var raw_request_data = Base64.decode (rootObj.get_string_member ("RequestData"));
+                    var req_data_str = (string) raw_request_data;
+
+                    if (req_data_str.validate (raw_request_data.length - 1, null)) {
+                        scrolled_window_text_view_request.visible = true;
+                        scrolled_window_hex_editor.visible = false;
+                        request_text_editor.buffer.set_text (req_data_str);
+                        label_request.mnemonic_widget = request_text_editor;
+                    }
+                    else {
+                        scrolled_window_text_view_request.visible = false;
+                        scrolled_window_hex_editor.visible = true;
+                        var buf = new HexStaticBuffer.from_bytes (raw_request_data);
+                        buf.set_read_only (false);
+                        hex_editor.buffer = buf;
+                        label_request.mnemonic_widget = hex_editor;
+                    }
 
                     entry_hostname.set_text (rootObj.get_string_member ("Hostname"));
                     combobox_protocol.set_active (rootObj.get_string_member ("Protocol") == "https://" ? 0 : 1);
-                    request_text_editor.buffer.set_text (requestData);
+                    
                     request_details.reset_state ();
                     
                 } catch (Error err) {
@@ -151,6 +181,10 @@ namespace Proximity {
             request_text_editor.buffer.set_text ("");
             label_error.visible = false;
             request_details.reset_state ();
+            hex_editor.buffer = new HexStaticBuffer.from_bytes (new uint8[0]);
+            scrolled_window_hex_editor.visible = false;
+            scrolled_window_text_view_request.visible = true;
+            label_request.mnemonic_widget = request_text_editor;
         }
     }
 }

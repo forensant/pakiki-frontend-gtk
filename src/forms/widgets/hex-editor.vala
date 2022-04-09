@@ -560,13 +560,19 @@ namespace Proximity {
         }
 
         private void handle_cut () {
-            // TODO: Only if not read-only
+            if (buffer.read_only ()) {
+                return;
+            }
+
             handle_copy (insertion_area);
             remove_selected_text (true);
         }
 
         private void handle_paste () {
-            // TODO: Only if not read-only
+            if (buffer.read_only ()) {
+                return;
+            }
+            
             var display = Gdk.Display.get_default ();
             var clipboard = Gtk.Clipboard.get_default (display);
             var text = clipboard.wait_for_text ();

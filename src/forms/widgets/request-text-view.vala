@@ -134,10 +134,10 @@ namespace Proximity {
             var str_request = (string)request;
             var str_response = (string)response;
 
-            if (str_response.make_valid () != str_response || str_request.make_valid () != str_request) {
-                set_hex_text (request, response);
-            } else {
+            if (str_response.validate (response.length - 1, null) && str_request.validate (request.length - 1, null)) {
                 set_text (str_request, str_response);
+            } else {
+                set_hex_text (request, response);
             }
         }
 

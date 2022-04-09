@@ -765,8 +765,10 @@ namespace Proximity {
         }
 
         public void set_url_filter (string url) {
-            this.url_filter = url;
-            this.get_requests ();
+            if (this.url_filter != url) {
+                this.url_filter = url;
+                this.get_requests ();
+            }
         }
 
         public void set_processed_launched (bool successful) {

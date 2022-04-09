@@ -243,7 +243,7 @@ namespace Proximity {
 
         private bool is_binary (uchar[] body) {
             var body_str = (string)body;
-            return body_str.make_valid () != body_str;
+            return !body_str.validate (body.length - 1, null);
         }
 
         public void on_back_clicked () {
@@ -320,6 +320,12 @@ namespace Proximity {
                     button_intercept_response.sensitive = false;
                 }
             });
+
+            if (selection_count == 0) {
+                scrolled_window_hex_request.hide ();
+                scrolled_window_text_request.show ();
+                text_view_request.buffer.text = "";
+            }
         }
 
         private void on_websocket_message (int type, Bytes message) {
