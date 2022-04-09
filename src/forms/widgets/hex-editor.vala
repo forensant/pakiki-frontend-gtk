@@ -200,7 +200,6 @@ namespace Proximity {
 
             style.render_layout (cr, 6, TOP_BORDER, line_no_layout);
 
-            //var hex_line_width = draw_hex_lines (cr, first_line, last_line, x_offset);
             var hex_line_width = draw_lines (cr, first_line, last_line, x_offset, Area.HEX, (b, pos) => {
                 var formatted_string = "%02x".printf (b);
                                 
@@ -218,8 +217,6 @@ namespace Proximity {
             style.add_class ("hex-border");
             style.render_background (cr, x_offset - 7, 0, 1, get_allocated_height ());
             style.remove_class ("hex-border");
-
-            //var ascii_line_width = draw_ascii_lines (cr, first_line, last_line, x_offset);
 
             style.add_class ("hex-background");
             var ascii_width = get_char_width () * 17; // 1 extra for the space in the middle
@@ -572,7 +569,7 @@ namespace Proximity {
             if (buffer.read_only ()) {
                 return;
             }
-            
+
             var display = Gdk.Display.get_default ();
             var clipboard = Gtk.Clipboard.get_default (display);
             var text = clipboard.wait_for_text ();
