@@ -411,6 +411,7 @@ namespace Proximity {
             application_window.http_session.websocket_connect_async.begin (wsmessage, "localhost", null, null, (obj, res) => {
                 try {
                     websocket = application_window.http_session.websocket_connect_async.end (res);
+                    websocket.max_incoming_payload_size = 0;
                     websocket.message.connect (on_websocket_message);
                 } catch (Error err) {
                     stdout.printf ("Error connecting to websocket %s, error message: %s\n", url, err.message);
@@ -764,8 +765,10 @@ namespace Proximity {
         }
 
         public void set_url_filter (string url) {
-            this.url_filter = url;
-            this.get_requests ();
+            if (this.url_filter != url) {
+                this.url_filter = url;
+                this.get_requests ();
+            }
         }
 
         public void set_processed_launched (bool successful) {

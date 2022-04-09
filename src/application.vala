@@ -136,7 +136,9 @@ namespace Proximity {
         }
 
         public override void shutdown () {
-            window.on_quit ();
+            if (window != null) {
+                window.on_quit ();
+            }
             base.shutdown ();
         }
 

@@ -1,5 +1,4 @@
 using Soup;
-
 using Gtk;
 
 namespace Proximity {
@@ -20,9 +19,12 @@ namespace Proximity {
         [GtkChild]
         private unowned Gtk.TreeView list_requests;
         [GtkChild]
-        private unowned Gtk.ScrolledWindow scrolled_window_request;
+        private unowned Gtk.ScrolledWindow scrolled_window_hex_request;
+        [GtkChild]
+        private unowned Gtk.ScrolledWindow scrolled_window_text_request;
 
         private ApplicationWindow application_window;
+        private HexEditor hex_editor;
         private Gtk.ListStore liststore_requests;
         private bool updating;
         private RequestTextEditor text_view_request;
@@ -68,7 +70,11 @@ namespace Proximity {
 
             text_view_request = new RequestTextEditor (application_window);
             text_view_request.show ();
-            scrolled_window_request.add (text_view_request);
+            scrolled_window_text_request.add (text_view_request);
+
+            hex_editor = new HexEditor ();
+            hex_editor.show ();
+            scrolled_window_hex_request.add (hex_editor);
 
             get_intercept_settings ();
             get_requests ();
@@ -123,11 +129,6 @@ namespace Proximity {
                 var url = request.get_string_member ("URL");
                 var body = request_data.get_string_member ("Body");
 
-                // check if it's a binary request we can't handle
-                if (skip_request_if_required (request_guid, data_packet_guid, body, direction)) {
-                    return;
-                }
-
                 if (direction == "browser_to_server") {
                     direction = "Browser to server";
                 } else {
@@ -163,6 +164,8 @@ namespace Proximity {
             button_drop.sensitive = false;
             button_forward.sensitive = false;
             button_intercept_response.sensitive = false;
+            scrolled_window_hex_request.hide ();
+            scrolled_window_text_request.show ();
         }
 
         private void get_intercept_settings () {
@@ -230,11 +233,17 @@ namespace Proximity {
             session.websocket_connect_async.begin (wsmessage, "localhost", null, null, (obj, res) => {
                 try {
                     websocket = session.websocket_connect_async.end (res);
+                    websocket.max_incoming_payload_size = 0;
                     websocket.message.connect (on_websocket_message);
                 } catch (Error err) {
                     stdout.printf ("Error ending websocket: %s\n", err.message);
                 }
             });
+        }
+
+        private bool is_binary (uchar[] body) {
+            var body_str = (string)body;
+            return !body_str.validate (body.length - 1, null);
         }
 
         public void on_back_clicked () {
@@ -284,7 +293,21 @@ namespace Proximity {
                     model.get (iter, Column.BODY, out body);
                     model.get (iter, Column.DIRECTION, out direction);
                     model.get (iter, Column.PROTOCOL, out protocol);
-                    text_view_request.buffer.text = (string) Base64.decode (body);
+
+                    var body_bytes = Base64.decode (body);
+
+                    if (is_binary (body_bytes)) {
+                        scrolled_window_hex_request.show ();
+                        scrolled_window_text_request.hide ();
+                        text_view_request.buffer.text = "";
+                        var buffer = new HexStaticBuffer.from_bytes (body_bytes);
+                        buffer.set_read_only (false);
+                        hex_editor.buffer = buffer;
+                    } else {
+                        scrolled_window_hex_request.hide ();
+                        scrolled_window_text_request.show ();
+                        text_view_request.buffer.text = (string) body_bytes;
+                    }
 
                     var is_request = (direction == "Browser to server");
                     button_forward.sensitive = true;
@@ -297,6 +320,12 @@ namespace Proximity {
                     button_intercept_response.sensitive = false;
                 }
             });
+
+            if (selection_count == 0) {
+                scrolled_window_hex_request.hide ();
+                scrolled_window_text_request.show ();
+                text_view_request.buffer.text = "";
+            }
         }
 
         private void on_websocket_message (int type, Bytes message) {
@@ -362,7 +391,13 @@ namespace Proximity {
                 model.get (iter, Column.BODY, out body);
 
                 if (selection_count == 1) {
-                    body = Base64.encode (text_view_request.buffer.text.data);
+                    if (scrolled_window_hex_request.visible) {
+                        var bytes = ((HexStaticBuffer)hex_editor.buffer).get_buffer ();
+                        body = Base64.encode (bytes);
+                    }
+                    else {
+                        body = Base64.encode (text_view_request.buffer.text.data);
+                    }
                 }
 
                 if (direction == "Browser to server") {
@@ -396,17 +431,6 @@ namespace Proximity {
             message.set_request("application/json", Soup.MemoryUse.COPY, parameters.data);
             
             application_window.http_session.queue_message (message, null);
-        }
-
-        private bool skip_request_if_required (string request_guid, string data_packet_guid, string base64_body, string direction) {
-            var body = (string)Base64.decode (base64_body);
-
-            if (body.make_valid () != body) {
-                send_individual_request_response (request_guid, data_packet_guid, "forward", direction, base64_body);
-                return true;
-            }
-
-            return false;
         }
 
         public void reset_state () {

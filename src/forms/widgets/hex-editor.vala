@@ -2,15 +2,10 @@ namespace Proximity {
 
     public class HexEditor : Gtk.DrawingArea, Gtk.Scrollable {
 
-        // Phase 2 - editing:
-        //   1. [ ] Typing in input (and updating the buffer)
-        //   2. [ ] Undo/redo
-        //   3. [ ] Copy/paste
-        //   4. [ ] Selection with keyboard shortcuts (including page up/page down)
-
         const int OFFSET_CHARACTERS = 8;
         const int PADDING_BETWEEN_SECTIONS = 32;
         const int TOP_BORDER = 6;
+        const string HEX_CHARS = "0123456789ABCDEF";
 
         enum Area {
             NONE,
@@ -27,11 +22,13 @@ namespace Proximity {
             }
         }
 
+        private bool half_selection = false;
+        private Area insertion_area = Area.NONE;
         private bool selecting = false;
         private double selection_start_x = -1;
         private double selection_start_y = -1;
-        private int selection_start_charidx = -1;
-        private int selection_end_charidx = -1;
+        private int64 selection_start_charidx = 0;
+        private int64 selection_end_charidx = 0;
 
         private Gtk.Adjustment _hadjustment;
         public Gtk.Adjustment hadjustment {
@@ -83,7 +80,13 @@ namespace Proximity {
 
             this.set_name ("hex-editor");
             this.get_style_context ().add_class ("hex");
-            this.add_events (Gdk.EventMask.BUTTON1_MOTION_MASK | Gdk.EventMask.BUTTON_PRESS_MASK | Gdk.EventMask.BUTTON_RELEASE_MASK | Gdk.EventMask.POINTER_MOTION_MASK | Gdk.EventMask.SCROLL_MASK);
+            this.can_focus = true;
+            this.add_events (Gdk.EventMask.BUTTON1_MOTION_MASK |
+                Gdk.EventMask.BUTTON_PRESS_MASK |
+                Gdk.EventMask.BUTTON_RELEASE_MASK |
+                Gdk.EventMask.KEY_PRESS_MASK |
+                Gdk.EventMask.POINTER_MOTION_MASK |
+                Gdk.EventMask.SCROLL_MASK);
 
             this.size_allocate.connect ( (allocation) => {
                 set_vadjustment_properties ();
@@ -103,6 +106,10 @@ namespace Proximity {
 
             this.button_press_event.connect ((evt) => {
                 if (evt.button == 1) {
+                    this.is_focus = true;
+
+                    selecting = false;
+
                     selection_start_x = evt.x;
                     selection_start_y = evt.y;
                     return true;
@@ -116,17 +123,17 @@ namespace Proximity {
                     selection_start_x = -1;
                     selection_start_y = -1;
 
-                    if (selecting) {
-                        selecting = false;
-                    } else {
-                        selection_start_charidx = -1;
-                        selection_end_charidx = -1;
+                    if (!selecting) {
+                        selection_start_charidx = get_char_idx_from_x_y (evt.x, evt.y, out half_selection);
+                        selection_end_charidx = selection_start_charidx;
+                        insertion_area = get_area_at_position ((int)evt.x, (int)evt.y);
                         queue_draw ();
                     }
                     
                     return true;
                 } else if (evt.button == 3) {
                     show_right_click_menu (evt);
+                    return true;
                 }
 
                 return false;
@@ -143,6 +150,8 @@ namespace Proximity {
 
                 return set_selection (evt.x, evt.y);
             });
+
+            this.key_press_event.connect (on_key_press);
         }
 
         public override bool draw (Cairo.Context cr) {
@@ -172,7 +181,6 @@ namespace Proximity {
 
             // http://developer.gnome.org/pangomm/unstable/classPango_1_1Layout.html
             var line_no_layout = create_pango_layout(text_to_set.str);
-
             line_no_layout.set_font_description(font);
 
             int x_offset;
@@ -192,14 +200,42 @@ namespace Proximity {
 
             style.render_layout (cr, 6, TOP_BORDER, line_no_layout);
 
-            var hex_line_width = draw_hex_lines (cr, first_line, last_line, x_offset);
+            var hex_line_width = draw_lines (cr, first_line, last_line, x_offset, Area.HEX, (b, pos) => {
+                var formatted_string = "%02x".printf (b);
+                                
+                if (pos % 16 == 15) {
+                    // do nothing
+                } else if (pos % 8 == 7) {
+                    formatted_string += "   ";
+                } else {
+                    formatted_string += " ";
+                }
+                return formatted_string;
+            });
             x_offset += hex_line_width + PADDING_BETWEEN_SECTIONS;
 
             style.add_class ("hex-border");
             style.render_background (cr, x_offset - 7, 0, 1, get_allocated_height ());
             style.remove_class ("hex-border");
 
-            var ascii_line_width = draw_ascii_lines (cr, first_line, last_line, x_offset);
+            style.add_class ("hex-background");
+            var ascii_width = get_char_width () * 17; // 1 extra for the space in the middle
+            style.render_background (cr, x_offset - 6, 0, ascii_width + 12, get_allocated_height ());
+            style.remove_class ("hex-background");
+
+            var ascii_line_width = draw_lines (cr, first_line, last_line, x_offset, Area.ASCII, (b, pos) => {
+                if (b < 32 || b > 126) {
+                    b = '.';
+                }
+
+                var formatted_string = "%c".printf (b);
+                
+                if (pos % 8 == 7 && pos % 16 != 15) {
+                    formatted_string += " ";
+                }
+                return formatted_string;
+            });
+
 
             style.add_class ("hex-border");
             style.render_background (cr, x_offset + ascii_line_width + 6, 0, 1, get_allocated_height ());
@@ -210,101 +246,8 @@ namespace Proximity {
             return false;
         }
 
-        private int draw_ascii_lines (Cairo.Context cr, int64 line_from, int64 line_to, int x_offset) {
-            // TODO: This works basically the same as draw_hex_lines, so we can probably use function pointers to extract out the commonalities
-            var style = get_style_context ();
-            style.add_class ("hex-background");
-            var ascii_width = get_char_width () * 17; // 1 extra for the space in the middle
-            style.render_background (cr, x_offset - 6, 0, ascii_width + 12, get_allocated_height ());
-            style.remove_class ("hex-background");
-
-            // this works the same way as the draw_hex_lines function
-            StringBuilder[] buffers = new StringBuilder[3];
-            buffers[0] = new StringBuilder ();
-            buffers[1] = new StringBuilder ();
-            buffers[2] = new StringBuilder ();
-
-            var start_idx = selection_start_charidx;
-            var end_idx = selection_end_charidx;
-            if (start_idx > end_idx) {
-                var tmp = start_idx;
-                start_idx = end_idx;
-                end_idx = tmp;
-            }
-
-            var from = line_from * 16;
-            var bytes = buffer.data (from, line_to * 16);
-
-            var start_of_selection = -1;
-
-            for (var i = 0; i < bytes.length; i++) {
-                var hex_char = bytes[i];
-                if (hex_char < 32 || hex_char > 126) {
-                    hex_char = '.';
-                }
-
-                var formatted_string = "%c".printf (hex_char);
-
-                var blank_string = " ";
-                var end_selection = ((i + from) == end_idx);
-                
-                if (i % 16 == 15) {
-                    formatted_string += "\n";
-                    blank_string = " \n";
-                    if (start_of_selection != -1) {
-                        end_selection = true;
-                    }
-                } else if (i % 8 == 7) {
-                    formatted_string += " ";
-                    blank_string = "  ";
-                }
-
-                if ((from + i) == start_idx) {
-                    start_of_selection = i % 16;
-                }
-                if (start_of_selection == -1 && i % 16 == 0 && (from + i) >= start_idx && (from + i) <= end_idx) {
-                    start_of_selection = i % 16;
-                }
-                
-                if (end_selection) {
-                    var x = get_char_ascii_x_offset (start_of_selection, x_offset, false);
-                    var y = ((i / 16) * get_line_height ()) + TOP_BORDER;
-                    var rect = Gdk.Rectangle() {
-                        x = x,
-                        y = y,
-                        width = get_char_ascii_x_offset ((i % 16) + 1, x_offset, true) - x,
-                        height = (((i/16)+1) * get_line_height ())-y + TOP_BORDER
-                    };
-
-                    style.add_class ("hex-selected");
-                    style.render_background (cr, rect.x, rect.y, rect.width, rect.height);
-                    style.remove_class ("hex-selected");
-                    
-                    start_of_selection = -1;
-                }
-                
-                if ((i + from) < start_idx) {
-                    // before selection
-                    buffers[0].append (formatted_string);
-                    buffers[1].append (blank_string);
-                    buffers[2].append (blank_string);
-                } else if ((i + from) >= start_idx && (i + from) <= end_idx) {
-                    // during selection
-                    buffers[0].append (blank_string);
-                    buffers[1].append (formatted_string);
-                    buffers[2].append (blank_string);
-                } else {
-                    // after selection
-                    buffers[0].append (blank_string);
-                    buffers[1].append (blank_string);
-                    buffers[2].append (formatted_string);
-                }
-            }
-
-            return render_selection (cr, x_offset, buffers[0].str, buffers[1].str, buffers[2].str);
-        }
-
-        private int draw_hex_lines (Cairo.Context cr, int64 line_from, int64 line_to, int x_offset) {
+        delegate string ByteToStringFunc (uint8 byte, int pos);
+        private int draw_lines (Cairo.Context cr, int64 line_from, int64 line_to, int x_offset, Area area, ByteToStringFunc byte_to_string) {
             // there are 3 different buffers, one before selection, one during selection, one after selection
             // then all three are rendered on top of each other
 
@@ -315,6 +258,8 @@ namespace Proximity {
             buffers[0] = new StringBuilder ();
             buffers[1] = new StringBuilder ();
             buffers[2] = new StringBuilder ();
+
+            var insertion_offset = -1;
 
             var start_idx = selection_start_charidx;
             var end_idx = selection_end_charidx;
@@ -329,24 +274,30 @@ namespace Proximity {
 
             var style = this.get_style_context ();
             var start_of_selection = -1;
+            int length = -1;
 
             for (var i = 0; i < bytes.length; i++) {
-                var formatted_string = "%02x".printf (bytes[i]);
-                var blank_string = "   ";
+                var formatted_string = byte_to_string (bytes[i], i);
 
-                var end_selection = ((i + from) == end_idx);
-                
+                var blank_string = "";
+                for (var j = 0; j < formatted_string.length; j++) {
+                    blank_string += " ";
+                }
+
                 if (i % 16 == 15) {
+                    blank_string += "\n";
                     formatted_string += "\n";
-                    blank_string = "  \n";
-                    if (start_of_selection != -1) {
-                        end_selection = true;
-                    }
-                } else if (i % 8 == 7) {
-                    formatted_string += "   ";
-                    blank_string = "     ";
-                } else {
-                    formatted_string += " ";
+                }
+
+                // calculate the start/end of selections
+                var end_selection = (((i + from) == end_idx) && selecting);
+
+                if (i % 16 == 15 && start_of_selection != -1 && selecting) {
+                    end_selection = true;
+                }
+
+                if (selecting && (i + from + 1) == buffer.length () && end_idx >= buffer.length () && start_of_selection != -1) {
+                    end_selection = true;
                 }
 
                 if ((from + i) == start_idx) {
@@ -356,14 +307,23 @@ namespace Proximity {
                     start_of_selection = i % 16;
                 }
                 
+                // draw the background for selected text
                 if (end_selection) {
-                    var x = get_char_hex_x_offset (start_of_selection, x_offset, false);
+                    int width, x;
+                    if (area == Area.ASCII) {
+                        x = get_char_ascii_x_offset (start_of_selection, x_offset, false);
+                        width = get_char_ascii_x_offset ((i % 16) + 1, x_offset, true) - x;
+                    } else {
+                        x = get_char_hex_x_offset (start_of_selection, x_offset, false);
+                        width = get_char_hex_x_offset ((i % 16) + 1, x_offset, true) - x;
+                    }
+
                     var y = ((i / 16) * get_line_height ()) + TOP_BORDER;
                     var rect = Gdk.Rectangle() {
                         x = x,
                         y = y,
-                        width = get_char_hex_x_offset ((i % 16) + 1, x_offset, true) - x,
-                        height = (((i/16)+1) * get_line_height ())-y+ TOP_BORDER
+                        width = width,
+                        height = (((i/16)+1) * get_line_height ())-y + TOP_BORDER
                     };
 
                     style.add_class ("hex-selected");
@@ -372,13 +332,26 @@ namespace Proximity {
                     
                     start_of_selection = -1;
                 }
-                
+
+                // calculate the insertion character position
+                if (i + from == start_idx) {
+                    insertion_offset = length + 1;
+                }
+
+                var total_length = buffer.length ();
+                if (i + from == total_length - 1 && start_idx >= total_length) {
+                    insertion_offset = length + 1;
+                }
+
+                length += formatted_string.length;
+
+                // create the text to draw
                 if ((i + from) < start_idx) {
                     // before selection
                     buffers[0].append (formatted_string);
                     buffers[1].append (blank_string);
                     buffers[2].append (blank_string);
-                } else if ((i + from) >= start_idx && (i + from) <= end_idx) {
+                } else if ((i + from) >= start_idx && (i + from) <= end_idx && selecting) {
                     // during selection
                     buffers[0].append (blank_string);
                     buffers[1].append (formatted_string);
@@ -391,7 +364,13 @@ namespace Proximity {
                 }
             }
 
-            return render_selection (cr, x_offset, buffers[0].str, buffers[1].str, buffers[2].str);
+            if (insertion_area != area) {
+                insertion_offset = -1;
+            } else if (area == Area.HEX && half_selection) {
+                insertion_offset++;
+            }
+
+            return render_selection (cr, x_offset, buffers[0].str, buffers[1].str, buffers[2].str, insertion_offset);
         }
 
         private Area get_area_at_position (int x, int y) {
@@ -444,8 +423,7 @@ namespace Proximity {
             return (idx * get_char_width ()) + hex_x_offset;
         }
 
-        private int get_char_idx_from_x_y (double x, double y) {
-            // for now let's just do the main selection area
+        private int get_char_idx_from_x_y (double x, double y, out bool half_selection) {
             var char_width = get_char_width ();
             var start_of_hex_chars = (char_width * OFFSET_CHARACTERS) + PADDING_BETWEEN_SECTIONS + 6; // 6 for the initial padding
             var end_of_hex_chars = start_of_hex_chars + (char_width * (3 + (16 * 2) + (7 * 2))); // 3 for the spaces, 16*2 for the hex chars, 7 for the spacing between hex chars
@@ -453,23 +431,24 @@ namespace Proximity {
             var end_of_ascii_chars = start_of_ascii_chars + (char_width * 17);
 
             y -= TOP_BORDER;
+            half_selection = false;
 
+            var chr_offset = -1.0;
+            
             // hex chars
             if (x > start_of_hex_chars && x < end_of_hex_chars) {
                 var halfway_point = ((end_of_hex_chars - start_of_hex_chars) / 2) + start_of_hex_chars;
                 var raw_chr_offset = (x - start_of_hex_chars) / char_width;
 
-                var chr_offset = -1.0;
-
                 if (x < halfway_point) {
                     chr_offset = (raw_chr_offset + 1) / 3; // the +1 is due to the first character not having a space before it
+                    half_selection = ((int)raw_chr_offset % 3) == 1;
                 } else {
-                    chr_offset = ((raw_chr_offset - (3 * 8) - 2) / 3) + 8;
+                    chr_offset = ((raw_chr_offset - (3 * 8) - 1) / 3) + 8;
+                    half_selection = ((int)raw_chr_offset % 3) == 0;
                 }
 
                 chr_offset += (((int)y / get_line_height ()) + (int)this.vadjustment.value) * 16;
-
-                return (int)chr_offset;
             }
 
             // ascii chars
@@ -477,19 +456,26 @@ namespace Proximity {
                 var halfway_point = ((end_of_ascii_chars - start_of_ascii_chars) / 2) + start_of_ascii_chars;
                 var raw_chr_offset = (x - start_of_ascii_chars) / char_width;
 
-                var chr_offset = raw_chr_offset;
+                chr_offset = raw_chr_offset;
 
                 if (x > halfway_point) {
                     chr_offset--;
                 }
 
                 chr_offset += (((int)y / get_line_height ()) + (int)this.vadjustment.value) * 16;
-
-                return (int)chr_offset;
             }
 
-            // neither
-            return -1;
+            if (chr_offset == -1) {
+                return -1;
+            }
+
+            if (chr_offset < 0) {
+                chr_offset = 0;
+            } else if (chr_offset > this.buffer.length ()) {
+                chr_offset = this.buffer.length ();
+            }
+
+            return (int)chr_offset;
         }
 
         private int get_char_width () {
@@ -529,6 +515,10 @@ namespace Proximity {
         }
 
         private string get_selected_text (Area area) {
+            if (area == Area.NONE) {
+                return "";
+            }
+
             var start = selection_start_charidx;
             var end = selection_end_charidx;
             if (start > end) {
@@ -560,6 +550,61 @@ namespace Proximity {
             return str;
         }
 
+        private void handle_copy (Area area) {
+            var selected_text = get_selected_text (area);
+            var clipboard = Gtk.Clipboard.get_default (Gdk.Display.get_default ());
+            clipboard.set_text (selected_text, selected_text.length);
+        }
+
+        private void handle_cut () {
+            if (buffer.read_only ()) {
+                return;
+            }
+
+            handle_copy (insertion_area);
+            remove_selected_text (true);
+        }
+
+        private void handle_paste () {
+            if (buffer.read_only ()) {
+                return;
+            }
+
+            var display = Gdk.Display.get_default ();
+            var clipboard = Gtk.Clipboard.get_default (display);
+            var text = clipboard.wait_for_text ();
+            
+            if (selecting) {
+                remove_selected_text (true);
+            }
+            
+            uint8[] data_to_insert = new uint8[0];
+            if (/^[A-F0-9\s]*$/i.match (text)) {
+                // if it's a hex string, let's parse that into bytes
+                try {
+                    text = /\s/.replace (text, text.length, 0, "", 0);
+                } catch {}
+
+                if (text.length % 2 == 1) {
+                    text = text + "0";
+                }
+
+                for (int i = 0; i < text.length; i += 2) {
+                    int b;
+                    var success = int.try_parse (text.substring (i, 2), out b, null, 16);
+                    if (success) {
+                        data_to_insert += (uint8)b;
+                    }
+                }
+            }
+            else {
+                data_to_insert = text.data;
+            }
+
+            buffer.insert (selection_start_charidx, data_to_insert);
+            selection_start_charidx = selection_end_charidx = selection_start_charidx + data_to_insert.length;
+        }
+
         public int lines_per_page () {
             return (int)((double)get_allocated_height () / (double)get_line_height ());
         }
@@ -572,7 +617,354 @@ namespace Proximity {
             return lines;
         }
 
-        private int render_selection (Cairo.Context cr, int x_offset, string before_selection, string selection, string after_selection) {
+        private bool on_key_press (Gdk.EventKey evt) {
+            var found = true;
+
+            if ((evt.state & Gdk.ModifierType.CONTROL_MASK) != 0) {
+                if (evt.keyval == 'c' || evt.keyval == 'C') {
+                    handle_copy (insertion_area);
+                    return true;
+                }
+                
+                if (evt.keyval == 'v' || evt.keyval == 'V') {
+                    handle_paste ();
+                    return true;
+                }
+
+                if (evt.keyval == 'x' || evt.keyval == 'X') {
+                    handle_cut ();
+                    return true;
+                }
+            }
+
+            // handle the two arrow key cases
+            if ((evt.state & Gdk.ModifierType.SHIFT_MASK) != 0) {
+                if (evt.keyval == Gdk.Key.Left) {
+                    if (!selecting) {
+                        selecting = true;
+                        
+                        if (half_selection && insertion_area == Area.HEX) {
+                            half_selection = false;
+                            queue_draw ();
+                            return true;
+                        }
+                        
+                        half_selection = false;
+                        selection_start_charidx--;
+                    }
+                    selection_end_charidx--;
+                } else if (evt.keyval == Gdk.Key.Right) {
+                    if (!selecting) {
+                        selecting = true;
+                        half_selection = false;
+                    }
+                    else {
+                        selection_end_charidx++;
+                    }
+                } else if (evt.keyval == Gdk.Key.Up) {
+                    if (!selecting) {
+                        selecting = true;
+                        half_selection = false;
+                    }
+                    selection_end_charidx -= 16;
+                } else if (evt.keyval == Gdk.Key.Down) {
+                    if (!selecting) {
+                        selecting = true;
+                        half_selection = false;
+                    }
+                    selection_end_charidx += 16;
+                } else if (evt.keyval == Gdk.Key.Home) {
+                    if (!selecting) {
+                        selecting = true;
+                        half_selection = false;
+                    }
+                    selection_end_charidx = 0;
+                    selection_start_charidx--;
+                    vadjustment.value = vadjustment.lower;
+                } else if (evt.keyval == Gdk.Key.End) {
+                    if (!selecting) {
+                        selecting = true;
+                        half_selection = false;
+                    }
+                    selection_end_charidx = (int64)buffer.length () - 1;
+                    vadjustment.value = vadjustment.upper;
+                } else if (evt.keyval == Gdk.Key.Page_Up) {
+                    if (!selecting) {
+                        selecting = true;
+                        half_selection = false;
+                    }
+                    var val = vadjustment.value - vadjustment.page_size;
+                    if (val < 0) {
+                        val = 0;
+                    }
+                    vadjustment.value = val;
+                    selection_end_charidx -= (lines_per_page () * 16);
+                } else if (evt.keyval == Gdk.Key.Page_Down) {
+                    if (!selecting) {
+                        selecting = true;
+                        half_selection = false;
+                    }
+                    var val = vadjustment.value + vadjustment.page_size;
+                    if (val > vadjustment.upper) {
+                        val = vadjustment.upper;
+                    }
+                    vadjustment.value = val;
+                    selection_end_charidx += lines_per_page () * 16;
+                } else {
+                    found = false;
+                }
+            }
+            else {
+                if (evt.keyval == Gdk.Key.Left) {
+                    if (insertion_area == Area.HEX) {
+                        if (selection_start_charidx == 0 && !half_selection) {
+                            return true;
+                        }
+
+                        if (!half_selection) {
+                            selection_start_charidx--;
+                            selection_end_charidx--;
+                        }
+
+                        half_selection = !half_selection;
+                    } else {
+                        // ascii
+                        selection_start_charidx--;
+                        selection_end_charidx--;
+                    }
+                    
+                    if (selecting) {
+                        selecting = false;
+                        var min = int64.min (selection_start_charidx, selection_end_charidx);
+                        selection_end_charidx = selection_start_charidx = min;
+                    }
+                } else if (evt.keyval == Gdk.Key.Right) {
+                    if (insertion_area == Area.HEX) {
+                        if (selection_start_charidx == buffer.length ()) {
+                            return true;
+                        }
+
+                        if (half_selection) {
+                            selection_start_charidx++;
+                            selection_end_charidx++;
+                        }
+
+                        half_selection = !half_selection;
+                    } else {
+                        // ascii
+                        selection_start_charidx++;
+                        selection_end_charidx++;
+                    }
+
+                    if (selecting) {
+                        selecting = false;
+                        var max = int64.max (selection_start_charidx, selection_end_charidx);
+                        selection_end_charidx = selection_start_charidx = max;
+                    }
+                } else if (evt.keyval == Gdk.Key.Up) {
+                    selection_start_charidx -= 16;
+                    selection_end_charidx -= 16;
+                    if (selecting) {
+                        selecting = false;
+                        var min = int64.min (selection_start_charidx, selection_end_charidx);
+                        selection_end_charidx = selection_start_charidx = min;
+                    }
+                } else if (evt.keyval == Gdk.Key.Down) {
+                    selection_start_charidx += 16;
+                    selection_end_charidx += 16;
+                    if (selecting) {
+                        selecting = false;
+                        var max = int64.max (selection_start_charidx, selection_end_charidx);
+                        selection_end_charidx = selection_start_charidx = max;
+                    }
+                } else if (evt.keyval == Gdk.Key.Page_Up) {
+                    var val = vadjustment.value - vadjustment.page_size;
+                    if (val < 0) {
+                        val = 0;
+                    }
+                    vadjustment.value = val;
+                } else if (evt.keyval == Gdk.Key.Page_Down) {
+                    var val = vadjustment.value + vadjustment.page_size;
+                    if (val > vadjustment.upper) {
+                        val = vadjustment.upper;
+                    }
+                    vadjustment.value = val;
+                } else if (evt.keyval == Gdk.Key.Home) {
+                    selection_start_charidx = selection_end_charidx = 0;
+                    if (selecting) {
+                        selecting = false;
+                    }
+                    vadjustment.value = vadjustment.lower;
+                } else if (evt.keyval == Gdk.Key.End) {
+                    var len = (int64)buffer.length ();
+                    len--;
+                    selection_start_charidx = selection_end_charidx = len;
+                    if (selecting) {
+                        selecting = false;
+                    }
+                    vadjustment.value = vadjustment.upper;
+                } else {
+                    found = false;
+                }
+            }
+
+            if (selection_start_charidx < 0) {
+                selection_start_charidx = 0;
+            }
+            if (selection_end_charidx < 0) {
+                selection_end_charidx = 0;
+            }
+            if (selection_end_charidx >= buffer.length ()) {
+                selection_end_charidx = (int64)buffer.length ();
+            }
+            if (selection_start_charidx >= buffer.length ()) {
+                selection_start_charidx = (int64)buffer.length ();
+            }
+
+            if (found) {
+                queue_draw ();
+                return true;
+            }
+
+            if (buffer.read_only ()) {
+                return false;
+            }
+
+            var selection_from = selection_start_charidx;
+            var selection_to = selection_end_charidx;
+            if (selection_from > selection_to) {
+                var tmp = selection_from;
+                selection_from = selection_to;
+                selection_to = tmp;
+            }
+
+            if (insertion_area != Area.NONE) {
+                if (evt.keyval == Gdk.Key.BackSpace) {
+                    if (!selecting) {
+                        selection_from--;
+                        if (selection_from < 0) {
+                            selection_from = 0;
+                        }
+
+                        selection_to--;
+                        if (selection_to < 0) {
+                            selection_to = 0;
+                        }
+                    }
+                    buffer.remove (selection_from, selection_to);
+                    selection_end_charidx = selection_start_charidx = selection_from;
+                    half_selection = false;
+                    selecting = false;
+                }
+
+                if (evt.keyval == Gdk.Key.Delete) {
+                    if (selecting) {
+                        remove_selected_text ();
+                    }
+                    else {
+                        buffer.remove (selection_from, selection_to);
+                    }
+                    half_selection = false;
+                    selection_end_charidx = selection_start_charidx = selection_from;
+                }
+            }
+
+            if (insertion_area == Area.HEX) {
+                if ((evt.keyval >= '0' && evt.keyval <= '9') || 
+                    (evt.keyval >= 'A' && evt.keyval <= 'F') ||
+                    (evt.keyval >= 'a' && evt.keyval <= 'f')) {
+
+                        if (selecting) {
+                            remove_selected_text ();
+                        }
+
+                        string to_insert = "";
+
+                        if (half_selection) {
+                            to_insert = "%02x".printf (buffer.byte_at (selection_from));
+                            to_insert = to_insert[0].to_string () + evt.keyval.to_string ("%c");
+                        }
+                        else {
+                            to_insert = evt.keyval.to_string ("%c") + "0";
+                        }
+
+                        int b;
+                        var success = int.try_parse (to_insert, out b, null, 16);
+                        if (!success) {
+                            return true;
+                        }
+
+                        var bytes = new uint8 [] {
+                            (uint8)b
+                        };
+
+                        if (half_selection) {
+                            buffer.replace_byte (selection_from, (uint8)b);
+                            half_selection = false;
+                            selection_end_charidx = selection_start_charidx = (selection_from + 1);
+                        }
+                        else {
+                            buffer.insert (selection_from, bytes);
+                            half_selection = true;
+                        }
+
+                        return true;
+                }
+            }
+
+            if (insertion_area == Area.ASCII) {
+                // regular ASCII characters
+                if ((evt.keyval >= 32 && evt.keyval <= 126) || evt.keyval == Gdk.Key.KP_Enter || evt.keyval == Gdk.Key.Return) {
+                    uint8[] bytes = {(uint8)evt.keyval};
+
+                    if (evt.keyval == Gdk.Key.KP_Enter || evt.keyval == Gdk.Key.Return) {
+                        if (buffer.pos_in_headers (selection_from)) {
+                            bytes = new uint8[] {0x0d, 0x0a};
+                        }
+                        else {
+                            bytes[0] = '\n';
+                        }
+                    }
+
+                    if (selecting) {   
+                        remove_selected_text ();
+                    }
+
+                    buffer.insert (selection_from, bytes);
+                    selection_end_charidx = selection_start_charidx = (selection_from + (int64)bytes.length);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void remove_selected_text (bool swap = false) {
+            // swap should be used if this should perminantely swap the selectio if they're "back to front"
+            if (swap && selection_start_charidx > selection_end_charidx) {
+                var tmp = selection_start_charidx;
+                selection_start_charidx = selection_end_charidx;
+                selection_end_charidx = tmp;
+            }
+            
+            var selection_from = selection_start_charidx;
+            var selection_to = selection_end_charidx;
+            if (selection_from > selection_to) {
+                var tmp = selection_from;
+                selection_from = selection_to;
+                selection_to = tmp;
+            }
+
+            if (selection_from == selection_to) {
+                selecting = false;
+                return;
+            }
+            
+            buffer.remove (selection_from, selection_to);
+            selecting = false;
+        }
+
+        private int render_selection (Cairo.Context cr, int x_offset, string before_selection, string selection, string after_selection, int selection_offset) {
             var style = get_style_context ();
             Pango.FontDescription font;
             style.get (this.get_state_flags (), "font", out font);
@@ -584,6 +976,9 @@ namespace Proximity {
             int line_width, text_height;
             before_layout.get_pixel_size(out line_width, out text_height);
             style.render_layout (cr, x_offset, TOP_BORDER, before_layout);
+            if (selection_offset != -1) {
+                style.render_insertion_cursor (cr, x_offset, TOP_BORDER, before_layout, selection_offset, Pango.Direction.LTR);
+            }
 
             // selected text
             style.add_class ("hex-selected");
@@ -605,14 +1000,15 @@ namespace Proximity {
                 return false;
             }
 
-            int start_chr = get_char_idx_from_x_y (selection_start_x, selection_start_y);
-            int end_chr = get_char_idx_from_x_y (end_x, end_y);
+            int start_chr = get_char_idx_from_x_y (selection_start_x, selection_start_y, null);
+            int end_chr = get_char_idx_from_x_y (end_x, end_y, null);
 
             if (start_chr == -1 || end_chr == -1) {
                 return false;
             }
 
             selecting = true;
+            half_selection = false;
 
             selection_start_charidx = start_chr;
             selection_end_charidx = end_chr;
@@ -631,6 +1027,8 @@ namespace Proximity {
             vadjustment.set_step_increment (10.0);
             vadjustment.set_page_increment ((double)lines_per_page ());
             vadjustment.set_upper ((double)line_count ());
+
+            queue_draw ();
         }
 
         private void show_right_click_menu (Gdk.EventButton evt) {
@@ -643,13 +1041,30 @@ namespace Proximity {
 
             var selected_text = get_selected_text (area);
 
+            if (buffer.read_only () == false) {
+                var cut_item = new Gtk.MenuItem.with_label ("Cut");
+                cut_item.activate.connect ( () => {
+                    handle_cut ();
+                });
+                cut_item.show ();
+                menu.append (cut_item);
+            }
+
             var copy_item = new Gtk.MenuItem.with_label ("Copy");
             copy_item.activate.connect ( () => {
-                var clipboard = Gtk.Clipboard.get_default (Gdk.Display.get_default ());
-                clipboard.set_text (selected_text, selected_text.length);
+                handle_copy (area);
             });
             copy_item.show ();
             menu.append (copy_item);
+
+            if (buffer.read_only () == false) {
+                var paste_item = new Gtk.MenuItem.with_label ("Paste");
+                paste_item.activate.connect ( () => {
+                    handle_paste ();
+                });
+                paste_item.show ();
+                menu.append (paste_item);
+            }
 
             var separator = new Gtk.SeparatorMenuItem ();
             separator.show ();
