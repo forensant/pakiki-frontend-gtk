@@ -5,6 +5,7 @@ namespace Proximity {
         public abstract uint8[] data (uint64 from, uint64 to);
         public abstract bool data_cached (uint64 from, uint64 to);
         public abstract uint64 length ();
+        public abstract bool read_only ();
 
         public virtual uint8 byte_at (uint64 offset) { return '0';}
         public virtual void insert (uint64 at, uint8[] data) {}

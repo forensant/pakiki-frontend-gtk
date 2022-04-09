@@ -823,7 +823,9 @@ namespace Proximity {
                 return true;
             }
 
-            // TODO: Ignore insert if read only
+            if (buffer.read_only ()) {
+                return false;
+            }
 
             var selection_from = selection_start_charidx;
             var selection_to = selection_end_charidx;
@@ -1036,13 +1038,14 @@ namespace Proximity {
 
             var selected_text = get_selected_text (area);
 
-            // TODO: if not read only
-            var cut_item = new Gtk.MenuItem.with_label ("Cut");
-            cut_item.activate.connect ( () => {
-                handle_cut ();
-            });
-            cut_item.show ();
-            menu.append (cut_item);
+            if (buffer.read_only () == false) {
+                var cut_item = new Gtk.MenuItem.with_label ("Cut");
+                cut_item.activate.connect ( () => {
+                    handle_cut ();
+                });
+                cut_item.show ();
+                menu.append (cut_item);
+            }
 
             var copy_item = new Gtk.MenuItem.with_label ("Copy");
             copy_item.activate.connect ( () => {
@@ -1051,13 +1054,14 @@ namespace Proximity {
             copy_item.show ();
             menu.append (copy_item);
 
-            // TODO: if not read only
-            var paste_item = new Gtk.MenuItem.with_label ("Paste");
-            paste_item.activate.connect ( () => {
-                handle_paste ();
-            });
-            paste_item.show ();
-            menu.append (paste_item);
+            if (buffer.read_only () == false) {
+                var paste_item = new Gtk.MenuItem.with_label ("Paste");
+                paste_item.activate.connect ( () => {
+                    handle_paste ();
+                });
+                paste_item.show ();
+                menu.append (paste_item);
+            }
 
             var separator = new Gtk.SeparatorMenuItem ();
             separator.show ();

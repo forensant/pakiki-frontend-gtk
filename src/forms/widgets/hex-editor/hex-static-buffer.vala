@@ -2,6 +2,7 @@ namespace Proximity {
     public class HexStaticBuffer : Object, HexBuffer {
         
         private uint8[] buffer;
+        private bool _read_only;
 
         public HexStaticBuffer () {
             buffer = new uint8[0];
@@ -9,6 +10,7 @@ namespace Proximity {
 
         public HexStaticBuffer.from_bytes (uint8[] buffer) {
             this.buffer = buffer;
+            _read_only = true;
         }
 
         public HexStaticBuffer.from_file (string filename) {
@@ -55,6 +57,10 @@ namespace Proximity {
             return true;
         }
 
+        public uint8[] get_buffer () {
+            return buffer;
+        }
+
         public void insert (uint64 at, uint8[] data) {
             Array<uint8> new_buffer = new Array<uint8> (false);
             new_buffer.append_vals (buffer[0:at], (uint)at);
@@ -85,12 +91,20 @@ namespace Proximity {
             length_changed ();
         }
 
+        public bool read_only () {
+            return _read_only;
+        }
+
         public void replace_byte (uint64 pos, uint8 byte) {
             if (pos >= buffer.length) {
                 return;
             }
             buffer[pos] = byte;
             length_changed (); // not technically, but will force a refresh
+        }
+
+        public void set_read_only (bool ro) {
+            _read_only = ro;
         }
     }
 }

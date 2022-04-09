@@ -81,5 +81,9 @@ namespace Proximity {
         public uint64 length () {
             return _content_length;
         }
+
+        public bool read_only () {
+            return true;
+        }
     }
 }

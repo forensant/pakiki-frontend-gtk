@@ -97,6 +97,7 @@ namespace Proximity {
             session.websocket_connect_async.begin(wsmessage, "localhost", null, null, (obj, res) => {
                 try {
                     websocket = session.websocket_connect_async.end(res);
+                    websocket.max_incoming_payload_size = 0;
                     websocket.message.connect(on_websocket_message);
                     websocket.error.connect ((err) => {
                         stdout.printf("Websocket error: %s\n", err.message);
