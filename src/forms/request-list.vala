@@ -316,7 +316,7 @@ namespace Proximity {
                 return GLib.Source.REMOVE;
             });
 
-            var url = "http://" + application_window.core_address + "/project/requests?exclude_resources=" + (exclude_resources ? "true" : "false");
+            var url = "http://" + application_window.core_address + "/requests?exclude_resources=" + (exclude_resources ? "true" : "false");
 
             if (search_query != null && search_query != "") {
                 url += "&filter=" + Soup.URI.encode(search_query, null);
@@ -532,9 +532,9 @@ namespace Proximity {
             Value guid;
             liststore.get_value (iter, Column.GUID, out guid);
 
-            var message = new Soup.Message ("POST", "http://" + application_window.core_address + "/project/request");
+            var message = new Soup.Message ("PATCH", "http://" + application_window.core_address + "/requests/" + guid.get_string () + "/notes");
 
-            var parameters = "guid=" + guid.get_string () + "&notes=" + Soup.URI.encode (newtext, null);
+            var parameters = "notes=" + Soup.URI.encode (newtext, null);
             message.set_request ("application/x-www-form-urlencoded", Soup.MemoryUse.COPY, parameters.data);
             
             application_window.http_session.send_async.begin (message);

@@ -93,14 +93,14 @@ namespace Proximity {
 
             switch (operation.get_status ()) {
                 case InjectOperation.Status.UNDERWAY:
-                    uri = "/scripts/cancel";
+                    uri = "/scripts/{guid}/cancel";
                     break;
                 case InjectOperation.Status.COMPLETED:
-                    uri = "/inject_operation/archive";
+                    uri = "/inject_operations/{guid}/archive";
                     archive = "true";
                     break;
                 case InjectOperation.Status.ARCHIVED:
-                    uri = "/inject_operation/archive";
+                    uri = "/inject_operations/{guid}/archive";
                     archive = "false";
                     break;
             }
@@ -109,11 +109,11 @@ namespace Proximity {
                 return;
             }
 
-            var message = new Soup.Message ("PUT", "http://" + application_window.core_address + uri);
+            var message = new Soup.Message ("PATCH", "http://" + application_window.core_address + uri.replace ("{guid}", operation.guid));
 
-            var parameters = "guid=" + operation.guid;
+            var parameters = "";
             if (archive != "") {
-                parameters += ("&archive=" + archive);
+                parameters += ("archive=" + archive);
             }
             message.set_request ("application/x-www-form-urlencoded", Soup.MemoryUse.COPY, parameters.data);
             application_window.http_session.send_async.begin (message);
@@ -131,22 +131,10 @@ namespace Proximity {
                 return;
             }
             
-            var message = new Soup.Message ("PUT", "http://" + application_window.core_address + "/inject_operation");
+            var message = new Soup.Message ("PATCH", "http://" + application_window.core_address + "/inject_operations/" + operation.guid + "/title");
 
-            Json.Builder builder = new Json.Builder ();
-            builder.begin_object ();
-            builder.set_member_name ("GUID");
-            builder.add_string_value (operation.guid);
-            builder.set_member_name ("Title");
-            builder.add_string_value (entry_title.get_text ());
-            builder.end_object ();
-
-            Json.Generator generator = new Json.Generator ();
-            Json.Node root = builder.get_root ();
-            generator.set_root (root);
-            string parameters = generator.to_data (null);
-
-            message.set_request ("application/json", Soup.MemoryUse.COPY, parameters.data);
+            var parameters = "title=" + Soup.URI.encode (entry_title.text, null);
+            message.set_request ("application/x-www-form-urlencoded", Soup.MemoryUse.COPY, parameters.data);
             application_window.http_session.send_async.begin (message);
         }
     }

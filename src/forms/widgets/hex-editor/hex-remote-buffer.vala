@@ -34,7 +34,7 @@ namespace Proximity {
             // this function makes the assumption that generally we'll only be receiving requests for smallish amounts of data
             // and that the server will generally provide mid-large amounts of data to cache
             if (!data_cached (from, to)) {
-                var url = "http://" + application_window.core_address + "/project/requests/" + guid+ "/data?from=" + from.to_string ();
+                var url = "http://" + application_window.core_address + "/requests/" + guid+ "/partial_data?from=" + from.to_string ();
 
                 var message = new Soup.Message ("GET", url);
                 application_window.http_session.send_message (message);

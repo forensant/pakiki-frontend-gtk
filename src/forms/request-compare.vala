@@ -67,7 +67,7 @@ namespace Proximity {
         }
 
         public void compare_requests (string base_guid, string compare_guid) {
-            var url = "http://" + application_window.core_address + "/project/requests/" + base_guid + "/compare/" + compare_guid;
+            var url = "http://" + application_window.core_address + "/requests/" + base_guid + "/compare/" + compare_guid;
             var message = new Soup.Message ("GET", url);
 
             application_window.http_session.queue_message (message, (sess, mess) => {
@@ -106,7 +106,7 @@ namespace Proximity {
         }
 
         private void load_web_preview (string guid, int request_preview_id) {
-            var message = new Soup.Message ("GET", "http://" + application_window.core_address + "/project/requestresponse?guid=" + guid);
+            var message = new Soup.Message ("GET", "http://" + application_window.core_address + "/requests/" + guid + "/contents");
 
             application_window.http_session.queue_message (message, (sess, mess) => {
                 if (mess.status_code != 200) {

@@ -79,7 +79,7 @@ namespace Proximity {
         public void on_send_clicked () {
             spinner.start ();
             label_error.visible = false;
-            var message = new Soup.Message ("POST", "http://" + application_window.core_address + "/proxy/make_request");
+            var message = new Soup.Message ("POST", "http://" + application_window.core_address + "/requests/make");
 
             Json.Builder builder = new Json.Builder ();
             builder.begin_object ();
@@ -133,7 +133,7 @@ namespace Proximity {
         }
 
         public void populate_request (string guid) {
-            var url = "http://" + application_window.core_address + "/project/request?guid=" + guid;
+            var url = "http://" + application_window.core_address + "/requests/" + guid;
 
             var message = new Soup.Message ("GET", url);
 

@@ -16,7 +16,7 @@ namespace Proximity {
         private void insert_oob_domain () {
             long_running_task (true);
 
-            var url = "http://" + application_window.core_address + "/proxy/out_of_band/url";
+            var url = "http://" + application_window.core_address + "/out_of_band/url";
 
             var message = new Soup.Message ("GET", url);
 

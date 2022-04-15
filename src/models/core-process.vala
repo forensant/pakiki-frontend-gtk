@@ -306,7 +306,7 @@ namespace Proximity {
         }
 
         public static string websocket_url(ApplicationWindow application_window, string object_type, Gee.HashMap<string, string> filters = new Gee.HashMap<string, string> ()) {
-            var url = "http://" + application_window.core_address + "/project/notifications";
+            var url = "http://" + application_window.core_address + "/notifications";
 
             filters["ObjectType"] = object_type;
             

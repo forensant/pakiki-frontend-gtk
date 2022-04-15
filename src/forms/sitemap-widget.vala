@@ -214,7 +214,7 @@ namespace Proximity {
 
         public void populate_sitemap () {
             tree_store_site_map.clear ();
-            var url = "http://" + application_window.core_address + "/project/sitemap";
+            var url = "http://" + application_window.core_address + "/requests/sitemap";
 
             var session = application_window.http_session;
             var message = new Soup.Message ("GET", url);

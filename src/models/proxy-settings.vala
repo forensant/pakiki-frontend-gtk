@@ -82,7 +82,7 @@ namespace Proximity {
             builder.begin_object ();
             builder.set_member_name ("Http11ProxyAddr");
             builder.add_string_value (proxy_address);
-            builder.set_member_name ("Http11UpstreamProxyAddress");
+            builder.set_member_name ("Http11UpstreamProxyAddr");
             builder.add_string_value (upstream_proxy_address);
             builder.end_object ();
 

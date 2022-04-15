@@ -80,7 +80,7 @@ namespace Proximity {
             scrolled_window_text_view_request.add (text_view_request);
             text_view_request.key_release_event.connect (on_text_view_request_key_release_event);
 
-            text_view_request.buffer.create_tag ("selection", "background", "yellow");
+            text_view_request.buffer.create_tag ("selection", "background", "yellow", "foreground", "black");
 
             button_find.clicked.connect ( () => this.find_clicked () );
         }
@@ -254,7 +254,7 @@ namespace Proximity {
         }
 
         public void populate_request (string guid) {
-            var url = "http://" + application_window.core_address + "/project/request?guid=" + guid;
+            var url = "http://" + application_window.core_address + "/requests/" + guid;
 
             var message = new Soup.Message ("GET", url);
 

@@ -269,7 +269,7 @@ namespace Proximity {
 
         private bool monitor_core_connection () {
             Soup.Session session = new Soup.Session ();
-            var message = new Soup.Message ("GET", "http://" + core_address + "/proxy/ping");
+            var message = new Soup.Message ("GET", "http://" + core_address + "/ping");
 
             session.queue_message (message, (sess, mess) => {
                 if (mess.status_code == 200) {
