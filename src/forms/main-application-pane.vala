@@ -14,6 +14,9 @@ namespace Proximity {
             return true;
         }
 
+        public virtual void find_activated () {
+        }
+
         public virtual string new_tooltip_text () {
             return "";
         }

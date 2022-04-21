@@ -104,10 +104,18 @@ namespace Proximity {
 
             var accel_group = new Gtk.AccelGroup ();
             accel_group.connect ('f', Gdk.ModifierType.CONTROL_MASK, 0, (group, accel, keyval, modifier) => {
-                searchbar.visible = !searchbar.visible;
-                if (searchbar.visible) {
-                    searchentry.grab_focus ();
+                var pane = selected_pane ();
+                if (pane == null || pane.can_search ()) {
+                    searchbar.visible = !searchbar.visible;
+                    if (searchbar.visible) {
+                        searchentry.grab_focus ();
+                    }
+                    return true;
                 }
+                else {
+                    pane.find_activated ();
+                }
+
                 return true;
             });
             add_accel_group (accel_group);
@@ -312,6 +320,11 @@ namespace Proximity {
         [GtkCallback]
         public void on_button_search_toggled () {
             combobox_search_protocols.visible = selected_pane ().can_filter_protocols ();
+        }
+
+        [GtkCallback]
+        public void on_searchentry_stop_search () {
+            searchbar.search_mode_enabled = false;
         }
 
         [GtkCallback]

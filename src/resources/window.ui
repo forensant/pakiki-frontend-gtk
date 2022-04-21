@@ -134,6 +134,7 @@
                     <property name="width_chars">40</property>
                     <property name="placeholder_text" translatable="yes">Search Requests</property>
                     <signal name="search-changed" handler="search_text_changed" swapped="no"/>
+                    <signal name="stop-search" handler="on_searchentry_stop_search" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">True</property>
