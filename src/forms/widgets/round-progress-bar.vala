@@ -1,5 +1,4 @@
 namespace Proximity {
-
     public class RoundProgressBar : Gtk.DrawingArea {
 
         private double _fraction = 0.0;
@@ -15,16 +14,40 @@ namespace Proximity {
         }
 
         public override bool draw (Cairo.Context cr) {
+            var rectangle = Gdk.Rectangle () {
+                x = 0,
+                y = 0,
+                width = get_allocated_width (),
+                height = get_allocated_height ()
+            };
+            var selected = ((this.get_state_flags () & Gtk.StateFlags.SELECTED) == Gtk.StateFlags.SELECTED);
+            return render (cr, rectangle, this.get_style_context (), selected);
+        }
+
+        public override Gtk.SizeRequestMode get_request_mode () {
+            return Gtk.SizeRequestMode.WIDTH_FOR_HEIGHT;
+        }
+    
+        public override void get_preferred_width_for_height (int height, out int minimum, out int natural) {
+            minimum = height;
+            natural = height;
+        }
+
+        public bool render (Cairo.Context cr, Gdk.Rectangle area, Gtk.StyleContext style_context, bool selected) {
+            if (fraction < 0.0) {
+                return false;
+            }
+
             cr.save ();
-            var x = get_allocated_width () / 2;
-            var y = get_allocated_height () / 2;
-            var radius = double.min (get_allocated_width () / 2,
-                                     get_allocated_height () / 2) - 5;
+            var x = (area.width / 2) + area.x;
+            var y = (area.height / 2) + area.y;
+            var radius = double.min (area.width / 2,
+                                     area.height / 2) - 5;
 
             cr.set_line_cap (Cairo.LineCap.BUTT);
 
-            var style_context = this.get_style_context ();
-            var colour = style_context.get_color (Gtk.StateFlags.NORMAL);
+            var state = selected ? Gtk.StateFlags.SELECTED : Gtk.StateFlags.NORMAL;
+            var colour = style_context.get_color (state);
 
             cr.set_line_width (2);
 
@@ -41,30 +64,20 @@ namespace Proximity {
 
             if (fraction == 1.0) {
                 // draw the tick
-                var width = get_allocated_width ();
-                var height = get_allocated_height ();
-
-                //cr.set_source_rgba (colour.red, colour.green, colour.blue, colour.alpha);
-
+                var diameter = radius * 2;
                 cr.set_line_width (1.5);
-                cr.move_to (width * 0.33, y);
-                cr.line_to (width * 0.45, height * 0.6);
-                cr.line_to (width * 0.65, height * 0.35);
+                
+                // these are all relative to the centre of the circle
+                cr.move_to (x - (diameter * 0.25), y); // first point (start of the tick)
+                cr.line_to (x - (diameter * 0.05), y + (diameter * 0.2)); // the centre point
+                cr.line_to (x + (diameter * 0.25), y - (diameter * 0.25)); // last bit of the tick
+
                 cr.stroke ();
             }
 
             cr.restore ();
 
             return false;
-        }
-
-        public override Gtk.SizeRequestMode get_request_mode () {
-            return Gtk.SizeRequestMode.WIDTH_FOR_HEIGHT;
-        }
-    
-        public override void get_preferred_width_for_height (int height, out int minimum, out int natural) {
-            minimum = height;
-            natural = height;
         }
     }
 }
