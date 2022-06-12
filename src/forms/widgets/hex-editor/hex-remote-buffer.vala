@@ -30,6 +30,9 @@ namespace Proximity {
             if (from > to) {
                 return blank_data;
             }
+            if (to > content_length) {
+                to = content_length;
+            }
 
             // this function makes the assumption that generally we'll only be receiving requests for smallish amounts of data
             // and that the server will generally provide mid-large amounts of data to cache

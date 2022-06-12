@@ -50,7 +50,7 @@ namespace Proximity {
             PROTOCOL,
             TIME,
             URL,
-            RESPONSE_SIZE,
+            RESPONSE_CONTENT_LENGTH,
             DURATION,
             VERB,
             STATUS,
@@ -82,7 +82,7 @@ namespace Proximity {
             time_cell_renderer.ellipsize = Pango.EllipsizeMode.MIDDLE;
             time_cell_renderer.ellipsize_set = true;
 
-            var response_size_renderer = new Gtk.CellRendererText();
+            var response_length_renderer = new Gtk.CellRendererText();
             var duration_renderer      = new Gtk.CellRendererText();
             var status_renderer        = new Gtk.CellRendererText();
 
@@ -118,8 +118,8 @@ namespace Proximity {
                                                     "text", Column.URL);
 
             request_list.insert_column_with_attributes (-1, "Size",
-                                                    response_size_renderer,
-                                                    "text", Column.RESPONSE_SIZE);
+                                                    response_length_renderer,
+                                                    "text", Column.RESPONSE_CONTENT_LENGTH);
 
             request_list.insert_column_with_attributes (-1, "Duration",
                                                     duration_renderer,
@@ -165,10 +165,10 @@ namespace Proximity {
             });
             time_column.min_width = 100;
 
-            var response_size_column = request_list.get_column(Column.RESPONSE_SIZE);
-            response_size_column.set_cell_data_func(response_size_renderer, (cell_layout, cell, tree_model, iter) => {
+            var response_size_column = request_list.get_column(Column.RESPONSE_CONTENT_LENGTH);
+            response_size_column.set_cell_data_func(response_length_renderer, (cell_layout, cell, tree_model, iter) => {
                 Value val;
-                tree_model.get_value(iter, Column.RESPONSE_SIZE, out val);
+                tree_model.get_value(iter, Column.RESPONSE_CONTENT_LENGTH, out val);
                 ((Gtk.CellRendererText)cell).text = response_size_to_string(val.get_int64 ());
                 val.unset();
             });
@@ -213,15 +213,15 @@ namespace Proximity {
                 request_list.get_column(i).reorderable = true;
             }
 
-            request_list.get_column(Column.TIME).sort_column_id          = Column.TIME;
-            request_list.get_column(Column.URL).sort_column_id           = Column.URL;
-            request_list.get_column(Column.RESPONSE_SIZE).sort_column_id = Column.RESPONSE_SIZE;
-            request_list.get_column(Column.DURATION).sort_column_id      = Column.DURATION;
-            request_list.get_column(Column.VERB).sort_column_id          = Column.VERB;
-            request_list.get_column(Column.STATUS).sort_column_id        = Column.STATUS;
-            request_list.get_column(Column.PAYLOADS).sort_column_id      = Column.PAYLOADS;
-            request_list.get_column(Column.ERROR).sort_column_id         = Column.ERROR;
-            request_list.get_column(Column.NOTES).sort_column_id         = Column.NOTES;
+            request_list.get_column(Column.TIME).sort_column_id                    = Column.TIME;
+            request_list.get_column(Column.URL).sort_column_id                     = Column.URL;
+            request_list.get_column(Column.RESPONSE_CONTENT_LENGTH).sort_column_id = Column.RESPONSE_CONTENT_LENGTH;
+            request_list.get_column(Column.DURATION).sort_column_id                = Column.DURATION;
+            request_list.get_column(Column.VERB).sort_column_id                    = Column.VERB;
+            request_list.get_column(Column.STATUS).sort_column_id                  = Column.STATUS;
+            request_list.get_column(Column.PAYLOADS).sort_column_id                = Column.PAYLOADS;
+            request_list.get_column(Column.ERROR).sort_column_id                   = Column.ERROR;
+            request_list.get_column(Column.NOTES).sort_column_id                   = Column.NOTES;
 
 
             box_request_details = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
@@ -258,17 +258,17 @@ namespace Proximity {
 
             Gtk.TreeIter iter;
             liststore.insert_with_values (out iter, -1,
-                Column.GUID,          guid,
-                Column.PROTOCOL,      request.get_string_member ("Protocol"),
-                Column.TIME,          request.get_int_member ("Time"),
-                Column.URL,           request.get_string_member ("URL"),
-                Column.RESPONSE_SIZE, request.get_int_member ("ResponseSize"),
-                Column.DURATION,      request.get_int_member ("ResponseTime"),
-                Column.VERB,          request.get_string_member ("Verb"),
-                Column.STATUS,        request.get_int_member ("ResponseStatusCode"),
-                Column.PAYLOADS,      request.get_string_member ("Payloads"),
-                Column.ERROR,         request.get_string_member ("Error"),
-                Column.NOTES,         request.get_string_member ("Notes")
+                Column.GUID,                    guid,
+                Column.PROTOCOL,                request.get_string_member ("Protocol"),
+                Column.TIME,                    request.get_int_member ("Time"),
+                Column.URL,                     request.get_string_member ("URL"),
+                Column.RESPONSE_CONTENT_LENGTH, request.get_int_member ("ResponseContentLength"),
+                Column.DURATION,                request.get_int_member ("ResponseTime"),
+                Column.VERB,                    request.get_string_member ("Verb"),
+                Column.STATUS,                  request.get_int_member ("ResponseStatusCode"),
+                Column.PAYLOADS,                request.get_string_member ("Payloads"),
+                Column.ERROR,                   request.get_string_member ("Error"),
+                Column.NOTES,                   request.get_string_member ("Notes")
             );
 
             guid_set.add (guid);
@@ -494,7 +494,7 @@ namespace Proximity {
                     if (request_guid == guid.get_string ()) {
                         liststore.set_value (iter, Column.TIME,          request.get_int_member("Time"));
                         liststore.set_value (iter, Column.URL,           request.get_string_member("URL"));
-                        liststore.set_value (iter, Column.RESPONSE_SIZE, request.get_int_member("ResponseSize"));
+                        liststore.set_value (iter, Column.RESPONSE_CONTENT_LENGTH, request.get_int_member("ResponseContentLength"));
                         liststore.set_value (iter, Column.DURATION,      request.get_int_member("ResponseTime"));
                         liststore.set_value (iter, Column.VERB,          request.get_string_member("Verb"));
                         liststore.set_value (iter, Column.STATUS,        request.get_int_member("ResponseStatusCode"));
