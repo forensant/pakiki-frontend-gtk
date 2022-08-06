@@ -187,6 +187,7 @@ namespace Proximity {
                 "_Cancel");
 
             set_common_file_dialog_properties (dialog);
+            dialog.set_current_name("project.prx");
             var res = dialog.run ();
             handle_open_project_response (dialog, res, true);
         }
@@ -275,6 +276,7 @@ namespace Proximity {
                 "_Cancel");
 
             set_common_file_dialog_properties (dialog);
+            dialog.set_current_name("project.prx");
             var response_id = dialog.run ();
 
             if (response_id == Gtk.ResponseType.ACCEPT) {
@@ -303,6 +305,17 @@ namespace Proximity {
             dialog.local_only = false; //allow for uri
             dialog.set_modal (true);
             dialog.set_do_overwrite_confirmation (true);
+
+            var filter = new Gtk.FileFilter ();
+            filter.add_pattern ("*");
+            filter.set_filter_name ("All files");
+            dialog.add_filter (filter);
+
+            filter = new Gtk.FileFilter ();
+            filter.add_pattern ("*.prx");
+            filter.set_filter_name ("Proximity Project");
+            dialog.add_filter (filter);
+            dialog.set_filter (filter);
         }
 
         public static string websocket_url(ApplicationWindow application_window, string object_type, Gee.HashMap<string, string> filters = new Gee.HashMap<string, string> ()) {
