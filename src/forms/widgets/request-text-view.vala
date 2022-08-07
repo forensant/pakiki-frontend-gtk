@@ -1,10 +1,13 @@
 namespace Proximity {
-    
+
     [GtkTemplate (ui = "/com/forensant/proximity/request-text-view.ui")]
     class RequestTextView : Gtk.Box {
         [GtkChild]
         private unowned Gtk.SourceView source_view;
         private HexEditor hex_editor;
+
+        // Anything above this, and we won't try to syntax highlight as it causes performance issues - 10KB?
+        private long MAX_HIGHLIGHT_LINE_LENGTH = (1024*10); 
 
         [GtkChild]
         private unowned Gtk.ScrolledWindow scrolled_window_source_view;
@@ -60,6 +63,17 @@ namespace Proximity {
             hex_editor = new HexEditor ();
             hex_editor.show ();
             scrolled_window_hex_view.add (hex_editor);
+        }
+
+        private long longest_line_length (string req) {
+            var lines = req.split("\n");
+            long longest_line_length = 0;
+            foreach (string l in lines) {
+                if (l.length > longest_line_length) {
+                    longest_line_length = l.length;
+                }
+            }
+            return longest_line_length;
         }
 
         private void on_request_response_popup (Gtk.Menu menu, Gtk.TextBuffer buffer) {
@@ -149,7 +163,6 @@ namespace Proximity {
                 GLib.MatchInfo match_info;
                 var match_found = re.match (response, 0, out match_info);
                 
-                
                 if (match_found && match_info.get_match_count () >= 1) {
                     var content_type = match_info.fetch (0);
                     if (content_type != null) {
@@ -169,9 +182,19 @@ namespace Proximity {
 
         private void set_text (string request, string response) {
             show_hex (false);
-            set_sourceview_language (request);
+            if (should_syntax_highlight (request, response)) {
+                set_sourceview_language (request);
+            }
+            else {
+                source_buffer.language = language_manager.get_language ("text");
+            }
             var newlines = _scroll ? "\n\n" : "";
             source_buffer.text = request.make_valid () + newlines + response.make_valid ();
+        }
+
+        private bool should_syntax_highlight(string request, string response) {
+            return longest_line_length(request) <= MAX_HIGHLIGHT_LINE_LENGTH &&
+             longest_line_length(response) <= MAX_HIGHLIGHT_LINE_LENGTH;
         }
 
         private void show_hex (bool show) {
