@@ -210,7 +210,7 @@ namespace Proximity {
 
                 if (large_response) {
                     text_view_request.set_large_request (guid, combined_content_length);
-                    text_view_orig_request.set_request_response (original_request, "Response too large to display".data);
+                    text_view_orig_request.set_request_response ("Request or response too large to display".data, "".data);
                     request_preview.hide ();
                 }
                 else {

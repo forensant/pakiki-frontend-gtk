@@ -243,7 +243,7 @@ namespace Proximity {
 
         private bool is_binary (uchar[] body) {
             var body_str = (string)body;
-            return !body_str.validate (body.length - 1, null);
+            return !body_str.validate (body.length - 1, null) || body.length > (1024*1024);
         }
 
         public void on_back_clicked () {
