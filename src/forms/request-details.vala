@@ -29,7 +29,7 @@ namespace Proximity {
         public string guid;
         private Gee.HashMap<string, string> modified_websocket_data;
         private OutOfBandDisplay out_of_band_display;
-        private RequestPreview request_preview;
+        private SearchableRequestPreview request_preview;
         private string url;
 
         private RequestTextView text_view_orig_request;
@@ -82,7 +82,7 @@ namespace Proximity {
             set_send_to_popup ();
             scroll_window_original_text.hide ();
 
-            request_preview = new RequestPreview (application_window);
+            request_preview = new SearchableRequestPreview (application_window);
             this.append_page (request_preview, new Gtk.Label.with_mnemonic ("_Preview"));
             request_preview.hide ();
 
@@ -135,11 +135,13 @@ namespace Proximity {
         }
 
         public bool find_activated () {
-            if (get_nth_page(page) == scroll_window_original_text) {
+            if (get_nth_page (page) == scroll_window_original_text) {
                 return text_view_orig_request.find_activated ();
             }
-            else if (get_nth_page(page) == scroll_window_text) {
+            else if (get_nth_page (page) == scroll_window_text) {
                 return text_view_request.find_activated ();
+            } else if (get_nth_page (page) == request_preview) {
+                return request_preview.find_activated ();
             }
             
             return false;
