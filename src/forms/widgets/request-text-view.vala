@@ -2,15 +2,11 @@ namespace Proximity {
 
     [GtkTemplate (ui = "/com/forensant/proximity/request-text-view.ui")]
     class RequestTextView : Gtk.Box {
-        [GtkChild]
-        private unowned Gtk.SourceView source_view;
+        private SearchableSourceView searchable_source_view;
         private HexEditor hex_editor;
 
         // Anything above this, and we won't try to syntax highlight as it causes performance issues - 10KB?
         private long MAX_HIGHLIGHT_LINE_LENGTH = (1024*10); 
-
-        [GtkChild]
-        private unowned Gtk.ScrolledWindow scrolled_window_source_view;
 
         [GtkChild]
         private unowned Gtk.ScrolledWindow scrolled_window_hex_view;
@@ -27,7 +23,7 @@ namespace Proximity {
             get { return _editable; }
             set { 
                 _editable = value;
-                source_view.editable = value;
+                searchable_source_view.source_view.editable = value;
                 // hex_editor.editable = value;
             }
         }
@@ -37,11 +33,11 @@ namespace Proximity {
             get { return _scroll; }
             set { 
                 _scroll = value;
+
+                searchable_source_view.scroll = value;
                 var vertical_policy = value ? Gtk.PolicyType.AUTOMATIC : Gtk.PolicyType.NEVER;
                 var shadow_type = value ? Gtk.ShadowType.NONE : Gtk.ShadowType.IN;
 
-                scrolled_window_source_view.vscrollbar_policy = vertical_policy;
-                scrolled_window_source_view.shadow_type = shadow_type;
                 scrolled_window_hex_view.vscrollbar_policy = vertical_policy;
                 scrolled_window_hex_view.shadow_type = shadow_type;
             }
@@ -49,20 +45,32 @@ namespace Proximity {
         
         public RequestTextView (ApplicationWindow application_window) {
             this.application_window = application_window;
+            searchable_source_view = new SearchableSourceView ();
+            searchable_source_view.show ();
+            this.add (searchable_source_view);
+            
             setting_selection = false;
             language_manager = Gtk.SourceLanguageManager.get_default ();
             var lang = language_manager.get_language ("xml");
 
             source_buffer = new Gtk.SourceBuffer.with_language (lang);
-            source_view.buffer = source_buffer;
+            searchable_source_view.source_view.buffer = source_buffer;
             
-            source_view.populate_popup.connect ( (menu) => {
+            searchable_source_view.source_view.populate_popup.connect ( (menu) => {
                 on_request_response_popup (menu, source_buffer);
             });
 
             hex_editor = new HexEditor ();
             hex_editor.show ();
             scrolled_window_hex_view.add (hex_editor);
+        }
+
+        public bool find_activated () {
+            if (searchable_source_view.visible) {
+                return searchable_source_view.find_activated ();
+            }
+
+            return false;
         }
 
         private long longest_line_length (string req) {
@@ -199,8 +207,7 @@ namespace Proximity {
 
         private void show_hex (bool show) {
             scrolled_window_hex_view.visible = show;
-            scrolled_window_source_view.visible = !show;
+            searchable_source_view.visible = !show;
         }
-
     }
 }

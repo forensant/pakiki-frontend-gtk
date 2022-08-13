@@ -300,6 +300,10 @@ namespace Proximity {
             }
         }
 
+        public bool find_activated () {
+            return request_details.find_activated ();
+        }
+
         private void get_requests () {
             label_no_requests.visible = false;
             this.updating = true;

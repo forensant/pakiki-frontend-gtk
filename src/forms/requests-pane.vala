@@ -54,6 +54,10 @@ namespace Proximity {
             return requests_loaded;
         }
 
+        public bool find_activated () {
+            return request_list.find_activated ();
+        }
+
         public string new_tooltip_text () {
             return "New Request";
         }

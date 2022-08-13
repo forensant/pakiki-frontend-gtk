@@ -14,6 +14,8 @@
     <file preprocess="xml-stripblanks">request-list.ui</file>
     <file preprocess="xml-stripblanks">request-new.ui</file>
     <file preprocess="xml-stripblanks">request-text-view.ui</file>
+    <file preprocess="xml-stripblanks">searchable-source-view.ui</file>
+    <file preprocess="xml-stripblanks">text-search-bar.ui</file>
     <file preprocess="xml-stripblanks">window.ui</file>
 
     <file>HappyLaptop.svg</file>

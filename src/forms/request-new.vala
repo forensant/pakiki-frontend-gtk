@@ -75,6 +75,10 @@ namespace Proximity {
             application_window.change_pane ("RequestList");
         }
 
+        public bool find_activated () {
+            return request_details.find_activated ();
+        }
+
         [GtkCallback]
         public void on_send_clicked () {
             spinner.start ();

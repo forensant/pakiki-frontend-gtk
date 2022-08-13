@@ -134,6 +134,17 @@ namespace Proximity {
             ended = true;
         }
 
+        public bool find_activated () {
+            if (get_nth_page(page) == scroll_window_original_text) {
+                return text_view_orig_request.find_activated ();
+            }
+            else if (get_nth_page(page) == scroll_window_text) {
+                return text_view_request.find_activated ();
+            }
+            
+            return false;
+        }
+
         private void on_websocket_packet_selected () {
             var selection = treeview_websocket_packets.get_selection ();
             Gtk.TreeModel model;

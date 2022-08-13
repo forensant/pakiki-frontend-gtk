@@ -105,15 +105,14 @@ namespace Proximity {
             var accel_group = new Gtk.AccelGroup ();
             accel_group.connect ('f', Gdk.ModifierType.CONTROL_MASK, 0, (group, accel, keyval, modifier) => {
                 var pane = selected_pane ();
-                if (pane == null || pane.can_search ()) {
+                if (pane != null && pane.find_activated ()) {
+                    // do nothing - as find has been activated
+                }
+                else if (pane == null || pane.can_search ()) {
                     searchbar.visible = !searchbar.visible;
                     if (searchbar.visible) {
                         searchentry.grab_focus ();
                     }
-                    return true;
-                }
-                else {
-                    pane.find_activated ();
                 }
 
                 return true;

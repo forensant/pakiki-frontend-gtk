@@ -41,6 +41,10 @@ namespace Proximity {
             this.show ();
         }
 
+        public bool find_activated () {
+            return request_list_full.find_activated ();
+        }
+
         public void set_inject_operation (InjectOperation operation) {
             var different_operation = this.operation == null || operation.guid != this.operation.guid;
             

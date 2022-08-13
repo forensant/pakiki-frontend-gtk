@@ -48,6 +48,10 @@ namespace Proximity {
             return inject_underway_form.visible;
         }
 
+        public bool find_activated () {
+            return inject_underway_form.visible && inject_underway_form.find_activated ();
+        }
+
         private void get_inject_operations () {
             var url = "http://" + application_window.core_address + "/inject_operations";
 
