@@ -1,6 +1,7 @@
 namespace Proximity {
 
     public class HexEditor : Gtk.DrawingArea, Gtk.Scrollable {
+        public signal void buffer_assigned ();
 
         const int OFFSET_CHARACTERS = 8;
         const int PADDING_BETWEEN_SECTIONS = 32;
@@ -69,6 +70,7 @@ namespace Proximity {
                 vadjustment.set_value (0);
                 selection_start_charidx = selection_end_charidx = -1;
                 queue_draw ();
+                this.buffer_assigned ();
             }
         }
 
@@ -993,6 +995,17 @@ namespace Proximity {
             style.render_layout (cr, x_offset, TOP_BORDER, after_layout);
 
             return line_width;
+        }
+
+        public void set_char_selection (int64 start_idx, int64 end_idx) {
+            selection_start_charidx = start_idx;
+            selection_end_charidx = end_idx;
+            selecting = true;
+            half_selection = false;
+
+            this.vadjustment.value = (double)start_idx / 16.0;
+
+            queue_draw ();
         }
 
         private bool set_selection (double end_x, double end_y) {

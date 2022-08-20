@@ -1,5 +1,5 @@
 namespace Proximity {
-    public class HexStaticBuffer : Object, HexBuffer {
+    public class HexStaticBuffer : HexBuffer {
         
         private uint8[] buffer;
         private bool _read_only;
@@ -30,7 +30,7 @@ namespace Proximity {
             }
         }
 
-        public uint8 byte_at (uint64 offset) {
+        public override uint8 byte_at (uint64 offset) {
             if (offset >= buffer.length) {
                 return '0';
             }
@@ -39,7 +39,7 @@ namespace Proximity {
             }
         }
         
-        public uint8[] data (uint64 from, uint64 to) {
+        public override uint8[] data (uint64 from, uint64 to) {
             if (to > buffer.length) {
                 to = buffer.length;
             }
@@ -53,7 +53,7 @@ namespace Proximity {
             return buffer[from:to];
         }
 
-        public bool data_cached (uint64 from, uint64 to) {
+        public override bool data_cached (uint64 from, uint64 to) {
             return true;
         }
 
@@ -61,7 +61,7 @@ namespace Proximity {
             return buffer;
         }
 
-        public void insert (uint64 at, uint8[] data) {
+        public override void insert (uint64 at, uint8[] data) {
             Array<uint8> new_buffer = new Array<uint8> (false);
             new_buffer.append_vals (buffer[0:at], (uint)at);
             new_buffer.append_vals (data, data.length);
@@ -71,16 +71,16 @@ namespace Proximity {
             length_changed ();
         }
 
-        public uint64 length () {
+        public override uint64 length () {
             return buffer.length;
         }
 
-        public bool pos_in_headers (uint64 pos) {
+        public override bool pos_in_headers (uint64 pos) {
             var str = (string)data;
             return str.index_of ("\x0a\x0d\x0a\x0d") > pos;
         }
 
-        public void remove (uint64 from, uint64 to) {
+        public override void remove (uint64 from, uint64 to) {
             Array<uint8> new_buffer = new Array<uint8> (false);
             if (from != 0) {
                 new_buffer.append_vals (buffer[0:from], (uint)from);
@@ -91,16 +91,52 @@ namespace Proximity {
             length_changed ();
         }
 
-        public bool read_only () {
+        public override bool read_only () {
             return _read_only;
         }
 
-        public void replace_byte (uint64 pos, uint8 byte) {
+        public override void replace_byte (uint64 pos, uint8 byte) {
             if (pos >= buffer.length) {
                 return;
             }
             buffer[pos] = byte;
             length_changed (); // not technically, but will force a refresh
+        }
+
+        public override void search (string query, string format) {
+            search_result_upto = -1;
+            string strbuf = (string)buffer;
+            HexBuffer.SearchResult[] results = {};
+
+            if (query == "") {
+                search_results = results;
+                this.search_results_available ();
+                return;
+            }
+            
+            var q = query;
+
+            if (format == "Hex") {
+                var hex = valid_hex (query);
+                if (hex.length == 0) {
+                    return;
+                }
+
+                q = (string) hex_to_bytes (hex);
+            }
+
+            int idx = 0;
+            while (idx != -1) {
+                idx = strbuf.index_of (q, idx);
+                if (idx != -1) {
+                    HexBuffer.SearchResult sr = { idx, idx + q.length - 1};
+                    results += sr;
+                    idx++;
+                }
+            }
+
+            search_results = results;
+            this.search_results_available ();
         }
 
         public void set_read_only (bool ro) {

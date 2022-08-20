@@ -1,5 +1,5 @@
 namespace Proximity {
-    public class HexRemoteBuffer : Object, HexBuffer {
+    public class HexRemoteBuffer : HexBuffer {
         
         public string guid { get; private set; }
 
@@ -25,7 +25,7 @@ namespace Proximity {
             buffer_end = 0;
         }
         
-        public uint8[] data (uint64 from, uint64 to) {
+        public override uint8[] data (uint64 from, uint64 to) {
             var blank_data = new uint8[0];
             if (from > to) {
                 return blank_data;
@@ -77,16 +77,73 @@ namespace Proximity {
             return b;
         }
 
-        public bool data_cached (uint64 from, uint64 to) {
+        public override bool data_cached (uint64 from, uint64 to) {
             return (from >= buffer_start && to <= buffer_end);
         }
 
-        public uint64 length () {
+        public override uint64 length () {
             return _content_length;
         }
 
-        public bool read_only () {
+        public override bool read_only () {
             return true;
+        }
+
+        private Soup.Message current_search_message = null;
+        public override void search (string query, string format) {
+            if (current_search_message != null) {
+                application_window.http_session.cancel_message (current_search_message, Soup.Status.CANCELLED);
+            }
+
+            if (query == "") {
+                search_results = {};
+                this.search_results_available ();
+                return;
+            }
+            
+            var q = query;
+
+            if (format == "Hex") {
+                var hex = valid_hex (query);
+                if (hex.length == 0) {
+                    return;
+                }
+
+                q = (string) hex_to_bytes (hex);
+            }
+
+            var url = "http://" + application_window.core_address + "/requests/" + guid+ "/search?query=" + Uri.escape_string (Base64.encode (q.data));
+
+            current_search_message = new Soup.Message ("GET", url);
+
+            application_window.http_session.queue_message (current_search_message, (sess, mess) => {
+                if (mess.status_code != 200) {
+                    return;
+                }
+                var parser = new Json.Parser ();
+                try {
+                    parser.load_from_data ((string) mess.response_body.flatten ().data, -1);
+
+                    HexBuffer.SearchResult[] results_to_set = {};
+
+                    var results = parser.get_root ().get_array ();
+                    results.foreach_element ( (array, idx, node) => {
+                        var el = node.get_object ();
+                        HexBuffer.SearchResult sr = {
+                            el.get_int_member ("StartOffset"),
+                            el.get_int_member ("EndOffset")
+                        };
+                        results_to_set += sr;
+                    });
+
+                    search_result_upto = -1;
+                    search_results = results_to_set;
+                    this.search_results_available ();
+
+                } catch (Error err) {
+                    stdout.printf ("Could not get search results: %s\n", err.message);
+                }
+            });
         }
     }
 }

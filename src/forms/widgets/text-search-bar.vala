@@ -11,11 +11,31 @@ namespace Proximity {
         private Gtk.ComboBox combobox_format;
 
         [GtkChild]
+        private Gtk.Label label_count;
+
+        [GtkChild]
         private Gtk.SearchEntry search_entry_text;
+
+        [GtkChild]
+        private Gtk.Spinner spinner;
+
+        public string count_text {
+            get { return label_count.label; }
+            set { label_count.label = value; }
+        }
+
+        public string format {
+            get { return combobox_format.active_id == "0" ? "ASCII" : "Hex"; }
+        }
 
         public bool format_visible {
             get { return combobox_format.visible; }
             set { combobox_format.visible = value; }
+        }
+
+        public bool spinner_visible {
+            get { return spinner.visible; }
+            set { spinner.visible = value; }
         }
 
         public string text {

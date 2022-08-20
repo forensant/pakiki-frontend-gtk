@@ -1,15 +1,11 @@
 namespace Proximity {
 
-    [GtkTemplate (ui = "/com/forensant/proximity/request-text-view.ui")]
     class RequestTextView : Gtk.Box {
         private SearchableSourceView searchable_source_view;
-        private HexEditor hex_editor;
+        private SearchableHexEditor searchable_hex_editor;
 
         // Anything above this, and we won't try to syntax highlight as it causes performance issues - 10KB?
         private long MAX_HIGHLIGHT_LINE_LENGTH = (1024*10); 
-
-        [GtkChild]
-        private unowned Gtk.ScrolledWindow scrolled_window_hex_view;
 
         // for the requests/responses where we can render them
         private Gtk.SourceLanguageManager language_manager;
@@ -35,11 +31,7 @@ namespace Proximity {
                 _scroll = value;
 
                 searchable_source_view.scroll = value;
-                var vertical_policy = value ? Gtk.PolicyType.AUTOMATIC : Gtk.PolicyType.NEVER;
-                var shadow_type = value ? Gtk.ShadowType.NONE : Gtk.ShadowType.IN;
-
-                scrolled_window_hex_view.vscrollbar_policy = vertical_policy;
-                scrolled_window_hex_view.shadow_type = shadow_type;
+                searchable_hex_editor.scroll = value;
             }
         }
         
@@ -47,7 +39,7 @@ namespace Proximity {
             this.application_window = application_window;
             searchable_source_view = new SearchableSourceView ();
             searchable_source_view.show ();
-            this.add (searchable_source_view);
+            this.pack_start (searchable_source_view, true, true, 0);
             
             setting_selection = false;
             language_manager = Gtk.SourceLanguageManager.get_default ();
@@ -60,14 +52,17 @@ namespace Proximity {
                 on_request_response_popup (menu, source_buffer);
             });
 
-            hex_editor = new HexEditor ();
-            hex_editor.show ();
-            scrolled_window_hex_view.add (hex_editor);
+            searchable_hex_editor = new SearchableHexEditor ();
+            searchable_hex_editor.show ();
+            this.pack_start (searchable_hex_editor, true, true, 0);
         }
 
         public bool find_activated () {
             if (searchable_source_view.visible) {
                 return searchable_source_view.find_activated ();
+            }
+            else if (searchable_hex_editor.visible) {
+                return searchable_hex_editor.find_activated ();
             }
 
             return false;
@@ -113,21 +108,21 @@ namespace Proximity {
 
         public void reset_state () {
             source_buffer.text = "";
-            hex_editor.buffer = new HexStaticBuffer ();
+            searchable_hex_editor.hex_editor.buffer = new HexStaticBuffer ();
             show_hex (false);
         }
 
         public void set_large_request (string guid, int64 content_length) {
             show_hex (true);
-            if (hex_editor.buffer is HexRemoteBuffer) {
-                var buf = hex_editor.buffer as HexRemoteBuffer;
+            if (searchable_hex_editor.hex_editor.buffer is HexRemoteBuffer) {
+                var buf = searchable_hex_editor.hex_editor.buffer as HexRemoteBuffer;
                 if (buf.guid == guid) {
                     buf.content_length = content_length;
                     return;
                 }
             }
 
-            hex_editor.buffer = new HexRemoteBuffer (application_window, guid, content_length);
+            searchable_hex_editor.hex_editor.buffer = new HexRemoteBuffer (application_window, guid, content_length);
         }
 
         private void set_hex_text (uchar[] request, uchar[] response) {
@@ -145,7 +140,7 @@ namespace Proximity {
                 full_hex_text.add (response[i]);
             }
 
-            hex_editor.buffer = new HexStaticBuffer.from_bytes (full_hex_text.to_array ());
+            searchable_hex_editor.hex_editor.buffer = new HexStaticBuffer.from_bytes (full_hex_text.to_array ());
         }
 
         public void set_request(uchar[] request) {
@@ -206,7 +201,7 @@ namespace Proximity {
         }
 
         private void show_hex (bool show) {
-            scrolled_window_hex_view.visible = show;
+            searchable_hex_editor.visible = show;
             searchable_source_view.visible = !show;
         }
     }
