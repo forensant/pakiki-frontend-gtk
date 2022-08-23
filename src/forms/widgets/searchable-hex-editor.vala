@@ -94,17 +94,17 @@ namespace Proximity {
         }
 
         private void update_count () {
-            var current_selection = hex_editor.buffer.search_result_selection ().to_string ();
-            var total = hex_editor.buffer.search_result_count ().to_string ();
+            var current_selection = hex_editor.buffer.search_result_selection ();
+            var total = hex_editor.buffer.search_result_count ();
             
             if (search_bar.text == "") {
-                search_bar.count_text = "";
+                search_bar.clear_search_count ();
             }
-            else if (total == "0") {
-                search_bar.count_text = "No results found";
+            else if (total == 0) {
+                search_bar.set_no_results ();
             }
             else {
-                search_bar.count_text = current_selection + " of " + total;
+                search_bar.set_count (current_selection, total);
             }
         }
     }

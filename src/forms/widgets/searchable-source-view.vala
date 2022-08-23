@@ -9,6 +9,8 @@ namespace Proximity {
         public unowned Gtk.SourceView source_view;
 
         private TextSearchBar search_bar;
+        private int total_count;
+        private int upto;
 
         private bool _scroll = true;
         public bool scroll {
@@ -52,10 +54,32 @@ namespace Proximity {
         }
 
         private void search_next () {
+            upto++;
+
+            if (upto >= total_count) {
+                upto = 0;
+
+                var prev_mark = source_view.buffer.get_mark ("search");
+                if (prev_mark != null) {
+                    source_view.buffer.delete_mark (prev_mark);
+                }
+            }
+
             search (true);
         }
 
         private void search_prev () {
+            upto--;
+
+            if (upto <= -1) {
+                upto = total_count - 1;
+
+                var prev_mark = source_view.buffer.get_mark ("search");
+                if (prev_mark != null) {
+                    source_view.buffer.delete_mark (prev_mark);
+                }
+            }
+
             search (false);
         }
 
@@ -64,6 +88,31 @@ namespace Proximity {
             if (prev_mark != null) {
                 source_view.buffer.delete_mark (prev_mark);
             }
+
+            if (search_bar.text == "") {
+                search_bar.clear_search_count ();
+            }
+            else {
+                Gtk.TextIter iter_start, iter_end;
+                source_view.buffer.get_start_iter (out iter_start);
+                source_view.buffer.get_end_iter (out iter_end);
+
+                var found = true;
+                total_count = 0;
+                upto = -1;
+                while (found) {
+                    found = iter_start.forward_search  (search_bar.text, Gtk.TextSearchFlags.CASE_INSENSITIVE, out iter_start, out iter_end, null);
+                    if (found) {
+                        iter_start = iter_end;
+                        total_count++;
+                    }
+                }
+
+                if (total_count == 0) {
+                    search_bar.set_no_results ();
+                }
+            }
+            
 
             search_next ();
         }
@@ -114,6 +163,7 @@ namespace Proximity {
                 source_view.buffer.select_range (iter_start, iter_end);
                 var mark = source_view.buffer.create_mark ("search", iter_end, true);
                 source_view.scroll_mark_onscreen (mark);
+                search_bar.set_count (upto + 1, total_count); // as it's 0-indexed
             }
         }
     }

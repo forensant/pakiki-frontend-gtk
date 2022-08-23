@@ -19,11 +19,6 @@ namespace Proximity {
         [GtkChild]
         private Gtk.Spinner spinner;
 
-        public string count_text {
-            get { return label_count.label; }
-            set { label_count.label = value; }
-        }
-
         public string format {
             get { return combobox_format.active_id == "0" ? "ASCII" : "Hex"; }
         }
@@ -41,6 +36,10 @@ namespace Proximity {
         public string text {
             get { return search_entry_text.text; }
             set { search_entry_text.text = value; }
+        }
+
+        public void clear_search_count () {
+            label_count.label = "";
         }
 
         public void find_activated () {
@@ -65,6 +64,14 @@ namespace Proximity {
         [GtkCallback]
         private void on_search_entry_text_stop_search () {
             stop ();
+        }
+
+        public void set_count (int upto, int total) {
+            label_count.label = upto.to_string () + " of " + total.to_string ();
+        }
+
+        public void set_no_results () {
+            label_count.label = "No results found";
         }
 
         public bool text_has_focus () {
