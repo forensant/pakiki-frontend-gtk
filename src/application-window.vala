@@ -129,7 +129,7 @@ namespace Proximity {
             // works around a webkit bug
             new WebKit.WebView();
 
-            requests_pane = new RequestsPane (this);
+            requests_pane = new RequestsPane (this, true);
             requests_pane.pane_changed.connect(on_pane_changed);
             stack.add_titled (requests_pane, "RequestList", "Requests");
             requests_pane.show ();

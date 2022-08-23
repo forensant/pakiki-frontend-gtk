@@ -16,16 +16,17 @@ namespace Proximity {
         [GtkChild]
         private unowned Gtk.ListStore liststore;
         [GtkChild]
+        private unowned Gtk.Overlay overlay;
+        [GtkChild]
         private unowned Gtk.TreeView request_list;
         [GtkChild]
         private unowned Gtk.ScrolledWindow scrolled_window_requests;
-        [GtkChild]
-        private unowned Gtk.Spinner spinner;
 
         private ApplicationWindow application_window;
         private Gtk.Box box_request_details;
         private bool exclude_resources;
         private Gee.Set<string> guid_set;
+        private Gtk.Label label_overlay;
         private PlaceholderRequests placeholder_requests;
         private RequestCompare request_compare;
         private RequestDetails request_details;
@@ -33,6 +34,7 @@ namespace Proximity {
         private string search_protocol;
         private string search_query;
         private bool updating;
+        private bool resetting;
         private string url_filter;
         private WebsocketConnection websocket;
 
@@ -59,7 +61,7 @@ namespace Proximity {
             NOTES
         }
         
-        public RequestList (ApplicationWindow application_window, string[] scan_ids = {}) {
+        public RequestList (ApplicationWindow application_window, bool initial_launch, string[] scan_ids = {}) {
             this.application_window = application_window;
             this.scan_ids = scan_ids;
             this.exclude_resources = true;
@@ -73,6 +75,11 @@ namespace Proximity {
             this.placeholder_requests = new PlaceholderRequests (application_window);
             placeholder_requests.hide ();
             this.box.add (placeholder_requests);
+
+            label_overlay = new Gtk.Label ("");
+            label_overlay.name = "lbl_overlay";
+            label_overlay.label = "Loading requests...";
+            overlay.add_overlay (label_overlay);
 
             var url_renderer = new Gtk.CellRendererText();
             url_renderer.ellipsize = Pango.EllipsizeMode.END;
@@ -223,7 +230,6 @@ namespace Proximity {
             request_list.get_column(Column.ERROR).sort_column_id                   = Column.ERROR;
             request_list.get_column(Column.NOTES).sort_column_id                   = Column.NOTES;
 
-
             box_request_details = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
 
             request_details = new RequestDetails (application_window);
@@ -238,7 +244,7 @@ namespace Proximity {
             
             scrolled_window_requests.hide ();
 
-            if (scan_ids.length != 0) {
+            if (scan_ids.length != 0 && !initial_launch) {
                 get_requests ();
             }
 
@@ -313,13 +319,6 @@ namespace Proximity {
             this.updating = false;
 
             bool fetched_data = false;
-            Timeout.add (200, () => {
-                if (!fetched_data) {
-                    spinner.active = true;
-                }
-                return GLib.Source.REMOVE;
-            });
-
             var url = "http://" + application_window.core_address + "/requests?exclude_resources=" + (exclude_resources ? "true" : "false");
 
             if (search_query != null && search_query != "") {
@@ -340,12 +339,20 @@ namespace Proximity {
             }
 
             var message = new Soup.Message ("GET", url);
+            var response_received = false;
+            var is_resetting = resetting;
+            
+            Timeout.add_full (GLib.Priority.HIGH, 50, () => {
+                if (!response_received && !is_resetting) {
+                    label_overlay.visible = true;
+                }
 
+                return GLib.Source.REMOVE;
+            });
+            
             application_window.http_session.queue_message (message, (sess, mess) => {
                 this.updating = true;
                 fetched_data = true;
-                liststore.clear ();
-                spinner.active = false;
                 var parser = new Json.Parser ();
                 try {
                     if (message.status_code != 200) {
@@ -364,8 +371,18 @@ namespace Proximity {
                         add_request_to_table (request);
                     }
 
+                    var should_scroll = true;
+                    Timeout.add_full (GLib.Priority.HIGH, 1000, () => {
+                        should_scroll = false;
+                        label_overlay.visible = false;
+                        return GLib.Source.REMOVE;
+                    });
+
                     GLib.Idle.add_full (GLib.Priority.DEFAULT_IDLE, () => {
-                        scroll_to_bottom ();
+                        if (should_scroll) {
+                            scroll_to_bottom ();
+                            label_overlay.visible = false;
+                        }
                         return GLib.Source.REMOVE;
                     });
 
@@ -373,9 +390,11 @@ namespace Proximity {
 
                 } catch (Error err) {
                     stdout.printf ("Could not populate request list: %s\n", err.message);
+                    label_overlay.visible = false;
                 }
 
                 this.updating = false;
+                response_received = true;
             });
 
             if (websocket != null && websocket.state == Soup.WebsocketState.OPEN) {
@@ -753,8 +772,11 @@ namespace Proximity {
         }
 
         public void reset_state () {
+            label_overlay.visible = false;
+            resetting = true;
             get_requests ();
             request_details.reset_state ();
+            resetting = false;
             request_compare.hide ();
             request_details.hide ();
         }
@@ -780,7 +802,6 @@ namespace Proximity {
                 placeholder_requests.set_error (application_window.core_address);
             } else {
                 placeholder_requests.update_proxy_address ();
-                get_requests();
             }
         }
     }

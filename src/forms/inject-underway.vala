@@ -32,7 +32,7 @@ namespace Proximity {
             this.application_window = application_window;
             search_query = "";
             string[] scan_ids = {"-"};
-            request_list_full = new RequestList (application_window, scan_ids);
+            request_list_full = new RequestList (application_window, false, scan_ids);
             this.attach (request_list_full, 0, 4, 2, 1);
 
             label_title.set_text_with_mnemonic ("_Title");

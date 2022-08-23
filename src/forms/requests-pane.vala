@@ -18,10 +18,10 @@ namespace Proximity {
             set { request_list.process_actions = value; }
         }
 
-        public RequestsPane (ApplicationWindow application_window) {
+        public RequestsPane (ApplicationWindow application_window, bool initial_launch) {
             requests_loaded = false;
             this.application_window = application_window;
-            request_list = new RequestList (application_window);
+            request_list = new RequestList (application_window, initial_launch);
             request_list.requests_loaded.connect (on_requests_loaded);
             request_list.request_selected.connect ( (guid) => { this.request_selected (guid); } );
             request_list.request_double_clicked.connect ( (guid) => { this.request_double_clicked (guid); } );
