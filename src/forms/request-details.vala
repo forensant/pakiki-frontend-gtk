@@ -29,7 +29,8 @@ namespace Proximity {
         public string guid;
         private Gee.HashMap<string, string> modified_websocket_data;
         private OutOfBandDisplay out_of_band_display;
-        private SearchableRequestPreview request_preview;
+        private RequestPreview request_preview;
+        private SearchableWebView searchable_web_view;
         private string url;
 
         private RequestTextView text_view_orig_request;
@@ -82,9 +83,10 @@ namespace Proximity {
             set_send_to_popup ();
             scroll_window_original_text.hide ();
 
-            request_preview = new SearchableRequestPreview (application_window);
-            this.append_page (request_preview, new Gtk.Label.with_mnemonic ("_Preview"));
-            request_preview.hide ();
+            request_preview = new RequestPreview (application_window);
+            searchable_web_view = new SearchableWebView (application_window, request_preview);
+            this.append_page (searchable_web_view, new Gtk.Label.with_mnemonic ("_Preview"));
+            searchable_web_view.hide ();
 
             out_of_band_display = new OutOfBandDisplay (application_window);
             scroll_window_out_of_band_interaction.add (out_of_band_display);
@@ -140,8 +142,8 @@ namespace Proximity {
             }
             else if (get_nth_page (page) == scroll_window_text) {
                 return text_view_request.find_activated ();
-            } else if (get_nth_page (page) == request_preview) {
-                return request_preview.find_activated ();
+            } else if (get_nth_page (page) == searchable_web_view) {
+                return searchable_web_view.find_activated ();
             }
             
             return false;
@@ -224,13 +226,13 @@ namespace Proximity {
                 if (large_response) {
                     text_view_request.set_large_request (guid, combined_content_length);
                     text_view_orig_request.set_request_response ("Request or response too large to display".data, "".data);
-                    request_preview.hide ();
+                    searchable_web_view.hide ();
                 }
                 else {
                     text_view_request.set_request_response (modified_request, modified_response);
                     text_view_orig_request.set_request_response (original_request, original_response);
                     var data_load_success = request_preview.set_content (modified_response, mimetype, url);
-                    request_preview.visible = data_load_success;
+                    searchable_web_view.visible = data_load_success;
                 }
                 
             } else {
@@ -238,12 +240,12 @@ namespace Proximity {
 
                 if (large_response) {
                     text_view_request.set_large_request (guid, combined_content_length);
-                    request_preview.hide ();
+                    searchable_web_view.hide ();
                 }
                 else {
                     text_view_request.set_request_response (original_request, original_response);
                     var data_load_success = request_preview.set_content (original_response, mimetype, url);
-                    request_preview.visible = data_load_success;
+                    searchable_web_view.visible = data_load_success;
                 }
             }
         }
@@ -374,7 +376,7 @@ namespace Proximity {
         private void set_controls_visible (bool http, bool websocket, bool out_of_band) {
             scroll_window_text.visible = http;
             scroll_window_original_text.visible = http;
-            request_preview.visible = http;
+            searchable_web_view.visible = http;
             pane_websocket.visible = websocket;
             viewport_out_of_band_interaction.visible = out_of_band;
 
@@ -431,10 +433,10 @@ namespace Proximity {
             text_view_request.reset_state ();
             text_view_orig_request.reset_state ();
             text_view_websocket_request.reset_state ();
-            request_preview.load_uri ("about:blank");
+            searchable_web_view.load_uri ("about:blank");
             liststore_websocket_packets.clear ();
             scroll_window_original_text.hide ();
-            request_preview.hide ();
+            searchable_web_view.hide ();
             pane_websocket.hide ();
             viewport_out_of_band_interaction.hide ();
             this.page = 0;
