@@ -49,8 +49,8 @@ modules:
     sources:
 #manual_ifdef production
       - type: archive
-        url: https://nightly.link/pipeline/proximity-core/workflows/build/main/Linux.zip
-        #sha256: a5c3d3c517695f71b48c9685d883f1ef7108f524c34ffa441654dbd59142f32c
+        url: https://github.com/pipeline/proximity-core/releases/download/v0.6-alpha/ProximityCore-Linux.zip
+        sha256: a5c3d3c517695f71b48c9685d883f1ef7108f524c34ffa441654dbd59142f32c
 #manual_ifdef local
 #      - type: dir
 #        path: /home/parallels/Coding/proximity-core/build/
