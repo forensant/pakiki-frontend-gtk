@@ -345,6 +345,7 @@ namespace Proximity {
             Timeout.add_full (GLib.Priority.HIGH, 50, () => {
                 if (!response_received && !is_resetting) {
                     label_overlay.visible = true;
+                    overlay.show ();
                 }
 
                 return GLib.Source.REMOVE;
@@ -800,8 +801,11 @@ namespace Proximity {
         public void set_processed_launched (bool successful) {
             if (!successful) {
                 placeholder_requests.set_error (application_window.core_address);
+                placeholder_requests.show ();
+                overlay.hide ();
             } else {
                 placeholder_requests.update_proxy_address ();
+                overlay.hide ();
             }
         }
     }

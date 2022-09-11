@@ -27,7 +27,7 @@ sudo apt install flatpak
 You'll need the Flatpak platform it's based on:
 ```
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-flatpak install flathub org.gnome.Platform//40
+flatpak install flathub org.gnome.Platform//42
 ```
 
 Then you can install Proximity:
@@ -56,7 +56,7 @@ You'll require the following dependencies to develop Proximity:
  * libnotify
 
 On Debian based distributions, these can be downloaded with:
- ```sudo apt install build-essential valac meson libgtk-3-dev libsoup2.4-dev libjson-glib-dev libwebkit2gtk-4.0-dev libgtksourceview-3-dev libnotify-dev```
+ ```sudo apt install build-essential valac meson libgtk-3-dev libsoup2.4-dev libjson-glib-dev libwebkit2gtk-4.0-dev libgtksourceview-3.0-dev libgee-0.8-dev libnotify-dev```
 
 If you're going to be building/packaging Proximity, you'll also require the Flatpak dependencies:
 ```
@@ -64,7 +64,7 @@ flatpak install org.gnome.Sdk
 flatpak install org.gnome.Platform
 ```
 
-Select version 40
+Select version 42
 
 ### Building
 Setup the build directory with ```meson setup builddir``` then run ```ninja -C builddir``` to start the build.
