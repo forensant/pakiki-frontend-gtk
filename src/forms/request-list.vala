@@ -298,6 +298,7 @@ namespace Proximity {
             } else {
                 label_no_requests.visible = false;
                 placeholder_requests.hide ();
+                overlay.show ();
                 scrolled_window_requests.show ();
                 box_request_details.show ();
                 request_details.show ();

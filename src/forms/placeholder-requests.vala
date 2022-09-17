@@ -19,7 +19,6 @@ namespace Proximity {
         private unowned Gtk.Label label_setup_proxy;
 
         private ApplicationWindow application_window;
-        private ProxySettings proxy_settings;
         
         public PlaceholderRequests (ApplicationWindow application_window) {
             this.application_window = application_window;
@@ -27,7 +26,7 @@ namespace Proximity {
 
         [GtkCallback]
         public void on_button_certificate_save_clicked (Gtk.Button button) {
-            proxy_settings.save_certificate (application_window);
+            application_window.proxy_settings.save_certificate (application_window);
         }
 
         public void update_proxy_address () {

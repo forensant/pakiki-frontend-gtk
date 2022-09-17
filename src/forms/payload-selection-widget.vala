@@ -274,7 +274,8 @@ namespace Proximity {
         }
 
         private void populate_payloads () {
-            var message = new Soup.Message ("GET", "http://" + application_window.core_address + "/inject_operations/payloads");
+            var url = "http://" + application_window.core_address + "/inject_operations/payloads";
+            var message = new Soup.Message ("GET", url);
 
             application_window.http_session.queue_message (message, (sess, mess) => {
                 if (mess.status_code != 200) {

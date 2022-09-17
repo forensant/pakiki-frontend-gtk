@@ -73,10 +73,10 @@ To run, you'll require Proximity Core in the same directory [https://github.com/
 
  ## Running
  A basic run can be launched with:
- ```GSETTINGS_SCHEMA_DIR=src/ ./proximity```
+ ```GSETTINGS_SCHEMA_DIR=src/ ./com.forensant.proximity```
 
 To build and run:
- ```ninja -C builddir && GSETTINGS_SCHEMA_DIR=builddir/src/ builddir/proximity```
+ ```ninja -C builddir && GSETTINGS_SCHEMA_DIR=builddir/src/ builddir/com.forensant.proximity```
 
 To build/run with Flatpak:
 ```

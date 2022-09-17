@@ -259,6 +259,7 @@ namespace Proximity {
             get_inject_operations ();
             inject_underway_form.hide ();
             inject_new_form.hide ();
+            inject_new_form.reset_state ();
             pane_changed ();
         }
 
