@@ -21,16 +21,16 @@ Download from the latest release from [https://github.com/pipeline/proximity-fro
 
 As the project grows, it will be published to repositories, for now, it is available as a downloadable Flatpak bundle. To install it, you'll first need Flatpak, if you don't have it already:
 ```
-sudo apt install flatpak
+sudo apt install flatpak libpam-gnome-keyring
 ```
+If these are installed, it may be safest to reboot your system twice to ensure the correct environment variables are set and the login keychain is created/unlocked.
 
 You'll need the Flatpak platform it's based on:
 ```
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-flatpak install flathub org.gnome.Platform//42
 ```
 
-Then you can install Proximity:
+Then you can install Proximity (you can download the latest version from the releases directory):
 ```
 flatpak install Proximity.flatpak
 ```
