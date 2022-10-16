@@ -21,6 +21,7 @@ Download from the latest release from [https://github.com/pipeline/proximity-fro
 
 As the project grows, it will be published to repositories, for now, it is available as a downloadable Flatpak bundle. To install it, you'll first need Flatpak, if you don't have it already:
 ```
+sudo apt update
 sudo apt install flatpak libpam-gnome-keyring
 ```
 If these needed to be installed, it may be safest to reboot your system twice to ensure the correct environment variables are set and the login keychain is created/unlocked.
