@@ -6,7 +6,7 @@ namespace Proximity {
             this.wrap_mode = Gtk.WrapMode.CHAR;
             
             this.buffer.create_tag ("diff-added", "background", "light green", "foreground", "black");
-            this.buffer.create_tag ("diff-removed", "background", "light grey");
+            this.buffer.create_tag ("diff-removed", "background", "pink", "foreground", "pink");
         }
 
         public void set_diff (Json.Array arr, int request) {
@@ -24,19 +24,7 @@ namespace Proximity {
                 } else if (request_no == request) {
                     this.buffer.insert_with_tags_by_name (ref iter, text, -1, "diff-added");
                 } else {
-                    var new_text = "";
-                    for (int i = 0; i < text.length; i++) {
-                        if (text.valid_char (i)) {
-                            var chr = text.get_char (i);
-                            if (chr == '\n') {
-                                new_text += "\n";
-                            } else {
-                                new_text += " ";
-                            }
-                        }
-                    }
-
-                    this.buffer.insert_with_tags_by_name (ref iter, new_text, -1, "diff-removed");
+                    this.buffer.insert_with_tags_by_name (ref iter, text, -1, "diff-removed");
                 }
             });
         }
