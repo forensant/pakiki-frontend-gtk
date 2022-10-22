@@ -94,6 +94,42 @@ namespace Proximity {
             builder.end_object ();
         }
 
+        private void clear_between_selection (Gtk.TextIter start_pos, Gtk.TextIter end_pos) {
+            unichar[] chrs_to_replace = {'»', '«'};
+            var start_mark = text_view_request.buffer.create_mark (null, start_pos, true);
+            var end_mark = text_view_request.buffer.create_mark (null, end_pos, true);
+
+            for (var i = 0; i < chrs_to_replace.length; i++) {
+                var chr = chrs_to_replace[i];
+                while (true) {
+                    Gtk.TextIter start_iter, end_iter;
+                    text_view_request.buffer.get_iter_at_mark (out start_iter, start_mark);
+                    text_view_request.buffer.get_iter_at_mark (out end_iter, end_mark);
+
+                    var found = false;
+                    if (start_iter.get_char () == chr) {
+                        found = true;
+                    }
+                    else {
+                        found = start_iter.forward_find_char ( (c) => {
+                            return c == chr;
+                        }, end_iter);
+                    }
+
+                    if (!found) {
+                        break;
+                    }
+
+                    var end_chr_iter = start_iter;
+                    end_chr_iter.forward_char ();
+                    text_view_request.buffer.delete_interactive (ref start_iter, ref end_chr_iter, true);
+                }
+            }
+
+            text_view_request.buffer.delete_mark (start_mark);
+            text_view_request.buffer.delete_mark (end_mark);
+        }
+
         private void correct_separators_and_tag () {
             Gtk.TextIter start_pos, end_pos;
             text_view_request.buffer.get_bounds (out start_pos, out end_pos);
@@ -194,15 +230,9 @@ namespace Proximity {
             builder.end_array ();
         }
 
-        [GtkCallback]
-        private void on_button_add_separator_clicked () {
-            label_error.label = "";
-
-            Gtk.TextIter start_pos, end_pos;
-            var text_selected = text_view_request.buffer.get_selection_bounds (out start_pos, out end_pos);
-
-            var last_start_iterator = start_pos;
-            var last_end_iterator = start_pos;
+        private bool is_iter_in_selection (Gtk.TextIter iter) {
+            var last_start_iterator = iter;
+            var last_end_iterator = iter;
             last_start_iterator.backward_find_char ( (c) => {
                 return c == '»';
             }, null);
@@ -210,12 +240,21 @@ namespace Proximity {
                 return c == '«';
             }, null);
 
-            var last_character_opened = (last_start_iterator.get_offset () > last_end_iterator.get_offset ());
+            return (last_start_iterator.get_offset () > last_end_iterator.get_offset ());
+        }
+
+        [GtkCallback]
+        private void on_button_add_separator_clicked () {
+            label_error.label = "";
+
+            Gtk.TextIter start_pos, end_pos;
+            var text_selected = text_view_request.buffer.get_selection_bounds (out start_pos, out end_pos);
+            var in_selection = is_iter_in_selection (start_pos);
 
             if (start_pos.equal (end_pos)) {
                 // start == end, so insert a single character
                 var chrToInsert = "»";    
-                if (last_character_opened) {
+                if (in_selection) {
                     chrToInsert = "«";
                 }
 
@@ -224,7 +263,7 @@ namespace Proximity {
             } else if (text_selected) {
                 // it's a range
 
-                if (last_character_opened) {
+                if (in_selection) {
                     label_error.label = "Cannot add separator as there's a previously unclosed separator.";
                     return;
                 }
@@ -246,6 +285,84 @@ namespace Proximity {
             }
 
             correct_separators_and_tag ();
+        }
+
+        [GtkCallback]
+        private void on_button_clear_separator_clicked () {
+            Gtk.TextIter start_pos, end_pos;
+            var text_selected = text_view_request.buffer.get_selection_bounds (out start_pos, out end_pos);
+
+            var in_selection = is_iter_in_selection (start_pos);
+
+            if (!text_selected) {
+                if (in_selection) {
+                    // just clear the current selection that we're in
+                    var last_start_iterator = start_pos;
+                    last_start_iterator.backward_find_char ( (c) => {
+                        return c == '»';
+                    }, null);
+
+                    var start_mark = text_view_request.buffer.create_mark (null, last_start_iterator, true);
+
+                    var end_char_pos = end_pos;
+                    end_char_pos.forward_find_char ( c => {
+                        return c == '«';
+                    }, null);
+
+                    if (!end_char_pos.is_end ()) {
+                        var mark_end_pos = end_char_pos;
+                        mark_end_pos.forward_char ();
+                        text_view_request.buffer.delete_interactive (ref end_char_pos, ref mark_end_pos, true);
+
+                    }
+
+                    Gtk.TextIter start_char_pos;
+                    text_view_request.buffer.get_iter_at_mark (out start_char_pos, start_mark);
+                    var mark_start_pos = start_char_pos;
+                    mark_start_pos.forward_char ();
+                    text_view_request.buffer.delete_interactive (ref mark_start_pos, ref start_char_pos, true);
+                    text_view_request.buffer.delete_mark (start_mark);
+                }
+                else {
+                    // if nothing is selected, clear all separators
+                    Gtk.TextIter buffer_text_start, buffer_text_end;
+                    text_view_request.buffer.get_start_iter (out buffer_text_start);
+                    text_view_request.buffer.get_end_iter (out buffer_text_end);
+
+                    clear_between_selection (buffer_text_start, buffer_text_end);
+                } 
+            }
+            else {
+                // if we have a selection covering multiple, then clear all selected
+                Gtk.TextIter multiple_start_iter = start_pos;
+                Gtk.TextIter multiple_end_iter = end_pos;
+                if (in_selection) {
+                    multiple_start_iter.backward_find_char ( (c) => {
+                        return c == '»';
+                    }, null);
+                }
+                if (is_iter_in_selection (end_pos)) {
+                    var found = false;
+
+                    if (multiple_end_iter.get_char () == '«') {
+                        found = true;
+                    }
+                    else {
+                        found = multiple_end_iter.forward_find_char ( (c) => {
+                            return c == '«';
+                        }, null);
+                    }
+
+                    if (found) {
+                        multiple_end_iter.forward_char ();
+                    }
+                }
+
+                clear_between_selection (multiple_start_iter, multiple_end_iter);
+            }
+
+            correct_separators_and_tag ();
+            text_view_request.has_focus = true;
         }
 
         private bool on_text_view_request_key_release_event (Gdk.EventKey event) {
