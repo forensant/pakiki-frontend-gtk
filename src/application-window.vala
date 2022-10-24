@@ -179,7 +179,6 @@ namespace Proximity {
 
             stdout.printf("Proximity started\n");
 
-            var app_window = this;
             this.delete_event.connect ((e) => {
                 if (core_process != null) {
                     saving_dialog = new SavingDialog();

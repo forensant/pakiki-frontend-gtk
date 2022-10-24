@@ -57,7 +57,11 @@ namespace Proximity {
                 ChildWatch.add (child_pid, (pid, status) => {
                     if (temporary_file) {
                         var f = File.new_for_path (path);
-                        f.@delete (null);
+                        try {
+                            f.@delete (null);
+                        } catch (Error e) {
+                            stdout.printf("Colud not delete file: %s\n", e.message);
+                        }
                     }
 
                     open (project_path);
@@ -299,7 +303,11 @@ namespace Proximity {
                 ChildWatch.add (child_pid, (pid, status) => {
                     if (temporary_file) {
                         var f = File.new_for_path (path);
-                        f.@delete (null);
+                        try {
+                            f.@delete (null);
+                        } catch (Error e) {
+                            stdout.printf("Colud not delete file: %s\n", e.message);
+                        }
                     }
 
                     if (quit_successful != null) {

@@ -283,6 +283,7 @@ namespace Proximity {
                 }
                 var parser = new Json.Parser ();
                 try {
+                    treestore_fuzzdb.clear ();
                     parser.load_from_data ((string) message.response_body.flatten ().data, -1);
 
                     var root_obj = parser.get_root().get_object();

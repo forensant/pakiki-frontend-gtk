@@ -39,11 +39,13 @@ namespace Proximity {
                 return false;
             }
 
-            var proxy_settings = new WebKit.NetworkProxySettings ("http://" + application_window.preview_proxy_address + "/", null);
             var web_context = this.get_context ();
             web_context.clear_cache ();
-            web_context.set_tls_errors_policy (WebKit.TLSErrorsPolicy.IGNORE);
-            web_context.set_network_proxy_settings (WebKit.NetworkProxyMode.CUSTOM, proxy_settings);
+
+            var proxy_settings = new WebKit.NetworkProxySettings ("http://" + application_window.preview_proxy_address + "/", null);
+            var web_data_manager = web_context.website_data_manager;
+            web_data_manager.set_tls_errors_policy (WebKit.TLSErrorsPolicy.IGNORE);
+            web_data_manager.set_network_proxy_settings (WebKit.NetworkProxyMode.CUSTOM, proxy_settings);
 
             var bytes_str = (string)bytes;
             var end_of_headers = bytes_str.index_of ("\r\n\r\n");
