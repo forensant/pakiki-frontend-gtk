@@ -10,7 +10,10 @@ namespace Proximity {
         private Pid child_pid;
         private string path;
         private FileStream process_stdin;
+        private SavingDialog saving_dialog = null;
         private bool temporary_file;
+
+        public delegate void QuitSuccessful();
 
         public CoreProcess (ApplicationWindow parent, string api_key) {
             this.application_window = parent;
@@ -24,6 +27,10 @@ namespace Proximity {
 
             try {
                 file1.copy (file2, FileCopyFlags.OVERWRITE, null, null);
+
+                if (temporary_file) {
+                    file1.@delete (null);
+                }
             } catch (Error e) {
                 print ("Error: %s\n", e.message);
             }
@@ -45,8 +52,19 @@ namespace Proximity {
 
         public bool open (string? project_path) {
             if (child_pid != 0) {
+                stdout.printf("Child process already open, this shouldn't happen - closing it.\n");
                 Posix.kill (child_pid, Posix.Signal.TERM);
-                child_pid = 0;
+                ChildWatch.add (child_pid, (pid, status) => {
+                    if (temporary_file) {
+                        var f = File.new_for_path (path);
+                        f.@delete (null);
+                    }
+
+                    open (project_path);
+    
+                    child_pid = 0;
+                });
+                return true;
             }
 
             if (project_path == null ) {
@@ -151,14 +169,28 @@ namespace Proximity {
             return false;
         }
 
+        string to_open;
+
+        private void on_open_project_quit_successful() {
+            child_pid = 0;
+            saving_dialog.close ();
+            open (to_open);
+        }
+
         void handle_open_project_response (Gtk.FileChooserNative open_dialog, int response_id, bool new_file) {
             switch (response_id) {
                 case Gtk.ResponseType.ACCEPT: // open the file
                     var file = open_dialog.get_file();
                     var filename = file.get_path ();
                     this.opening_file (true);
-                    open (filename);
 
+                    if (child_pid != 0) {
+                        saving_dialog = new SavingDialog ();
+                        saving_dialog.show_all ();
+                        to_open = filename;
+                        quit (this.on_open_project_quit_successful);
+                    }
+                    
                     break;
     
                 case Gtk.ResponseType.CANCEL:
@@ -260,11 +292,26 @@ namespace Proximity {
             return true;
         }
 
-        public void quit () {
+        public void quit (QuitSuccessful? quit_successful) {
             if (child_pid != 0) {
                 Posix.kill (child_pid, Posix.Signal.TERM);
-                int status;
-                Posix.waitpid (child_pid, out status, 0);
+
+                ChildWatch.add (child_pid, (pid, status) => {
+                    if (temporary_file) {
+                        var f = File.new_for_path (path);
+                        f.@delete (null);
+                    }
+
+                    if (quit_successful != null) {
+                        quit_successful ();
+                    }
+                });
+
+                child_pid = 0;
+            } else {
+                if (quit_successful != null) {
+                    quit_successful ();
+                }
             }
         }
 

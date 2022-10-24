@@ -1,138 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.2 -->
+<!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.12"/>
   <template class="ProximityApplicationWindow" parent="GtkApplicationWindow">
-    <property name="can_focus">False</property>
+    <property name="can-focus">False</property>
     <property name="title" translatable="yes">Proximity</property>
-    <property name="default_width">1280</property>
-    <property name="default_height">768</property>
-    <child type="titlebar">
-      <object class="GtkHeaderBar" id="header">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="show_close_button">True</property>
-        <child>
-          <object class="GtkButton" id="button_back">
-            <property name="can_focus">False</property>
-            <property name="receives_default">False</property>
-            <property name="tooltip_text" translatable="yes">Back</property>
-            <signal name="clicked" handler="on_back_clicked" swapped="no"/>
-            <child>
-              <object class="GtkArrow">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="arrow_type">left</property>
-              </object>
-            </child>
-          </object>
-        </child>
-        <child>
-          <object class="GtkButton" id="button_new">
-            <property name="label" translatable="yes">_New</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="receives_default">False</property>
-            <property name="tooltip_text" translatable="yes">New Request</property>
-            <property name="use_underline">True</property>
-            <signal name="clicked" handler="on_new_clicked" swapped="no"/>
-          </object>
-          <packing>
-            <property name="position">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="button_intercept">
-            <property name="label" translatable="yes">_Intercept</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="receives_default">False</property>
-            <property name="tooltip_text" translatable="yes">Intercept Requests and Responses</property>
-            <property name="use_underline">True</property>
-            <signal name="clicked" handler="on_intercept_clicked" swapped="no"/>
-          </object>
-          <packing>
-            <property name="position">2</property>
-          </packing>
-        </child>
-        <child type="title">
-          <object class="GtkStackSwitcher" id="stack_switcher_tabs">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="stack">stack</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkMenuButton" id="gears">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="receives_default">False</property>
-            <property name="tooltip_text" translatable="yes">Menu</property>
-            <property name="direction">none</property>
-            <child>
-              <object class="GtkImage" id="gears-icon">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="icon_name">open-menu-symbolic</property>
-                <property name="icon_size">1</property>
-              </object>
-            </child>
-            <style>
-              <class name="image-button"/>
-            </style>
-          </object>
-          <packing>
-            <property name="pack_type">end</property>
-            <property name="position">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkToggleButton" id="button_search">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="receives_default">False</property>
-            <signal name="toggled" handler="on_button_search_toggled" swapped="no"/>
-            <child>
-              <object class="GtkImage" id="search-icon">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="tooltip_text" translatable="yes">Search Requests</property>
-                <property name="icon_name">edit-find-symbolic</property>
-                <property name="icon_size">1</property>
-              </object>
-            </child>
-            <style>
-              <class name="image-button"/>
-            </style>
-          </object>
-          <packing>
-            <property name="pack_type">end</property>
-            <property name="position">3</property>
-          </packing>
-        </child>
-      </object>
-    </child>
+    <property name="default-width">1280</property>
+    <property name="default-height">768</property>
     <child>
       <object class="GtkBox" id="box_content">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkSearchBar" id="searchbar">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="show_close_button">True</property>
+            <property name="can-focus">False</property>
+            <property name="show-close-button">True</property>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="spacing">12</property>
                 <child>
                   <object class="GtkSearchEntry" id="searchentry">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="width_chars">40</property>
-                    <property name="placeholder_text" translatable="yes">Search Requests</property>
+                    <property name="can-focus">True</property>
+                    <property name="width-chars">40</property>
+                    <property name="placeholder-text" translatable="yes">Search Requests</property>
                     <signal name="search-changed" handler="search_text_changed" swapped="no"/>
                     <signal name="stop-search" handler="on_searchentry_stop_search" swapped="no"/>
                   </object>
@@ -146,10 +41,10 @@
                   <object class="GtkCheckButton" id="check_button_exclude_resources">
                     <property name="label" translatable="yes">Exclude Resources</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">False</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
                     <property name="active">True</property>
-                    <property name="draw_indicator">True</property>
+                    <property name="draw-indicator">True</property>
                     <signal name="toggled" handler="search_text_changed" swapped="no"/>
                   </object>
                   <packing>
@@ -161,9 +56,9 @@
                 <child>
                   <object class="GtkComboBoxText" id="combobox_search_protocols">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="active">0</property>
-                    <property name="active_id">all</property>
+                    <property name="active-id">all</property>
                     <items>
                       <item id="all" translatable="yes">All Protocols</item>
                       <item id="HTTP/1.1" translatable="yes">HTTP</item>
@@ -190,26 +85,26 @@
         <child>
           <object class="GtkOverlay" id="overlay">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <child>
               <object class="GtkBox" id="box_inner_contents">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkInfoBar" id="info_bar_bind_error">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="message_type">warning</property>
-                    <property name="show_close_button">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="message-type">warning</property>
+                    <property name="show-close-button">True</property>
                     <property name="revealed">False</property>
                     <signal name="close" handler="on_info_bar_bind_error_close" swapped="no"/>
                     <signal name="response" handler="on_info_bar_bind_error_response" swapped="no"/>
                     <child internal-child="action_area">
                       <object class="GtkButtonBox">
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="spacing">6</property>
-                        <property name="layout_style">end</property>
+                        <property name="layout-style">end</property>
                         <child>
                           <placeholder/>
                         </child>
@@ -228,12 +123,12 @@
                     </child>
                     <child internal-child="content_area">
                       <object class="GtkBox">
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="spacing">16</property>
                         <child>
                           <object class="GtkLabel" id="label_proxy_bind_error">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
+                            <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Proxy could not be started on XYZ, requests are not being intercepted.</property>
                             <attributes>
                               <attribute name="weight" value="medium"/>
@@ -262,8 +157,8 @@
                 <child>
                   <object class="GtkStack" id="stack">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="transition_type">slide-left-right</property>
+                    <property name="can-focus">False</property>
+                    <property name="transition-type">slide-left-right</property>
                     <child>
                       <placeholder/>
                     </child>
@@ -284,6 +179,111 @@
             <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <child type="titlebar">
+      <object class="GtkHeaderBar" id="header">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="show-close-button">True</property>
+        <child type="title">
+          <object class="GtkStackSwitcher" id="stack_switcher_tabs">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="stack">stack</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="button_back">
+            <property name="can-focus">False</property>
+            <property name="receives-default">False</property>
+            <property name="tooltip-text" translatable="yes">Back</property>
+            <signal name="clicked" handler="on_back_clicked" swapped="no"/>
+            <child>
+              <object class="GtkArrow">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="arrow-type">left</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="button_new">
+            <property name="label" translatable="yes">_New</property>
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="receives-default">False</property>
+            <property name="tooltip-text" translatable="yes">New Request</property>
+            <property name="use-underline">True</property>
+            <signal name="clicked" handler="on_new_clicked" swapped="no"/>
+          </object>
+          <packing>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="button_intercept">
+            <property name="label" translatable="yes">_Intercept</property>
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="receives-default">False</property>
+            <property name="tooltip-text" translatable="yes">Intercept Requests and Responses</property>
+            <property name="use-underline">True</property>
+            <signal name="clicked" handler="on_intercept_clicked" swapped="no"/>
+          </object>
+          <packing>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkMenuButton" id="gears">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="receives-default">False</property>
+            <property name="tooltip-text" translatable="yes">Menu</property>
+            <property name="direction">none</property>
+            <child>
+              <object class="GtkImage" id="gears-icon">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="icon-name">open-menu-symbolic</property>
+                <property name="icon_size">1</property>
+              </object>
+            </child>
+            <style>
+              <class name="image-button"/>
+            </style>
+          </object>
+          <packing>
+            <property name="pack-type">end</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkToggleButton" id="button_search">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="receives-default">False</property>
+            <signal name="toggled" handler="on_button_search_toggled" swapped="no"/>
+            <child>
+              <object class="GtkImage" id="search-icon">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="tooltip-text" translatable="yes">Search Requests</property>
+                <property name="icon-name">edit-find-symbolic</property>
+                <property name="icon_size">1</property>
+              </object>
+            </child>
+            <style>
+              <class name="image-button"/>
+            </style>
+          </object>
+          <packing>
+            <property name="pack-type">end</property>
+            <property name="position">3</property>
           </packing>
         </child>
       </object>

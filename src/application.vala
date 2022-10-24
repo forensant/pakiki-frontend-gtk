@@ -9,6 +9,8 @@ namespace Proximity {
             application_id = "com.forensant.proximity";
             flags |= GLib.ApplicationFlags.HANDLES_COMMAND_LINE;
             GLib.Environment.set_prgname("Proximity");
+
+            set_temp_environment_var ();
         }
 
         private void about () {
@@ -135,11 +137,15 @@ namespace Proximity {
             prefs.present ();
         }
 
-        public override void shutdown () {
-            if (window != null) {
-                window.on_quit ();
+        private void set_temp_environment_var () {
+            var env_vars = GLib.Environ.@get ();
+
+            var cache_home = GLib.Environ.get_variable (env_vars, "XDG_CACHE_HOME");
+            if (cache_home == null) {
+                return;
             }
-            base.shutdown ();
+
+            GLib.Environment.set_variable ("TMPDIR", cache_home + "/tmp", false);
         }
 
         public override void startup () {

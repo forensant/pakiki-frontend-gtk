@@ -51,6 +51,7 @@ namespace Proximity {
         private RequestNew new_request;
         private Application proximity_application;
         private RequestsPane requests_pane;
+        private SavingDialog saving_dialog;
         private GLib.Settings settings;
         private bool timeout_started;
 
@@ -177,6 +178,21 @@ namespace Proximity {
             }
 
             stdout.printf("Proximity started\n");
+
+            var app_window = this;
+            this.delete_event.connect ((e) => {
+                if (core_process != null) {
+                    saving_dialog = new SavingDialog();
+                    this.hide ();
+                    saving_dialog.show_all ();
+
+                    core_process.quit (this.on_quit_successful);
+
+                    return true;
+                }
+                
+                return false;
+            });
         }
 
         private void authenticate_user () {
@@ -377,10 +393,10 @@ namespace Proximity {
             button_intercept.visible = (stack.visible_child == requests_pane);
         }
 
-        public void on_quit () {
-            if (core_process != null) {
-                core_process.quit ();
-            }
+        private void on_quit_successful () {
+            core_process = null;
+            saving_dialog.close ();
+            this.close ();
         }
 
         public void on_save_project () {

@@ -20,6 +20,7 @@ sources += files(
     'forms/request-new.vala',
     'forms/request-preview.vala',
     'forms/requests-pane.vala',
+    'forms/saving-dialog.vala',
     'forms/searchable-web-view.vala',
     'forms/sitemap-widget.vala',
     'forms/widgets/inject-point-selection-widget.vala',

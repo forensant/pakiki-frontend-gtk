@@ -14,10 +14,6 @@ finish-args:
   - --talk-name=org.freedesktop.secrets
   # to allow notifications to be sent to the desktop
   - --talk-name=org.freedesktop.Notifications
-
-  # TODO: I'm not happy with this. Some sandboxing is better than none, but if we could use portals that'd be ideal
-  # see the notes at: https://github.com/pipeline/proximity-frontend-gtk/issues/6
-  - --filesystem=host
   
 modules:
   - name: GtkSourceView
@@ -43,14 +39,15 @@ modules:
       # there's a weird bug were the python39/lib directory in the original zip is flattened to just lib
       - mkdir /app/bin/python39
       - ls -lah
+      # comment this out if building locally
       - cp -r lib /app/bin/python39/
       # if testing locally, use this instead:
 #      - cp -r python39 /app/bin/
     sources:
 #manual_ifdef production
       - type: archive
-        url: https://github.com/pipeline/proximity-core/releases/download/v0.6-alpha/ProximityCore-Linux.zip
-        sha256: a5c3d3c517695f71b48c9685d883f1ef7108f524c34ffa441654dbd59142f32c
+        url: https://github.com/pipeline/proximity-core/releases/download/v0.6-alpha/Linux-Core-Test-Build.zip
+        sha256: b7ff1e4b5c00fd76da11a07dcbfc8347b1de53a806ff96f351b9dbc770befd2e
 #manual_ifdef local
 #      - type: dir
 #        path: /home/parallels/Coding/proximity-core/build/
