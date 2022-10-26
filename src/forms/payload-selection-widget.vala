@@ -82,6 +82,19 @@ namespace Proximity {
             filename_renderer.ellipsize_set = true;
 
             treeview_custom_files.insert_column_with_attributes (-1, "Filename", filename_renderer, "text", 0);
+            var filename_column = treeview_custom_files.get_column(0);
+            filename_column.set_cell_data_func(filename_renderer, (cell_layout, cell, tree_model, iter) => {
+                Value val;
+                tree_model.get_value(iter, 0, out val);
+                try {
+                    var file = File.new_for_path (val.get_string ());
+                    var file_info = file.query_info ("standard::*", GLib.FileQueryInfoFlags.NONE, null);
+                    ((Gtk.CellRendererText)cell).text = file_info.get_display_name ();
+                } catch (Error e) {
+                    stdout.printf("Could not get filename: %s\n", e.message);
+                }
+                val.unset();
+            });
 
             int toggle_column = treeview_fuzzdb.insert_column_with_attributes (-1, "Checked",
                 fuzzdb_toggle_renderer);
