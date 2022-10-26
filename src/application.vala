@@ -30,7 +30,7 @@ namespace Proximity {
             dialog.website_label = "proximityhq.com";
 
             try {
-                var logo = new Gdk.Pixbuf.from_stream_at_scale (banner_logo_svg (), 350, 64, true, null);
+                var logo = new Gdk.Pixbuf.from_stream_at_scale (window.banner_logo_svg (), 350, 64, true, null);
                 dialog.logo = logo;
             } catch (Error err) {
                 stdout.printf ("Could not create logo for the about page");
@@ -67,28 +67,6 @@ namespace Proximity {
             action = new SimpleAction("save_as", null);
             action.activate.connect (window.on_save_project);
             add_action (action);
-        }
-
-        public InputStream banner_logo_svg () {
-            var file = File.new_for_uri ("resource:///com/forensant/proximity/Logo-banner.svg");
-
-            var contents = "";
-
-            try {
-                var dis = new DataInputStream (file.read ());
-                string line;
-                while ((line = dis.read_line (null)) != null) {
-                    contents += line + "\n";
-                }
-            } catch (Error e) {
-                stdout.printf ("Error getting logo: %s\n", e.message);
-            }
-
-            var style_context = window.get_style_context ();
-            var text_color = style_context.get_color (Gtk.StateFlags.NORMAL);
-
-            contents = contents.replace ("#000000", text_color.to_string ());
-            return new GLib.MemoryInputStream.from_data (contents.data);
         }
 
         private int _command_line (ApplicationCommandLine command_line) {

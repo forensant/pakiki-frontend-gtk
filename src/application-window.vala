@@ -218,6 +218,28 @@ namespace Proximity {
             }
         }
 
+        public InputStream banner_logo_svg () {
+            var file = File.new_for_uri ("resource:///com/forensant/proximity/Logo-banner.svg");
+
+            var contents = "";
+
+            try {
+                var dis = new DataInputStream (file.read ());
+                string line;
+                while ((line = dis.read_line (null)) != null) {
+                    contents += line + "\n";
+                }
+            } catch (Error e) {
+                stdout.printf ("Error getting logo: %s\n", e.message);
+            }
+
+            var style_context = this.get_style_context ();
+            var text_color = style_context.get_color (Gtk.StateFlags.NORMAL);
+
+            contents = contents.replace ("#000000", text_color.to_string ());
+            return new GLib.MemoryInputStream.from_data (contents.data);
+        }
+
         private void create_http_session () {
             http_session = new Soup.Session ();
 
