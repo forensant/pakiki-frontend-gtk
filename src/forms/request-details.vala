@@ -374,11 +374,18 @@ namespace Proximity {
         }
 
         private void set_controls_visible (bool http, bool websocket, bool out_of_band) {
+            var text_visibility_changed = (!scroll_window_text.visible && http);
+
             scroll_window_text.visible = http;
             scroll_window_original_text.visible = http;
             searchable_web_view.visible = http;
             pane_websocket.visible = websocket;
             viewport_out_of_band_interaction.visible = out_of_band;
+
+            // reset the displayed page to stop jumping around
+            if(text_visibility_changed) {
+                this.page = 0;
+            }
 
             if (!http) {
                 button_send_to.set_visible (false);

@@ -47,7 +47,7 @@ modules:
 #manual_ifdef production
       - type: archive
         url: https://github.com/pipeline/proximity-core/releases/download/v0.6-alpha/Linux-Core-Test-Build.zip
-        sha256: b7ff1e4b5c00fd76da11a07dcbfc8347b1de53a806ff96f351b9dbc770befd2e
+        sha256: 127fddaec1dcc5e812edf13f573935d1f0c857330e24183d1e1f92d31da48f8b
 #manual_ifdef local
 #      - type: dir
 #        path: /home/parallels/Coding/proximity-core/build/
