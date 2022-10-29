@@ -9,15 +9,15 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: bilelmoussaoui/flatpak-github-actions:gnome-40
+      image: bilelmoussaoui/flatpak-github-actions:gnome-42
       options: --privileged
     
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Build and package
-        uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v3
+        uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v4
         with:
           bundle: Proximity.flatpak
           manifest-path: com.forensant.proximity.yml
