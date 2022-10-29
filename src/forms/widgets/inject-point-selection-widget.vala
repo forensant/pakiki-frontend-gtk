@@ -32,6 +32,16 @@ namespace Proximity {
             }
         }
 
+        public bool host_error_visible {
+            get {
+                return entry_hostname.secondary_icon_name != "";
+            }
+            set {
+                entry_hostname.secondary_icon_name = (value ? "dialog-warning-symbolic" : "");
+                entry_hostname.secondary_icon_tooltip_text = (value ? "Hostname must be entered" : "");
+            }
+        }
+
         public bool find_visible {
             get {
                 return button_find.visible;
@@ -420,6 +430,7 @@ namespace Proximity {
             entry_hostname.text = "";
             combobox_protocol.active = 0;
             text_view_request.buffer.text = "";
+            entry_hostname.secondary_icon_name = "";
         }
     }
 }

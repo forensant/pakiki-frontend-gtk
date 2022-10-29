@@ -91,6 +91,14 @@ namespace Proximity {
         }
 
         private void on_run_clicked () {
+            if (inject_point_selection_widget.hostname == "") {
+                inject_point_selection_widget.host_error_visible = true;
+                return;
+            }
+            else {
+                inject_point_selection_widget.host_error_visible = false;
+            }
+            
             var message = new Soup.Message ("POST", "http://" + application_window.core_address + "/inject_operations/run");
 
             button_run.sensitive = false;
