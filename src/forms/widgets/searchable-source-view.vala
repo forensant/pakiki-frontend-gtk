@@ -37,6 +37,13 @@ namespace Proximity {
             search_bar.text_changed.connect (this.search_text_changed);
         }
 
+        public Gtk.SourceStyleScheme get_theme () {
+            var settings = new GLib.Settings ("com.forensant.proximity");
+            var scheme = settings.get_string ("colour-scheme");
+            var style_manager = Gtk.SourceStyleSchemeManager.get_default();
+            return style_manager.get_scheme (scheme);
+        }
+
         public bool find_activated () {
             if (!search_bar.text_has_focus () && !source_view.has_focus) {
                 return false;

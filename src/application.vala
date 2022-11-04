@@ -1,5 +1,7 @@
 namespace Proximity {
     public class Application : Gtk.Application {
+        public static string VERSION = "2022-11.01";
+
         private string? api_key;
         private string? core_address;
         private string? preview_proxy_address;
@@ -22,7 +24,7 @@ namespace Proximity {
             dialog.program_name = "Proximity Community Edition";
             dialog.comments = "Intercepting proxy";
             dialog.copyright = "Copyright © %d Forensant Ltd".printf (new DateTime.now ().get_year ());
-            dialog.version = "0.4";
+            dialog.version = VERSION;
 
             dialog.license_type = Gtk.License.MIT_X11;
 
@@ -134,6 +136,9 @@ namespace Proximity {
 
         private void preferences () {
             var prefs = new ApplicationPreferences (window);
+            prefs.settings_changed.connect (() => {
+                window.settings_changed (); 
+            });
             prefs.present ();
         }
 

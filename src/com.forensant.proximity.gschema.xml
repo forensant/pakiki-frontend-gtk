@@ -10,5 +10,10 @@
             <summary>Request Double-click</summary>
             <description>The action to take when a request is double-clicked.</description>
         </key>
+        <key name="colour-scheme" type="s">
+            <default>'tango'</default>
+            <summary>Text preview colour scheme</summary>
+            <description>The colour scheme to use when rendering requests.</description>
+        </key>
     </schema>
 </schemalist>

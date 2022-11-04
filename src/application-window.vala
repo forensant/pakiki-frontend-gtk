@@ -4,6 +4,7 @@ namespace Proximity {
 
     [GtkTemplate (ui = "/com/forensant/proximity/window.ui")]
     public class ApplicationWindow : Gtk.ApplicationWindow {
+        public signal void settings_changed ();
 
         [GtkChild]
         private unowned Gtk.Button button_back;

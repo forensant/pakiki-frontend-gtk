@@ -46,7 +46,13 @@ namespace Proximity {
             var lang = language_manager.get_language ("xml");
 
             source_buffer = new Gtk.SourceBuffer.with_language (lang);
+            source_buffer.style_scheme = searchable_source_view.get_theme ();
             searchable_source_view.source_view.buffer = source_buffer;
+
+            application_window.settings_changed.connect ( () => {
+                var buffer = (Gtk.SourceBuffer)searchable_source_view.source_view.buffer;
+                buffer.style_scheme = searchable_source_view.get_theme ();
+            });
             
             searchable_source_view.source_view.populate_popup.connect ( (menu) => {
                 on_request_response_popup (menu, source_buffer);
