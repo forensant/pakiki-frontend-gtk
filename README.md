@@ -17,6 +17,8 @@ Given this is still under development, bugs should be expected, although any fee
 Please only use this against applications that you have permission to test.
 
 ## Installation
+It is recommended you subscribe to the newsletter at https://proximityhq.com/ to receive notifications about new updates. Given it is not in repositories, there is no automatic update feature at the moment.
+
 Download from the latest release from [https://github.com/pipeline/proximity-frontend-gtk/releases](https://github.com/pipeline/proximity-frontend-gtk/releases)
 
 This has been primarily tested in Kali. While other distributions should work, they have not have been as well tested. Please submit a bug report if you run into any issues.
