@@ -4,6 +4,8 @@ namespace Proximity {
 
     [GtkTemplate (ui = "/com/forensant/proximity/window.ui")]
     public class ApplicationWindow : Gtk.ApplicationWindow {
+        public const string UPDATE_HOST = "https://proximityhq.com";
+
         public signal void settings_changed ();
 
         [GtkChild]
@@ -433,6 +435,8 @@ namespace Proximity {
             requests_pane.process_launch_successful (process_launched);
 
             if (process_launched) {
+                do_update_check ();
+
                 button_new.visible = true;
                 button_intercept.visible = true;
                 button_back.visible = false;
@@ -515,6 +519,35 @@ namespace Proximity {
             }
 
             window.set_icon_list (icons);
+        }
+
+        private void do_update_check () {
+            var url = UPDATE_HOST + "/api/application/updates?edition=Community&version=" + Application.VERSION;
+
+            Soup.Session session = new Soup.Session ();
+            var message = new Soup.Message ("GET", url);
+            
+            session.queue_message (message, (sess, mess) => {
+                try {
+                    var parser = new Json.Parser ();
+                    parser.load_from_data ((string)mess.response_body.data);
+                    if (parser.get_root () == null) {
+                        return;
+                    }
+                    var root_object = parser.get_root ().get_object ();
+                    var should_update = root_object.get_boolean_member ("ShouldUpdate");
+                    
+                    if (should_update) {
+                        if (!this.info_bar_bind_error.revealed) {
+                            this.info_bar_bind_error.revealed = true;
+                            label_proxy_bind_error.label = "An update is available, visit <a href=\"https://proximityhq.com/\">https://proximityhq.com/</a> to download it.";
+                        }
+                    }
+                }
+                catch (GLib.Error err) {
+                    stdout.printf("Error checking for updates: %s\n", err.message);
+                }
+            });
         }
     }
 }
