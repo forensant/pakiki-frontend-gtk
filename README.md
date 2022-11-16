@@ -17,6 +17,8 @@ Given this is still under development, bugs should be expected, although any fee
 Please only use this against applications that you have permission to test.
 
 ## Installation
+It is recommended you subscribe to the newsletter at https://proximityhq.com/ to receive notifications about new updates. Given it is not in repositories, there is no automatic update feature at the moment.
+
 Download from the latest release from [https://github.com/pipeline/proximity-frontend-gtk/releases](https://github.com/pipeline/proximity-frontend-gtk/releases)
 
 This has been primarily tested in Kali. While other distributions should work, they have not have been as well tested. Please submit a bug report if you run into any issues.
@@ -27,7 +29,7 @@ sudo apt install flatpak libpam-gnome-keyring
 ```
 If these needed to be installed, it may be safest to reboot your system **twice** to ensure the correct environment variables are set and the login keychain is created/unlocked.
 
-You'll need repository which contains the Flatpak platform it's based on:
+You'll need the repository which contains the Flatpak platform it's based on:
 ```
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 ```
