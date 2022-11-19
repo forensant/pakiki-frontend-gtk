@@ -36,7 +36,7 @@ flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flat
 
 Then you can install Proximity (you can download the latest version from the releases directory):
 ```
-flatpak install proximity-core-[version].flatpak
+flatpak install Proximity-Community-[version].flatpak
 ```
 
 If running in Kali, in order to honour the dark theme:
@@ -44,6 +44,7 @@ If running in Kali, in order to honour the dark theme:
 flatpak install org.gtk.Gtk3theme.Adwaita-dark
 sudo flatpak override --env=GTK_THEME=Adwaita-dark
 ```
+If you are using dark mode, you may wish to change the default colour scheme used by the request viewer in the preferences.
 
 To run, from a console type:
 ```

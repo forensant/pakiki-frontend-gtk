@@ -177,6 +177,9 @@ namespace Proximity {
                     if (content_type != null) {
                         if (content_type.contains ("javascript")) {
                             language = "javascript";
+                        }
+                        else if (content_type.contains ("json")) {
+                            language = "json";
                         } else if (content_type.contains ("css") || content_type.contains ("stylesheet")) {
                             language = "css";
                         }
@@ -192,7 +195,7 @@ namespace Proximity {
         private void set_text (string request, string response) {
             show_hex (false);
             if (should_syntax_highlight (request, response)) {
-                set_sourceview_language (request);
+                set_sourceview_language (response);
             }
             else {
                 source_buffer.language = language_manager.get_language ("text");
