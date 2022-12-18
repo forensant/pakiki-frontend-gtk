@@ -27,7 +27,7 @@ As the project grows, it will be published to repositories, for now, it is avail
 sudo apt update
 sudo apt install flatpak libpam-gnome-keyring
 ```
-If these needed to be installed, it may be safest to reboot your system **twice** to ensure the correct environment variables are set and the login keychain is created/unlocked.
+If these needed to be installed, it is recommended to reboot your system **twice** (and log in each time) to ensure the correct environment variables are set and the login keychain is created/unlocked.
 
 You'll need the repository which contains the Flatpak platform it's based on:
 ```
