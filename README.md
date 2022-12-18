@@ -98,7 +98,8 @@ flatpak run com.forensant.proximity
 To build the bundle:
 ```
 flatpak-builder --repo=repo --force-clean build-dir com.forensant.proximity.yml
-flatpak build-bundle repo proximity.flatpak com.forensant.proximity
+flatpak build-bundle repo Proximity-Community-v$(date +"%Y.%m.01")-Linux-$(uname --m).flatpak com.forensant.proximity
+
 ```
 Note that if you're testing a built bundle, you may have multiple instances installed on your system.
 
