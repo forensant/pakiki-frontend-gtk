@@ -34,7 +34,11 @@ namespace Proximity {
                 searchable_hex_editor.scroll = value;
             }
         }
-        
+
+        public bool is_hex_visible {
+            get { return searchable_hex_editor.visible; }
+        }
+
         public RequestTextView (ApplicationWindow application_window) {
             this.application_window = application_window;
             searchable_source_view = new SearchableSourceView ();

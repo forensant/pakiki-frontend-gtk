@@ -540,7 +540,7 @@ namespace Proximity {
                     request_details.set_request (request_guid, true);
                 } else {
                     int64 content_length = request.get_int_member ("ResponseSize") + request.get_int_member ("RequestSize");
-                    request_details.update_content_length (content_length);
+                    request_details.request_updated (content_length);
                 }
             }
 

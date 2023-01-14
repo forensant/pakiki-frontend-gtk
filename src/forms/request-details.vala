@@ -431,8 +431,12 @@ namespace Proximity {
             button_send_to.set_popup (menu);
         }
 
-        public void update_content_length (int64 combined_content_length) {
-            text_view_request.set_large_request (guid, combined_content_length);
+        public void request_updated (int64 combined_content_length) {
+            // the request could have been updated because the notes were updated
+            // only trigger a refresh of the hex-view if one's already displayed
+            if (text_view_request.is_hex_visible) {
+                text_view_request.set_large_request (guid, combined_content_length);
+            }
         }
 
         public void reset_state () {
