@@ -186,7 +186,16 @@ namespace Proximity {
                 case Gtk.ResponseType.ACCEPT: // open the file
                     var file = open_dialog.get_file();
                     var filename = file.get_path ();
+
+                    if (this.path == filename) {
+                        return;
+                    }
+                    
                     this.opening_file (true);
+
+                    if (new_file && file.query_exists ()) {
+                        file.@delete ();
+                    }
 
                     if (child_pid != 0) {
                         saving_dialog = new SavingDialog ();

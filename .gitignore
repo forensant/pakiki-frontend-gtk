@@ -4,3 +4,4 @@ build-dir
 python39
 repo
 *~
+*.flatpak
