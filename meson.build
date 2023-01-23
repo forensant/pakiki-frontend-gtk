@@ -1,5 +1,5 @@
 project('com.forensant.proximity', 'vala', 'c',
-  version: '2022.12.01',
+  version: '2023.01.01',
   license: 'MIT')
 
 dependencies = [

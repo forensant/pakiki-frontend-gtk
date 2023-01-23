@@ -1,6 +1,6 @@
 namespace Proximity {
     public class Application : Gtk.Application {
-        public static string VERSION = "2022.12.01";
+        public static string VERSION = "2023.01.01";
 
         private string? api_key;
         private string? core_address;
