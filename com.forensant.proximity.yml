@@ -46,8 +46,8 @@ modules:
     sources:
 #manual_ifdef production
       - type: archive
-        url: https://github.com/pipeline/proximity-core/releases/download/v2022.12.01-rc/Proximity-Core-v2022.12.01-Linux-x64.zip
-        sha256: f149e423cfeb20902bfb47ba50c1ccfe92f1e8d3ab72559df4c1af02fdae2ec2
+        url: https://github.com/pipeline/proximity-core/releases/download/v2023.01.01-rc/Proximity-Core-v2023.01.01-Linux-x64.zip
+        sha256: efe41caf81b42588cca442a5870eb0ce4e37fd7fae6a5111724c48abc1e2d445
 #manual_ifdef local
 #      - type: dir
 #        path: /home/parallels/Coding/proximity-core/build/
