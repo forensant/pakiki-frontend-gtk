@@ -629,6 +629,26 @@ namespace Proximity {
                 item_inject.show ();
                 menu.append (item_inject);
 
+                var copy_url = new Gtk.MenuItem.with_label ("Copy URL");
+                copy_url.activate.connect ( () => {
+                    var urls = get_selected_fields (Column.URL);
+                    if (urls.length != 1 || urls[0] == "") {
+                        return;
+                    }
+
+                    var url = urls[0];
+                    try {
+                        Gdk.Display display = Gdk.Display.get_default ();
+                        Gtk.Clipboard clipboard = Gtk.Clipboard.get_for_display (display, Gdk.SELECTION_CLIPBOARD);
+
+                        clipboard.set_text (url, url.length);
+                    } catch (Error err) {
+                        stdout.printf ("Could not launch browser: %s\n", err.message);
+                    }
+                });
+                copy_url.show ();
+                menu.append (copy_url);
+
                 var open_browser_inject = new Gtk.MenuItem.with_label ("Open in Browser");
                 open_browser_inject.activate.connect ( () => {
                     var urls = get_selected_fields (Column.URL);
