@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Proximity
+Icon=proximity
+StartupNotify=true
+Exec=proximity
+Categories=Network;Security;
+X-GNOME-UsesNotifications=true

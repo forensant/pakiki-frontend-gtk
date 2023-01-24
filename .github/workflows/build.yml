@@ -3,8 +3,106 @@ name: Build GTK Frontend
 on: [push]
 
 jobs:
-  GTK-Frontend:
-    name: 'GTK Frontend'
+  HTML-Frontend:
+    name: 'HTML Frontend'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone Proximity HTML Frontend
+        uses: GuillaumeFalourd/clone-github-repo-action@v2
+        with:
+          owner: 'pipeline'
+          repository: 'proximity-frontend-html'
+
+      
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+
+      - name: Install Node dependencies
+        working-directory: 'proximity-frontend-html'
+        run: npm install
+        
+      - name: Build the frontend
+        working-directory: 'proximity-frontend-html'
+        run: npm run build
+
+      - name: Upload frontend build
+        uses: actions/upload-artifact@v2.2.3
+        with:
+          name: proximity-frontend-html
+          # A file, directory or wildcard pattern that describes what to upload
+          path: proximity-frontend-html/dist
+
+  Proximity-Core:
+    name: 'Proximity Core'
+    runs-on: ubuntu-20.04
+    
+    needs: HTML-Frontend
+      
+    steps:
+      - name: Clone Proximity Core
+        uses: GuillaumeFalourd/clone-github-repo-action@v2
+        with:
+          owner: 'pipeline'
+          repository: 'proximity-core'
+          
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      
+      - name: Download frontend
+        uses: actions/download-artifact@v2
+        with:
+          name: proximity-frontend-html
+          path: www/dist/
+            
+      - name: Install system dependencies
+        run: sudo apt install build-essential
+
+      - name: Install golang
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.19' # The Go version to download (if necessary) and use.
+        
+      - name: Build golang executable
+        working-directory: proximity-core
+        run: |
+          go install github.com/swaggo/swag/cmd/swag
+          ./scripts/build.sh
+
+      - name: Install Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.6 # Not needed with a .ruby-version file
+
+      - name: Copy Dependencies
+        working-directory: proximity-core/build
+        run: ../scripts/copy_lib_linux.rb ./
+
+      - name: List files and their types (for debug)
+        working-directory: proximity-core/build
+        run: |
+          ls -lah
+
+      # TODO: Maybe move this further down?
+      - name: Set permissions
+        working-directory: proximity-core
+        run: chmod +x build/*
+
+      - name: Upload core build
+        uses: actions/upload-artifact@v2.2.3
+        with:
+          name: proximity-core
+          # A file, directory or wildcard pattern that describes what to upload
+          path: proximity-core/build
+
+  GTK-Frontend-Flatpak:
+    name: 'GTK Frontend Flatpak'
+    needs: HTML-Frontend
     
     runs-on: ubuntu-latest
 
@@ -16,9 +114,47 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v3
 
+      - name: Download core
+        uses: actions/download-artifact@v2
+        with:
+          name: proximity-core
+          path: proximity-core
+
       - name: Build and package
         uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v4
         with:
           bundle: Proximity.flatpak
           manifest-path: com.forensant.proximity.yml
           cache-key: flatpak-builder-${{ github.sha }}  
+
+  GTK-Frontend-Deb:
+    name: 'GTK Frontend - .deb'
+    needs: HTML-Frontend
+    
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Download core
+        uses: actions/download-artifact@v2
+        with:
+          name: proximity-core
+          path: proximity-core
+
+      - name: Install system dependencies
+        run: sudo apt install build-essential valac meson libgtk-3-dev libsoup2.4-dev libjson-glib-dev libwebkit2gtk-4.0-dev libgtksourceview-3.0-dev libgee-0.8-dev libnotify-dev
+
+      - name: Create Debian build
+        run: ./build-for-debian.sh
+
+      - uses: jiro4989/build-deb-action@v2
+        with:
+          package: proximity
+          package_root: .debpkg
+          maintainer: Forensant
+          version: ${{ github.ref }} # refs/tags/v*.*.*
+          arch: 'amd64'
+          depends: 'libc6 (>= 2.2.1), libgtk-3, libsoup2.4, libjson-glib, libwebkit2gtk-4.0 libgtksourceview-3.0 libgee-0.8 libnotify'
+          desc: 'Intercepting Proxy'

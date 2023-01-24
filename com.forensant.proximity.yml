@@ -42,12 +42,11 @@ modules:
       # comment this out if building locally
       - cp -r lib /app/bin/python39/
       # if testing locally, use this instead:
-#      - cp -r python39 /app/bin/
+      - cp -r python39 /app/bin/
     sources:
 #manual_ifdef production
-      - type: archive
-        url: https://github.com/pipeline/proximity-core/releases/download/v2023.01.01-rc/Proximity-Core-v2023.01.01-Linux-x64.zip
-        sha256: efe41caf81b42588cca442a5870eb0ce4e37fd7fae6a5111724c48abc1e2d445
+      - type: dir
+        path: proximity-core
 #manual_ifdef local
-#      - type: dir
-#        path: /home/parallels/Coding/proximity-core/build/
+      - type: dir
+        path: /home/parallels/Coding/proximity-core/build/
