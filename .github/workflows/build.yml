@@ -124,7 +124,7 @@ jobs:
         uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v4
         with:
           bundle: Proximity.flatpak
-          manifest-path: com.forensant.proximity.yml
+          manifest-path: com.forensant.proximity-github.yml
           cache-key: flatpak-builder-${{ github.sha }}  
 
   GTK-Frontend-Deb:

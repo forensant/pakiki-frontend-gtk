@@ -39,9 +39,8 @@ modules:
       # there's a weird bug were the python39/lib directory in the original zip is flattened to just lib
       - mkdir /app/bin/python39
       - ls -lah
-      # this differs from the cloud build
-      - cp -r python39 /app/bin/
+      # this differs from what is required on a local build
+      - cp -r lib /app/bin/python39/
     sources:
-#manual_ifdef local
       - type: dir
-        path: /home/parallels/Coding/proximity-core/build/
+        path: proximity-core
