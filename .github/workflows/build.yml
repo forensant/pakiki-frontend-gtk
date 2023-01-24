@@ -40,7 +40,7 @@ jobs:
     name: 'Proximity Core'
     runs-on: ubuntu-20.04
     
-    needs: HTML-Frontend
+    needs: Proximity-Core
       
     steps:
       - name: Clone Proximity Core
@@ -58,7 +58,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: proximity-frontend-html
-          path: www/dist/
+          path: proximity-core/www/dist/
             
       - name: Install system dependencies
         run: sudo apt install build-essential
@@ -102,7 +102,7 @@ jobs:
 
   GTK-Frontend-Flatpak:
     name: 'GTK Frontend Flatpak'
-    needs: HTML-Frontend
+    needs: Proximity-Core
     
     runs-on: ubuntu-latest
 
