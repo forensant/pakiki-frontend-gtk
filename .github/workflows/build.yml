@@ -40,7 +40,7 @@ jobs:
     name: 'Proximity Core'
     runs-on: ubuntu-20.04
     
-    needs: Proximity-Core
+    needs: HTML-Frontend
       
     steps:
       - name: Clone Proximity Core
@@ -129,7 +129,7 @@ jobs:
 
   GTK-Frontend-Deb:
     name: 'GTK Frontend - .deb'
-    needs: HTML-Frontend
+    needs: Proximity-Core
     
     runs-on: ubuntu-20.04
 
