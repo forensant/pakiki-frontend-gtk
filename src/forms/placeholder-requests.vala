@@ -4,11 +4,19 @@ namespace Proximity {
     class PlaceholderRequests : Gtk.Box {
 
         [GtkChild]
+        private unowned Gtk.Box box_chromium_not_found;
+        [GtkChild]
         private unowned Gtk.Button button_certificate_save;
+        [GtkChild]
+        private unowned Gtk.Button button_launch_browser;
+        [GtkChild]
+        private unowned Gtk.Expander expander_manual_instructions;
         [GtkChild]
         private unowned Gtk.Frame frame_error;
         [GtkChild]
         private unowned Gtk.Label label_certificate;
+        [GtkChild]
+        private unowned Gtk.Label label_chromium_not_found;
         [GtkChild]
         private unowned Gtk.Label label_error;
         [GtkChild]
@@ -22,6 +30,31 @@ namespace Proximity {
         
         public PlaceholderRequests (ApplicationWindow application_window) {
             this.application_window = application_window;
+
+            if (is_sandboxed ()) {
+                expander_manual_instructions.expanded = true;
+                label_chromium_not_found.visible = false;
+                button_launch_browser.visible = false;
+                box_chromium_not_found.visible = false;
+            } else {
+                set_browser_available ();
+
+                if (!application_window.can_open_browser ()) {
+                    Timeout.add_full (Priority.DEFAULT, 1000, () => {
+                        if (application_window.can_open_browser ()) {
+                            set_browser_available ();
+                            return false;
+                        }
+    
+                        return true;
+                    });
+                }
+            }            
+        }
+
+        private bool is_sandboxed () {
+            File file = File.new_for_path ("/.flatpak-info");
+            return file.query_exists ();
         }
 
         [GtkCallback]
@@ -29,13 +62,24 @@ namespace Proximity {
             application_window.proxy_settings.save_certificate (application_window);
         }
 
+        [GtkCallback]
+        public void on_button_launch_browser_clicked (Gtk.Button button) {
+            application_window.on_open_browser ();
+        }
+
         public void update_proxy_address () {
             if (application_window.proxy_settings.successful) {
-                label_setup_proxy.label = label_setup_proxy.label.replace ("PROXYADDRESS", "http://localhost" + application_window.proxy_settings.proxy_address);
+                label_setup_proxy.label = label_setup_proxy.label.replace ("PROXYADDRESS", "http://" + application_window.proxy_settings.local_proxy_address ());
             }
             else {
                 set_error (application_window.core_address);
             }
+        }
+
+        private void set_browser_available () {
+            label_chromium_not_found.visible = !application_window.can_open_browser ();
+            box_chromium_not_found.visible = !application_window.can_open_browser ();
+            button_launch_browser.sensitive = application_window.can_open_browser ();
         }
 
         public void set_error (string core_address) {

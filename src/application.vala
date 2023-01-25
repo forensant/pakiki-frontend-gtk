@@ -69,6 +69,10 @@ namespace Proximity {
             action = new SimpleAction("save_as", null);
             action.activate.connect (window.on_save_project);
             add_action (action);
+
+            action = new SimpleAction("open_browser", null);
+            action.activate.connect (window.on_open_browser);
+            add_action (action);
         }
 
         private int _command_line (ApplicationCommandLine command_line) {
@@ -101,7 +105,7 @@ namespace Proximity {
             }
     
             if (version) {
-                command_line.print ("Proximity Community Edition 0.4\n");
+                command_line.print ("Proximity Community Edition " + get_version () + "\n");
                 return 0;
             }
 
