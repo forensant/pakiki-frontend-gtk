@@ -183,6 +183,7 @@
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="margin-top">25</property>
+                <signal name="activate" handler="on_expander_manual_instructions_activate" swapped="no"/>
                 <child>
                   <object class="GtkFrame">
                     <property name="visible">True</property>
