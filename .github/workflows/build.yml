@@ -160,4 +160,11 @@ jobs:
           version: ${{ steps.getversion.outputs.version }} # refs/tags/v*.*.*
           arch: 'amd64'
           depends: 'libc6 (>= 2.2.1), libgtk-3, libsoup2.4, libjson-glib, libwebkit2gtk-4.0, libgtksourceview-3.0, libgee-0.8, libnotify'
-          desc: 'Intercepting Proxy'
+          desc: 'Native next generation intercepting proxy, designed for security testing of web applications.'
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: artifact-deb
+          path: |
+            ./*.deb
+            
