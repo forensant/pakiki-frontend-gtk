@@ -36,10 +36,8 @@ modules:
       - cp *.so* /app/lib/
       - install -D proximitycore /app/bin/
       - install -D proximitypythoninterpreter /app/bin/
-      # there's a weird bug were the python39/lib directory in the original zip is flattened to just lib
-      - mkdir /app/bin/python39
       - ls -lah
-      - cp -r python39/* /app/bin/python39/
+      - cp -r python39 /app/bin/
     sources:
       - type: dir
         path: proximity-core
