@@ -522,7 +522,7 @@ namespace Proximity {
         }
 
         private void do_update_check () {
-            var url = UPDATE_HOST + "/api/application/updates?edition=Community&version=" + Application.VERSION;
+            var url = UPDATE_HOST + "/api/application/updates?edition=Community&version=" + proximity_application.get_version ();
 
             Soup.Session session = new Soup.Session ();
             var message = new Soup.Message ("GET", url);

@@ -149,12 +149,16 @@ jobs:
       - name: Create Debian build
         run: ./build-for-debian.sh
 
+      - name: Read VERSION file
+        id: getversion
+        run: echo "::set-output name=version::$(cat src/resources/version)"
+
       - uses: jiro4989/build-deb-action@v2
         with:
           package: proximity
           package_root: .debpkg
           maintainer: Forensant
-          version: ${{ github.ref }} # refs/tags/v*.*.*
+          version: ${{ steps.getversion.outputs.version }} # refs/tags/v*.*.*
           arch: 'amd64'
           depends: 'libc6 (>= 2.2.1), libgtk-3, libsoup2.4, libjson-glib, libwebkit2gtk-4.0 libgtksourceview-3.0 libgee-0.8 libnotify'
           desc: 'Intercepting Proxy'
