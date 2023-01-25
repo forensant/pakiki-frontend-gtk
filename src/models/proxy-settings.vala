@@ -75,6 +75,17 @@ namespace Proximity {
             }
         }
 
+        public string local_proxy_address () {
+            var parts = proxy_address.split (":", 2);
+            if (parts.length == 1) {
+                return "127.0.0.1:" + parts[0];
+            } else if (parts[0] == "") {
+                return "127.0.0.1:" + parts[1];
+            } else {
+                return proxy_address;
+            }
+        }
+
         public string save () {
             var message = new Soup.Message ("PUT", "http://" + application_window.core_address + "/proxy/settings");
 
