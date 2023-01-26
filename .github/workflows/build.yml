@@ -162,7 +162,7 @@ jobs:
           maintainer: Forensant
           version: ${{ steps.getversion.outputs.version }} # refs/tags/v*.*.*
           arch: 'amd64'
-          depends: 'libc6 (>= 2.2.1), libgtk-3-0, libsoup2.4-1, libjson-glib-1.0-0, libwebkit2gtk-4.0-37, libgtksourceview-3.0-1, libgee-0.8-2, libnotify4'
+          depends: 'libc6 (>= 2.2.1), libgtk-3-0, libsoup2.4-1, libjson-glib-1.0-0, libwebkit2gtk-4.0-37, libgtksourceview-3.0-1, libgee-0.8-2 (>= 0.20.4), libnotify4'
           desc: 'Native next generation intercepting proxy, designed for security testing of web applications.'
 
       - uses: actions/upload-artifact@v3
