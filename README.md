@@ -22,33 +22,12 @@ It is recommended you subscribe to the newsletter at https://proximityhq.com/ to
 Download from the latest release from [https://github.com/pipeline/proximity-frontend-gtk/releases](https://github.com/pipeline/proximity-frontend-gtk/releases)
 
 This has been primarily tested in Kali. While other distributions should work, they have not have been as well tested. Please submit a bug report if you run into any issues.
-As the project grows, it will be published to repositories, for now, it is available as a downloadable Flatpak bundle. To install it, you'll first need Flatpak, if you don't have it already:
+
+To install the .deb file, run:
 ```
 sudo apt update
-sudo apt install flatpak libpam-gnome-keyring
-```
-If these needed to be installed, it is recommended to reboot your system **twice** (and log in each time) to ensure the correct environment variables are set and the login keychain is created/unlocked.
-
-You'll need the repository which contains the Flatpak platform it's based on:
-```
-flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-```
-
-Then you can install Proximity (you can download the latest version from the releases directory):
-```
-flatpak install Proximity-Community-[version].flatpak
-```
-
-If running in Kali, in order to honour the dark theme:
-```
-flatpak install org.gtk.Gtk3theme.Adwaita-dark
-sudo flatpak override --env=GTK_THEME=Adwaita-dark
-```
-If you are using dark mode, you may wish to change the default colour scheme used by the request viewer in the preferences.
-
-To run, from a console type:
-```
-flatpak run com.forensant.proximity
+sudo dkpg -i <.deb file>
+sudo apt install -f
 ```
 
 To run this on Windows Subsystem for Linux (Windows 11), you'll need a headless keyring: https://github.com/jaraco/keyring#using-keyring-on-headless-linux-systems
