@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Proximity
+Icon=/usr/share/pixmaps/proximity.svg
+StartupNotify=true
+Exec=proximity
+Categories=Network;Security;
+X-GNOME-UsesNotifications=true

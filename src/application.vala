@@ -1,7 +1,5 @@
 namespace Proximity {
     public class Application : Gtk.Application {
-        public static string VERSION = "2023.01.01";
-
         private string? api_key;
         private string? core_address;
         private string? preview_proxy_address;
@@ -24,7 +22,7 @@ namespace Proximity {
             dialog.program_name = "Proximity Community Edition";
             dialog.comments = "Intercepting proxy";
             dialog.copyright = "Copyright © %d Forensant Ltd".printf (new DateTime.now ().get_year ());
-            dialog.version = VERSION;
+            dialog.version = get_version ();
 
             dialog.license_type = Gtk.License.MIT_X11;
 
@@ -136,6 +134,24 @@ namespace Proximity {
             int res = _command_line (command_line);
             this.release ();
             return res;
+        }
+
+        public string get_version () {
+            var file = File.new_for_uri ("resource:///com/forensant/proximity/version");
+
+            var contents = "";
+
+            try {
+                var dis = new DataInputStream (file.read ());
+                string line;
+                while ((line = dis.read_line (null)) != null) {
+                    contents += line;
+                }
+            } catch (Error e) {
+                stdout.printf ("Error getting logo: %s\n", e.message);
+            }
+
+            return contents;
         }
 
         private void preferences () {

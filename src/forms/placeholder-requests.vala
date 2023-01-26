@@ -27,9 +27,14 @@ namespace Proximity {
         private unowned Gtk.Label label_setup_proxy;
 
         private ApplicationWindow application_window;
+        private GLib.Settings settings;
         
         public PlaceholderRequests (ApplicationWindow application_window) {
             this.application_window = application_window;
+
+            settings = new GLib.Settings ("com.forensant.proximity");
+            
+            expander_manual_instructions.expanded = settings.get_boolean ("manual-instructions-expanded");
 
             if (is_sandboxed ()) {
                 expander_manual_instructions.expanded = true;
@@ -67,6 +72,11 @@ namespace Proximity {
             application_window.on_open_browser ();
         }
 
+        [GtkCallback]
+        public void on_expander_manual_instructions_activate (Gtk.Expander expander) {
+            settings.set_boolean ("manual-instructions-expanded", !expander.expanded);
+        }
+
         public void update_proxy_address () {
             if (application_window.proxy_settings.successful) {
                 label_setup_proxy.label = label_setup_proxy.label.replace ("PROXYADDRESS", "http://" + application_window.proxy_settings.local_proxy_address ());
@@ -90,6 +100,10 @@ namespace Proximity {
             }
             
             frame_error.visible = true;
+            expander_manual_instructions.visible = false;
+            label_chromium_not_found.visible = false;
+            button_launch_browser.visible = false;
+            box_chromium_not_found.visible = false;
 
             button_certificate_save.visible = false;
             label_certificate.visible = false;

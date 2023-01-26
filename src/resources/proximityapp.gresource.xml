@@ -28,5 +28,7 @@
     <file>Pinchy.svg</file>
     <file>style.css</file>
 
+    <file>version</file>
+
   </gresource>
 </gresources>

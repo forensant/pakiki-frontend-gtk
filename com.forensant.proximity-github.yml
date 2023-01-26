@@ -39,6 +39,5 @@ modules:
       - ls -lah
       - cp -r python39 /app/bin/
     sources:
-#manual_ifdef local
       - type: dir
-        path: /home/parallels/Coding/proximity-core/build/
+        path: proximity-core
