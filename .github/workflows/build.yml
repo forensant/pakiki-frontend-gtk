@@ -157,7 +157,7 @@ jobs:
 
       - uses: jiro4989/build-deb-action@v2
         with:
-          package: proximity
+          package: Proximity
           package_root: .debpkg
           maintainer: Forensant
           version: ${{ steps.getversion.outputs.version }} # refs/tags/v*.*.*

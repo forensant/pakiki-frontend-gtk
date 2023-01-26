@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=Proximity
-Icon=proximity
+Icon=/usr/share/pixmaps/proximity.svg
 StartupNotify=true
 Exec=proximity
 Categories=Network;Security;
