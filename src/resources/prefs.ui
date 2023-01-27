@@ -55,6 +55,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <items>
+                  <item id="new-window" translatable="yes">Open in new window</item>
                   <item id="inject" translatable="yes">Inject</item>
                   <item id="new-request" translatable="yes">New Request</item>
                 </items>

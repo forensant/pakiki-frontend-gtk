@@ -506,10 +506,22 @@ namespace Proximity {
         }
 
         public void request_double_clicked (string guid) {
-            if (settings.get_string ("request-double-click") == "new-request") {
+            var behaviour = settings.get_string ("request-double-click");
+
+            switch (behaviour) {
+            case "new-window":
+                var win = new RequestWindow (this, guid);
+                win.show ();
+                break;
+            case "new-request":
                 send_to_new_request (guid);
-            } else {
+                break;
+            case "inject":
                 send_to_inject (guid);
+                break;
+            default:
+                stdout.printf("Unknown double-click behaviour setting: %s\n", behaviour);
+                break;
             }
         }
 

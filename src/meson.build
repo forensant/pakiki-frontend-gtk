@@ -19,6 +19,7 @@ sources += files(
     'forms/request-list.vala',
     'forms/request-new.vala',
     'forms/request-preview.vala',
+    'forms/request-window.vala',
     'forms/requests-pane.vala',
     'forms/saving-dialog.vala',
     'forms/searchable-web-view.vala',
