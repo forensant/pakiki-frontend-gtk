@@ -67,10 +67,6 @@ namespace Proximity {
             action = new SimpleAction("save_as", null);
             action.activate.connect (window.on_save_project);
             add_action (action);
-
-            action = new SimpleAction("open_browser", null);
-            action.activate.connect (window.on_open_browser);
-            add_action (action);
         }
 
         private int _command_line (ApplicationCommandLine command_line) {

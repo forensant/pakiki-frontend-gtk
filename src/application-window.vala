@@ -124,8 +124,21 @@ namespace Proximity {
             add_accel_group (accel_group);
 
             var builder = new Gtk.Builder.from_resource ("/com/forensant/proximity/app-menu.ui");
-            var menu = (MenuModel) builder.get_object ("menu");
-            gears.menu_model = menu;
+            var menu_model = (GLib.MenuModel) builder.get_object ("menu");
+            var menu = new Gtk.Menu.from_model (menu_model);
+            
+            if (!is_sandboxed ()) {
+                var open_item = new Gtk.MenuItem.with_mnemonic ("Open _Browser");
+                open_item.activate.connect (on_open_browser);
+                open_item.show ();
+                menu.insert (open_item, 4);
+                
+                var sep_item = new Gtk.SeparatorMenuItem ();
+                sep_item.show ();
+                menu.insert (sep_item, 5);
+            }
+            
+            gears.popup = menu;
 
             Notify.init ("com.forensant.proximity");
 
@@ -312,6 +325,11 @@ namespace Proximity {
             for (var i = 0; i < key_bytes.length; i++) {
                 api_key += key_bytes[i].to_string ("%02X");
             }
+        }
+
+        public bool is_sandboxed () {
+            File file = File.new_for_path ("/.flatpak-info");
+            return file.query_exists ();
         }
 
         private bool monitor_core_connection () {

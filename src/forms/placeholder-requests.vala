@@ -36,7 +36,7 @@ namespace Proximity {
             
             expander_manual_instructions.expanded = settings.get_boolean ("manual-instructions-expanded");
 
-            if (is_sandboxed ()) {
+            if (application_window.is_sandboxed ()) {
                 expander_manual_instructions.expanded = true;
                 label_chromium_not_found.visible = false;
                 button_launch_browser.visible = false;
@@ -55,11 +55,6 @@ namespace Proximity {
                     });
                 }
             }            
-        }
-
-        private bool is_sandboxed () {
-            File file = File.new_for_path ("/.flatpak-info");
-            return file.query_exists ();
         }
 
         [GtkCallback]
