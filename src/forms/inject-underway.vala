@@ -49,11 +49,15 @@ namespace Proximity {
             var different_operation = this.operation == null || operation.guid != this.operation.guid;
             
             this.operation = operation;
-            text_view_request.buffer.text = operation.request;
-            label_injection_parameters.set_text (operation.inject_description);
-
+            
             if (different_operation || entry_title.has_focus == false) {
                 entry_title.set_text (operation.title);
+            }
+
+            if (different_operation) {
+                text_view_request.buffer.text = operation.request;
+                label_injection_parameters.set_text (operation.inject_description);
+                label_injection_parameters.set_tooltip_text (operation.inject_description);
             }
 
             if (operation.percent_completed >= 100) {
@@ -73,6 +77,7 @@ namespace Proximity {
                 label_error.show ();
 
                 label_error.set_text (operation.error);
+                label_error.set_tooltip_text (operation.error);
             }
 
             if (different_operation) {
