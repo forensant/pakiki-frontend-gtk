@@ -19,6 +19,8 @@ namespace Proximity {
         [GtkChild]
         private unowned Gtk.CheckButton check_button_exclude_resources;
         [GtkChild]
+        private unowned Gtk.CheckButton check_button_negative_filter;
+        [GtkChild]
         private unowned Gtk.ComboBoxText combobox_search_protocols;
         [GtkChild]
         private unowned Gtk.MenuButton gears;
@@ -362,12 +364,17 @@ namespace Proximity {
         [GtkCallback]
         public void on_button_filter_toggled () {
             combobox_search_protocols.visible = selected_pane ().can_filter_protocols ();
-            if (popover_filter.visible) {
+            if (!button_filter.active) { // state we're changing from
                 popover_filter.popdown ();
             } else {
                 popover_filter.popup ();
                 searchentry.grab_focus ();
             }
+        }
+
+        [GtkCallback]
+        public void on_popover_filter_closed () {
+            button_filter.active = false;
         }
 
         [GtkCallback]
@@ -381,7 +388,7 @@ namespace Proximity {
 
         [GtkCallback]
         public void on_searchentry_stop_search () {
-            popover_filter.popdown ();
+            button_filter.active = false;
         }
 
         [GtkCallback]
@@ -545,6 +552,7 @@ namespace Proximity {
         [GtkCallback]
         public void search_text_changed () {
             selected_pane ().on_search (searchentry.get_text (),
+                check_button_negative_filter.get_active (),
                 check_button_exclude_resources.get_active (),
                 combobox_search_protocols.get_active_id ()
             );

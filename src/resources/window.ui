@@ -228,6 +228,7 @@
     <property name="can-focus">True</property>
     <property name="relative-to">button_filter</property>
     <property name="modal">False</property>
+    <signal name="closed" handler="on_popover_filter_closed" swapped="no"/>
     <signal name="focus-out-event" handler="on_popover_filter_focus_out_event" swapped="no"/>
     <child>
       <object class="GtkBox">
@@ -257,7 +258,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkCheckButton" id="checkbox_negative_search">
+          <object class="GtkCheckButton" id="check_button_negative_filter">
             <property name="label" translatable="yes">_Negative Filter</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
@@ -265,6 +266,7 @@
             <property name="use-underline">True</property>
             <property name="xalign">0</property>
             <property name="draw-indicator">True</property>
+            <signal name="toggled" handler="search_text_changed" swapped="no"/>
           </object>
           <packing>
             <property name="expand">False</property>

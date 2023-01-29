@@ -31,6 +31,7 @@ namespace Proximity {
         private RequestCompare request_compare;
         private RequestDetails request_details;
         private string[] scan_ids;
+        private bool search_negative_filter;
         private string search_protocol;
         private string search_query;
         private bool updating;
@@ -66,6 +67,7 @@ namespace Proximity {
             this.scan_ids = scan_ids;
             this.exclude_resources = true;
             this.updating = false;
+            this.search_negative_filter = false;
             this.search_protocol = "";
             this.search_query = "";
             this.url_filter = "";
@@ -326,6 +328,10 @@ namespace Proximity {
                 url += "&filter=" + Soup.URI.encode(search_query, null);
             }
 
+            if (search_negative_filter) {
+                url += "&negative_filter=true";
+            }
+
             var scan_id = string.joinv (":", scan_ids);
             if (scan_id != "") {
                 url += "&scanid=" + scan_id;
@@ -412,7 +418,6 @@ namespace Proximity {
             }
            
             if (search_protocol != "" && search_protocol != "all") {
-
                 notification_filters["Protocol"] = search_protocol;
             }
 
@@ -420,6 +425,9 @@ namespace Proximity {
             string filter = "";
             if (exclude_resources) {
                 filter += "exclude_resources:true";
+            }
+            if (search_negative_filter) {
+                filter += " negative_filter:true";
             }
 
             if (search_query != null && search_query != "") {
@@ -672,8 +680,9 @@ namespace Proximity {
             return false; // allow other event handlers to also be run
         }
 
-        public void on_search (string query, bool exclude_resources, string protocol = "") {
+        public void on_search (string query, bool negative_filter, bool exclude_resources, string protocol = "") {
             this.search_query = query;
+            this.search_negative_filter = negative_filter;
             this.exclude_resources = exclude_resources;
             this.search_protocol = protocol;
             get_requests ();

@@ -80,8 +80,8 @@ namespace Proximity {
             }
         }
 
-        public void on_search (string text, bool exclude_resources, string protocol) {
-            request_list.on_search (text, exclude_resources, protocol);
+        public void on_search (string text, bool negative_filter, bool exclude_resources, string protocol) {
+            request_list.on_search (text, negative_filter, exclude_resources, protocol);
         }
 
         public void process_launch_successful (bool success) {

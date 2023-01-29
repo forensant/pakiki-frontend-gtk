@@ -26,11 +26,13 @@ namespace Proximity {
         public InjectOperation operation { get; private set; }
         private RequestList request_list_full;
         private bool search_exclude_resources;
+        private bool search_negative_filter;
         private string search_query;
 
         public InjectUnderway (ApplicationWindow application_window) {
             this.application_window = application_window;
             search_query = "";
+            search_negative_filter = false;
             string[] scan_ids = {"-"};
             request_list_full = new RequestList (application_window, false, scan_ids);
             this.attach (request_list_full, 0, 4, 2, 1);
@@ -83,7 +85,7 @@ namespace Proximity {
             if (different_operation) {
                 string[] scan_ids = {operation.guid};
                 request_list_full.set_scan_ids (scan_ids);
-                request_list_full.on_search (search_query, search_exclude_resources);
+                request_list_full.on_search (search_query, search_negative_filter, search_exclude_resources);
             }
 
             if (operation.get_status () == InjectOperation.Status.ARCHIVED) {
@@ -128,10 +130,11 @@ namespace Proximity {
             application_window.http_session.send_async.begin (message);
         }
 
-        public void on_search (string query, bool exclude_resources) {
+        public void on_search (string query, bool negative_filter, bool exclude_resources) {
             this.search_query = query;
+            this.search_negative_filter = negative_filter;
             this.search_exclude_resources = exclude_resources;
-            request_list_full.on_search (search_query, search_exclude_resources);
+            request_list_full.on_search (search_query, negative_filter, search_exclude_resources);
         }
 
         [GtkCallback]

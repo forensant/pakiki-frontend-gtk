@@ -169,8 +169,8 @@ namespace Proximity {
             pane_changed ();
         }
 
-        public void on_search (string query, bool exclude_resources, string protocol) {
-            inject_underway_form.on_search (query, exclude_resources);
+        public void on_search (string query, bool negative_filter, bool exclude_resources, string protocol) {
+            inject_underway_form.on_search (query, negative_filter, exclude_resources);
         }
 
         private void on_websocket_message (int type, Bytes message) {

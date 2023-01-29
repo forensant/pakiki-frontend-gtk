@@ -32,7 +32,10 @@ namespace Proximity {
         public virtual void on_new_clicked () {
         }
 
-        public virtual void on_search (string text, bool exclude_resources, string protocol) {
+        public virtual void on_search (string text,
+            bool negative_filter,
+            bool exclude_resources,
+            string protocol) {
         }
 
         public abstract void reset_state ();
