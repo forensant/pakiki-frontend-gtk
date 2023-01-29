@@ -17,6 +17,7 @@
     <file preprocess="xml-stripblanks">text-search-bar.ui</file>
     <file preprocess="xml-stripblanks">window.ui</file>
 
+    <file preprocess="xml-stripblanks">funnel-outline-symbolic.svg</file>
     <file>HappyLaptop.svg</file>
     <file>Logo-banner.svg</file>
     <file>Logo16.png</file>

@@ -15,7 +15,7 @@ namespace Proximity {
         [GtkChild]
         private unowned Gtk.Button button_new;
         [GtkChild]
-        private unowned Gtk.ToggleButton button_search;
+        private unowned Gtk.ToggleButton button_filter;
         [GtkChild]
         private unowned Gtk.CheckButton check_button_exclude_resources;
         [GtkChild]
@@ -29,7 +29,7 @@ namespace Proximity {
         [GtkChild]
         private unowned Gtk.Overlay overlay;
         [GtkChild]
-        private unowned Gtk.SearchBar searchbar;
+        private unowned Gtk.Popover popover_filter;
         [GtkChild]
         private unowned Gtk.SearchEntry searchentry;
         [GtkChild]
@@ -94,18 +94,6 @@ namespace Proximity {
             
             settings = new GLib.Settings ("com.forensant.proximity");
             
-            button_search.bind_property ("active", searchbar, "search-mode-enabled",
-                                  GLib.BindingFlags.BIDIRECTIONAL);
-
-            button_search.bind_property ("active", searchbar, "visible",
-                                  GLib.BindingFlags.BIDIRECTIONAL);
-
-            button_search.clicked.connect (() => {
-                searchentry.grab_focus ();
-            });
-
-            searchbar.visible = false;
-
             var accel_group = new Gtk.AccelGroup ();
             accel_group.connect ('f', Gdk.ModifierType.CONTROL_MASK, 0, (group, accel, keyval, modifier) => {
                 var pane = selected_pane ();
@@ -113,10 +101,7 @@ namespace Proximity {
                     // do nothing - as find has been activated
                 }
                 else if (pane == null || pane.can_search ()) {
-                    searchbar.visible = !searchbar.visible;
-                    if (searchbar.visible) {
-                        searchentry.grab_focus ();
-                    }
+                    button_filter.active = !button_filter.active;
                 }
 
                 return true;
@@ -375,13 +360,28 @@ namespace Proximity {
         }
 
         [GtkCallback]
-        public void on_button_search_toggled () {
+        public void on_button_filter_toggled () {
             combobox_search_protocols.visible = selected_pane ().can_filter_protocols ();
+            if (popover_filter.visible) {
+                popover_filter.popdown ();
+            } else {
+                popover_filter.popup ();
+                searchentry.grab_focus ();
+            }
+        }
+
+        [GtkCallback]
+        public bool on_ProximityApplicationWindow_button_press_event (Gdk.EventButton btn) {
+            if (popover_filter.visible) {
+                button_filter.active = false;
+            }
+
+            return false;
         }
 
         [GtkCallback]
         public void on_searchentry_stop_search () {
-            searchbar.search_mode_enabled = false;
+            popover_filter.popdown ();
         }
 
         [GtkCallback]
@@ -458,11 +458,11 @@ namespace Proximity {
             button_back.visible = pane.back_visible ();
 
             var can_search = pane.can_search ();
-            button_search.sensitive = can_search;
+            button_filter.sensitive = can_search;
             combobox_search_protocols.visible = selected_pane ().can_filter_protocols ();
 
-            if (searchbar.visible && !can_search) {
-                searchbar.visible = false;
+            if (popover_filter.visible && !can_search) {
+                button_filter.active = false;
             }
 
             // special case
@@ -493,14 +493,14 @@ namespace Proximity {
                 button_intercept.visible = true;
                 button_back.visible = false;
                 gears.visible = true;
-                button_search.visible = true;
+                button_filter.visible = true;
                 inject_pane.visible = true;
             } 
             else {
                 button_new.visible = false;
                 button_intercept.visible = false;
                 button_back.visible = false;
-                button_search.visible = false;
+                button_filter.visible = false;
                 inject_pane.visible = false;
             }
         }
