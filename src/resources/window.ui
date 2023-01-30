@@ -229,7 +229,6 @@
     <property name="relative-to">button_filter</property>
     <property name="modal">False</property>
     <signal name="closed" handler="on_popover_filter_closed" swapped="no"/>
-    <signal name="focus-out-event" handler="on_popover_filter_focus_out_event" swapped="no"/>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>

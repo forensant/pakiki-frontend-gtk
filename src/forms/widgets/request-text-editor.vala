@@ -23,7 +23,10 @@ namespace Proximity {
             application_window.http_session.queue_message (message, (sess, mess) => {
                 if (message.status_code == 200) {
                     var domain = (string) message.response_body.flatten ().data;
+                    buffer.begin_user_action ();
+                    buffer.delete_selection (true, true);
                     buffer.insert_at_cursor (domain, domain.length);
+                    buffer.end_user_action ();
                 }
 
                 long_running_task (false);
