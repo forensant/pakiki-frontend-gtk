@@ -22,12 +22,35 @@ It is recommended you subscribe to the newsletter at https://proximityhq.com/ to
 Download from the latest release from [https://github.com/pipeline/proximity-frontend-gtk/releases](https://github.com/pipeline/proximity-frontend-gtk/releases)
 
 This has been primarily tested in Kali. While other distributions should work, they have not have been as well tested. Please submit a bug report if you run into any issues.
+As the project grows, it will be published to repositories, for now, it is available as a .deb file and a Flatpak bundle.
+
+### .deb package (recommended)
+This will work for Kali, Debian, Ubuntu, and their derivatives.
 
 To install the .deb file, run:
 ```
 sudo apt update
 sudo dkpg -i <.deb file>
 sudo apt install -f
+```
+
+### Flatpak
+
+To install it, you'll first need Flatpak, if you don't have it already:
+```
+sudo apt update
+sudo apt install flatpak libpam-gnome-keyring
+```
+If these needed to be installed, it may be safest to reboot your system **twice** to ensure the correct environment variables are set and the login keychain is created/unlocked.
+
+You'll need repository which contains the Flatpak platform it's based on:
+```
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+```
+
+Then you can install Proximity (you can download the latest version from the releases page):
+```
+flatpak install Proximity-Community-[version].flatpak
 ```
 
 To run this on Windows Subsystem for Linux (Windows 11), you'll need a headless keyring: https://github.com/jaraco/keyring#using-keyring-on-headless-linux-systems
