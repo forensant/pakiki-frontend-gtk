@@ -1,5 +1,8 @@
 
-<img src="docs/resources/Banner.svg" width="50%" />
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/resources/Banner-Dark.svg">
+  <img alt="Text changing depending on mode. Light: 'So light!' Dark: 'So dark!'" src="docs/resources/Banner-Light.svg" width="50%">
+</picture>
 
 ## Overview
 Proximity is an intercepting proxy, allowing you to view and manipulate network requests between your web browser and the servers its communicating with. It is designed for web application penetration testing, but could be used for general debugging of applications, etc. It is similar in principle to mitmproxy or OWASP ZAP.
