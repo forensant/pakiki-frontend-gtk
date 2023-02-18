@@ -58,7 +58,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: proximity-frontend-html
-          path: proximity-core/www/dist/
+          path: proximity-core/www/html_frontend/dist/
             
       - name: Install system dependencies
         run: sudo apt install build-essential
