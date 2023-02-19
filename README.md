@@ -42,6 +42,7 @@ sudo apt install -f
 To install it, you'll first need Flatpak, if you don't have it already:
 ```
 sudo apt update
+sudo apt upgrade
 sudo apt install flatpak libpam-gnome-keyring
 ```
 If these needed to be installed, it may be safest to reboot your system **twice** to ensure the correct environment variables are set and the login keychain is created/unlocked.
