@@ -25,6 +25,8 @@ namespace Proximity {
         [GtkChild]
         private unowned Gtk.MenuButton gears;
         [GtkChild]
+        private unowned Gtk.Image image_filter_icon;
+        [GtkChild]
         private unowned Gtk.InfoBar info_bar_bind_error;
         [GtkChild]
         private unowned Gtk.Label label_proxy_bind_error;
@@ -133,6 +135,8 @@ namespace Proximity {
             // works around a webkit bug
             new WebKit.WebView();
 
+            set_filter_icon ();
+
             requests_pane = new RequestsPane (this, true);
             requests_pane.pane_changed.connect(on_pane_changed);
             stack.add_titled (requests_pane, "RequestList", "Requests");
@@ -222,25 +226,7 @@ namespace Proximity {
         }
 
         public InputStream banner_logo_svg () {
-            var file = File.new_for_uri ("resource:///com/forensant/proximity/Logo-banner.svg");
-
-            var contents = "";
-
-            try {
-                var dis = new DataInputStream (file.read ());
-                string line;
-                while ((line = dis.read_line (null)) != null) {
-                    contents += line + "\n";
-                }
-            } catch (Error e) {
-                stdout.printf ("Error getting logo: %s\n", e.message);
-            }
-
-            var style_context = this.get_style_context ();
-            var text_color = style_context.get_color (Gtk.StateFlags.NORMAL);
-
-            contents = contents.replace ("#000000", text_color.to_string ());
-            return new GLib.MemoryInputStream.from_data (contents.data);
+            return get_coloured_svg("resource:///com/forensant/proximity/Logo-banner.svg");
         }
 
         private void create_http_session () {
@@ -312,6 +298,28 @@ namespace Proximity {
             for (var i = 0; i < key_bytes.length; i++) {
                 api_key += key_bytes[i].to_string ("%02X");
             }
+        }
+
+        private InputStream get_coloured_svg (string uri) {
+            var file = File.new_for_uri (uri);
+
+            var contents = "";
+
+            try {
+                var dis = new DataInputStream (file.read ());
+                string line;
+                while ((line = dis.read_line (null)) != null) {
+                    contents += line + "\n";
+                }
+            } catch (Error e) {
+                stdout.printf ("Error getting logo: %s\n", e.message);
+            }
+
+            var style_context = this.get_style_context ();
+            var text_color = style_context.get_color (Gtk.StateFlags.NORMAL);
+
+            contents = contents.replace ("#000000", text_color.to_string ());
+            return new GLib.MemoryInputStream.from_data (contents.data);
         }
 
         public bool is_sandboxed () {
@@ -583,6 +591,11 @@ namespace Proximity {
         public void send_to_new_request (string guid) {
             stack.visible_child = new_request;
             new_request.populate_request (guid);
+        }
+
+        private void set_filter_icon () {
+            var image_src = this.get_coloured_svg ("resource:///com/forensant/proximity/funnel-outline-symbolic.svg");
+            image_filter_icon.pixbuf = new Gdk.Pixbuf.from_stream (image_src);
         }
 
         private void set_window_icon (Gtk.Window window) {
