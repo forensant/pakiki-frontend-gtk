@@ -37,7 +37,7 @@ modules:
       - install -D proximitycore /app/bin/
       - install -D proximitypythoninterpreter /app/bin/
       - ls -lah
-      - cp -r python39 /app/bin/
+      - cp -r python310 /app/bin/
     sources:
 #manual_ifdef local
       - type: dir
