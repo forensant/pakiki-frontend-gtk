@@ -386,15 +386,6 @@ namespace Proximity {
         }
 
         [GtkCallback]
-        public bool on_ProximityApplicationWindow_button_press_event (Gdk.EventButton btn) {
-            if (popover_filter.visible) {
-                button_filter.active = false;
-            }
-
-            return false;
-        }
-
-        [GtkCallback]
         public void on_searchentry_stop_search () {
             button_filter.active = false;
         }
