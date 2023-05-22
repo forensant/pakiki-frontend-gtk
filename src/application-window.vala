@@ -416,7 +416,9 @@ namespace Proximity {
         }
 
         public void on_open_browser () {
-            if (can_open_browser () == false) {
+            var browser_path = this.browser_path ();
+
+            if (browser_path == "") {
                 var msgbox = new Gtk.MessageDialog (this,
                     Gtk.DialogFlags.MODAL,
                     Gtk.MessageType.WARNING,
@@ -428,7 +430,7 @@ namespace Proximity {
             }
 
             string[] spawn_args = {
-                "/usr/bin/chromium",
+                browser_path,
                 "--temp-profile",
                 "--ignore-certificate-errors",
                 "--test-type",
@@ -440,12 +442,17 @@ namespace Proximity {
             string[] spawn_env = Environ.get ();
             Pid child_pid;
 
-            Process.spawn_async (null,
-                spawn_args,
-                spawn_env,
-                SpawnFlags.SEARCH_PATH | SpawnFlags.DO_NOT_REAP_CHILD,
-                null,
-                out child_pid);
+            try {
+                Process.spawn_async (null,
+                    spawn_args,
+                    spawn_env,
+                    SpawnFlags.SEARCH_PATH | SpawnFlags.DO_NOT_REAP_CHILD,
+                    null,
+                    out child_pid);
+            } catch (Error e) {
+                stdout.printf ("Error launching browser: %s\n", e.message);
+                return;
+            }
 
             ChildWatch.add (child_pid, (pid, status) => {
                 // Triggered when the child indicated by child_pid exits
@@ -453,9 +460,18 @@ namespace Proximity {
             });
         }
 
-        public bool can_open_browser () {
+        public string browser_path () {
             File file = File.new_for_path ("/usr/bin/chromium");
-            return file.query_exists ();
+            if (file.query_exists ()) {
+                return "/usr/bin/chromium";
+            }
+
+            file = File.new_for_path ("/usr/bin/chromium-browser");
+            if (file.query_exists ()) {
+                return "/usr/bin/chromium-browser";
+            }
+
+            return "";
         }
 
         public void on_open_project () {

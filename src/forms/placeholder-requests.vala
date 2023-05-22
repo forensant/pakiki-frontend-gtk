@@ -44,9 +44,11 @@ namespace Proximity {
             } else {
                 set_browser_available ();
 
-                if (!application_window.can_open_browser ()) {
+                var browser_path = application_window.browser_path ();
+
+                if (browser_path == "") {
                     Timeout.add_full (Priority.DEFAULT, 1000, () => {
-                        if (application_window.can_open_browser ()) {
+                        if (application_window.browser_path () != "") {
                             set_browser_available ();
                             return false;
                         }
@@ -82,9 +84,10 @@ namespace Proximity {
         }
 
         private void set_browser_available () {
-            label_chromium_not_found.visible = !application_window.can_open_browser ();
-            box_chromium_not_found.visible = !application_window.can_open_browser ();
-            button_launch_browser.sensitive = application_window.can_open_browser ();
+            var browser_path = application_window.browser_path ();
+            label_chromium_not_found.visible = browser_path == "";
+            box_chromium_not_found.visible = browser_path == "";
+            button_launch_browser.sensitive = browser_path != "";
         }
 
         public void set_error (string core_address) {
