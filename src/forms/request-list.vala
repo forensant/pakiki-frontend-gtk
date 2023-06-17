@@ -589,7 +589,7 @@ namespace Proximity {
                 if (protocols.length != 1) {
                     return false;
                 }
-                if (protocols[0] != "HTTP/1.1") {
+                if (!protocols[0].contains("HTTP")) {
                     return false;
                 }
 
@@ -613,7 +613,7 @@ namespace Proximity {
                 if (protocols.length != 1) {
                     return false;
                 }
-                if (protocols[0] != "HTTP/1.1") {
+                if (!protocols[0].contains("HTTP")) {
                     return false;
                 }
 

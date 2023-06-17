@@ -309,7 +309,7 @@
             <property name="active-id">all</property>
             <items>
               <item id="all" translatable="yes">All Protocols</item>
-              <item id="HTTP/1.1" translatable="yes">HTTP</item>
+              <item id="HTTP" translatable="yes">HTTP</item>
               <item id="Websocket" translatable="yes">Websockets</item>
               <item id="Out of Band" translatable="yes">Out of Band</item>
             </items>

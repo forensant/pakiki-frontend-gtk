@@ -430,7 +430,6 @@ namespace Proximity {
             }
 
             var configdir = writeBrowserConfig ();
-            stdout.printf("Browser config written to: %s\n", configdir);
 
             string[] spawn_args = {
                 browser_path,

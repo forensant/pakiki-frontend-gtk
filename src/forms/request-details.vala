@@ -354,7 +354,7 @@ namespace Proximity {
 
                     var protocol = root_obj.get_string_member ("Protocol");
 
-                    set_controls_visible (protocol == "HTTP/1.1", protocol == "Websocket", protocol == "Out of Band");
+                    set_controls_visible (protocol.contains("HTTP"), protocol == "Websocket", protocol == "Out of Band");
 
                     if (protocol == "Websocket") {
                         populate_websocket_data (root_obj, request_updated);
