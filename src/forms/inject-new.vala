@@ -8,6 +8,7 @@ namespace Proximity {
         private Gtk.Button button_run;
         private InjectPane inject_pane;
         private InjectPointSelectionWidget inject_point_selection_widget;
+        private Gtk.Label label_error;
         private PayloadSelectionWidget payload_selection_widget;
         private Gtk.Spinner spinner;
 
@@ -37,6 +38,9 @@ namespace Proximity {
             button_run.clicked.connect (on_run_clicked);
             button_run.show ();
 
+            label_error = new Gtk.Label ("");
+            label_error.halign = Gtk.Align.START;
+
             var accel_group = new Gtk.AccelGroup ();
             accel_group.connect ('r', Gdk.ModifierType.CONTROL_MASK, 0, (group, accel, keyval, modifier) => {
                 if (application_window.selected_pane_name () != "Inject" || this.visible == false) {
@@ -53,6 +57,7 @@ namespace Proximity {
             
             var box_bottom = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 0);
             box_bottom.margin_top = 12;
+            box_bottom.pack_start (label_error, true, true, 0);
             box_bottom.pack_end (button_run, false, false, 0);
             box_bottom.pack_end (spinner, false, false, 0);
             box_bottom.show ();
@@ -131,10 +136,21 @@ namespace Proximity {
             message.set_request("application/json", Soup.MemoryUse.COPY, parameters.data);
 
             application_window.http_session.queue_message (message, (sess, mess) => {
+                var response_data = (string)mess.response_body.flatten().data;
+                
+                if (mess.status_code != 200) {
+                    label_error.label = "Error: " + response_data;
+                    label_error.visible = true;
+                    button_run.sensitive = true;
+                    spinner.active = false;
+                    return;
+                } else {
+                    label_error.visible = false;
+                }
+
                 var parser = new Json.Parser ();
-                var jsonData = (string)mess.response_body.flatten().data;
                 try {
-                    parser.load_from_data (jsonData, -1);
+                    parser.load_from_data (response_data, -1);
 
                     var rootObj = parser.get_root().get_object();
                     
@@ -144,7 +160,7 @@ namespace Proximity {
                     inject_pane.select_when_received (guid);
                 }
                 catch(Error e) {
-                    stdout.printf("Could not parse JSON data, error: %s\nData: %s\n", e.message, jsonData);
+                    stdout.printf("Could not parse JSON data, error: %s\nData: %s\n", e.message, response_data);
                 }
 
                 button_run.sensitive = true;
