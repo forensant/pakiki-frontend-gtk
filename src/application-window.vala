@@ -430,6 +430,7 @@ namespace Proximity {
             }
 
             var configdir = writeBrowserConfig ();
+            stdout.printf("Config dir: %s\n", configdir);
 
             string[] spawn_args = {
                 browser_path,
@@ -451,7 +452,13 @@ namespace Proximity {
                 "--no-service-autorun",
                 "--media-cache-size=0",
                 "--use-mock-keychain",
+                "--no-default-browser-check",
+                "--disable-features=Translate",
+                "--password-store=basic",
                 "--disable-background-networking",
+                "--disable-sync",
+                "--metrics-recording-only",
+                "--disable-features=MediaRouter",
                 "http://" + core_address + "/browser_home/",
             };
 
