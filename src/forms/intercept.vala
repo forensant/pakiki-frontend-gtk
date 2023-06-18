@@ -149,6 +149,8 @@ namespace Proximity {
                     list_selection.select_iter (iter);
                 }
             }
+
+            application_window.set_intercepted_request_count (liststore_requests.iter_n_children (null));
         }
 
         public bool back_visible () {

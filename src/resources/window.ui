@@ -157,13 +157,22 @@
         </child>
         <child>
           <object class="GtkButton" id="button_intercept">
-            <property name="label" translatable="yes">_Intercept</property>
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="receives-default">False</property>
             <property name="tooltip-text" translatable="yes">Intercept Requests and Responses</property>
             <property name="use-underline">True</property>
             <signal name="clicked" handler="on_intercept_clicked" swapped="no"/>
+            <child>
+              <object class="GtkLabel" id="label_intercept">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">_Intercept</property>
+                <property name="use-markup">True</property>
+                <property name="use-underline">True</property>
+                <property name="mnemonic-widget">button_intercept</property>
+              </object>
+            </child>
           </object>
           <packing>
             <property name="position">2</property>

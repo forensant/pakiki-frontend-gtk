@@ -29,6 +29,8 @@ namespace Proximity {
         [GtkChild]
         private unowned Gtk.InfoBar info_bar_bind_error;
         [GtkChild]
+        private unowned Gtk.Label label_intercept;
+        [GtkChild]
         private unowned Gtk.Label label_proxy_bind_error;
         [GtkChild]
         private unowned Gtk.Overlay overlay;
@@ -184,8 +186,6 @@ namespace Proximity {
                 render_controls (false);
             }
 
-            stdout.printf("Proximity started\n");
-
             this.delete_event.connect ((e) => {
                 if (core_process != null) {
                     saving_dialog = new SavingDialog();
@@ -266,7 +266,7 @@ namespace Proximity {
             try {
                 notification.show ();
             } catch (Error e) {
-                stdout.printf("Error displaying notification: %s\n", e.message);
+                stderr.printf("Error displaying notification: %s\n", e.message);
             }
         }
 
@@ -619,6 +619,15 @@ namespace Proximity {
         private void set_filter_icon () {
             var image_src = this.get_coloured_svg ("resource:///com/forensant/proximity/funnel-outline-symbolic.svg");
             image_filter_icon.pixbuf = new Gdk.Pixbuf.from_stream (image_src);
+        }
+
+        public void set_intercepted_request_count(int count) {
+            if (count > 0) {
+                label_intercept.label = "<b>_Intercept (" + count.to_string () + ")</b>";
+            }
+            else {
+                label_intercept.label = "_Intercept";
+            }
         }
 
         private void set_window_icon (Gtk.Window window) {
