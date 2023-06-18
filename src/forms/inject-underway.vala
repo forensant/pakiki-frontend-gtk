@@ -90,10 +90,13 @@ namespace Proximity {
 
             if (operation.get_status () == InjectOperation.Status.ARCHIVED) {
                 button_action.label = "_Unarchive";
+                button_action.tooltip_text = "Move the scan to the completed section of the sidebar";
             } else if (operation.get_status () == InjectOperation.Status.UNDERWAY) {
                 button_action.label = "_Cancel";
+                button_action.tooltip_text = "Cancel the scan";
             } else {
                 button_action.label = "_Archive";
+                button_action.tooltip_text = "Move the scan to the archived section in the sidebar";
             }
         }
 
