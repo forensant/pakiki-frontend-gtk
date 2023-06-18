@@ -3,6 +3,7 @@ namespace Proximity {
 
         private ApplicationWindow application_window;
         private string certificate;
+        public int connections_per_host;
         public string proxy_address;
         public string upstream_proxy_address;
         public bool successful;
@@ -66,6 +67,7 @@ namespace Proximity {
 
                 proxy_address = root_object.get_string_member ("Http11ProxyAddr");
                 upstream_proxy_address = root_object.get_string_member ("Http11UpstreamProxyAddr");
+                connections_per_host = (int)root_object.get_int_member ("MaxConnectionsPerHost");
 
             } catch (Error e) {
                 proxy_address = "UNKNOWN";
@@ -95,6 +97,8 @@ namespace Proximity {
             builder.add_string_value (proxy_address);
             builder.set_member_name ("Http11UpstreamProxyAddr");
             builder.add_string_value (upstream_proxy_address);
+            builder.set_member_name ("MaxConnectionsPerHost");
+            builder.add_int_value (connections_per_host);
             builder.end_object ();
 
             Json.Generator generator = new Json.Generator ();
