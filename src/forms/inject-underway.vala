@@ -24,13 +24,15 @@ namespace Proximity {
 
         private ApplicationWindow application_window;
         public InjectOperation operation { get; private set; }
+        private InjectPane inject_pane;
         private RequestList request_list_full;
         private bool search_exclude_resources;
         private bool search_negative_filter;
         private string search_query;
 
-        public InjectUnderway (ApplicationWindow application_window) {
+        public InjectUnderway (ApplicationWindow application_window, InjectPane inject_pane) {
             this.application_window = application_window;
+            this.inject_pane = inject_pane;
             search_query = "";
             search_negative_filter = false;
             string[] scan_ids = {"-"};
@@ -131,6 +133,11 @@ namespace Proximity {
             }
             message.set_request ("application/x-www-form-urlencoded", Soup.MemoryUse.COPY, parameters.data);
             application_window.http_session.send_async.begin (message);
+        }
+
+        [GtkCallback]
+        public void on_button_clone_clicked () {
+            inject_pane.clone_inject_operation (operation);
         }
 
         public void on_search (string query, bool negative_filter, bool exclude_resources) {

@@ -5,9 +5,9 @@ namespace Proximity {
     class InjectPane : Gtk.Paned, MainApplicationPane {
 
         [GtkChild]
-        private Gtk.Grid grid;
+        private unowned Gtk.Grid grid;
         [GtkChild]
-        private Gtk.ScrolledWindow injectListScrollWindow;
+        private unowned Gtk.ScrolledWindow injectListScrollWindow;
 
         private ApplicationWindow application_window;
         private InjectNew inject_new_form;
@@ -27,7 +27,7 @@ namespace Proximity {
             inject_list_placeholder_row = new InjectListRow.placeholder ();
             list_box_injection_scans.insert (inject_list_placeholder_row, 0);
 
-            inject_underway_form = new InjectUnderway (application_window);
+            inject_underway_form = new InjectUnderway (application_window, this);
             grid.attach (inject_underway_form, 0, 1);
             inject_underway_form.hide ();
 
@@ -46,6 +46,15 @@ namespace Proximity {
 
         public bool can_search () {
             return inject_underway_form.visible;
+        }
+
+        public void clone_inject_operation (InjectOperation operation) {
+            inject_underway_form.hide ();
+            placeholder_form.hide ();
+            inject_new_form.show ();
+            list_box_injection_scans.unselect_all ();
+            pane_changed ();
+            inject_new_form.clone_inject_operation (operation);
         }
 
         public bool find_activated () {

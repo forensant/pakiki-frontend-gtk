@@ -65,6 +65,11 @@ namespace Proximity {
             this.pack_start (box_bottom, false);
         }
 
+        public void clone_inject_operation (InjectOperation operation) {
+            inject_point_selection_widget.clone_inject_operation (operation);
+            payload_selection_widget.clone_inject_operation (operation);
+        }
+
         private void get_custom_files (Json.Builder builder) {
             builder.set_member_name ("customPayloads");
             builder.begin_array ();

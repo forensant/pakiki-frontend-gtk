@@ -146,6 +146,53 @@ namespace Proximity {
             }
         }
 
+        private bool string_array_contains(string[] array, string value) {
+            foreach (var element in array) {
+                if (element.down () == value.down ()) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public void clone_inject_operation (InjectOperation operation) {
+            liststore_custom_files.clear ();
+            for (int i = 0; i < operation.custom_filenames.length; i++) {
+                Gtk.TreeIter iter;
+                liststore_custom_files.insert_with_values (out iter, -1,
+                    0, operation.custom_filenames[i]
+                );
+            }
+
+            treestore_fuzzdb.@foreach ((model, path, iter) => {
+                treestore_fuzzdb.set_value (iter, Column.CHECKED, "Unchecked");
+                return false;
+            });
+
+            treestore_fuzzdb.@foreach ((model, path, iter) => {
+                // if iter has children
+                if (model.iter_n_children (iter) != 0) {
+                    return false;
+                }
+
+                Value filename;
+                model.get_value (iter, Column.FILENAME, out filename);
+
+                var checked = string_array_contains (operation.fuzzdb, filename.get_string ());
+
+                if (checked) {
+                    treeview_fuzzdb.expand_to_path (path);
+                    on_fuzzdb_toggled (path.to_string ());
+                }
+
+                return false; // iterate until the end
+            });
+
+            iterate_from = operation.iterate_from;
+            iterate_to = operation.iterate_to;
+        }
+
         private string[] get_custom_filenames_internal () {
             var custom_files = new Gee.ArrayList<string> ();
             liststore_custom_files.@foreach ((model, path, iter) => {
@@ -505,7 +552,6 @@ namespace Proximity {
             } else {
                 label_payload_selection_count.label = payload_count.to_string () + " payloads selected";
             }
-            
         }
     }
 }

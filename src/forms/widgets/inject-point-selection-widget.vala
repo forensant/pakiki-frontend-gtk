@@ -131,6 +131,15 @@ namespace Proximity {
             text_view_request.buffer.delete_mark (end_mark);
         }
 
+        public void clone_inject_operation (InjectOperation operation) {
+            entry_title.text = operation.title;
+            entry_hostname.text = operation.host;
+            combobox_protocol.active = (operation.ssl ? 0 : 1);
+            host_error_visible = false;
+            text_view_request.buffer.text = operation.request;
+            correct_separators_and_tag ();
+        }
+
         private void correct_separators_and_tag () {
             Gtk.TextIter start_pos, end_pos;
             text_view_request.buffer.get_bounds (out start_pos, out end_pos);
