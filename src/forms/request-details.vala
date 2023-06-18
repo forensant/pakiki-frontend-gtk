@@ -51,7 +51,6 @@ namespace Proximity {
             get { return _show_send_to; }
             set {
                 _show_send_to = value; 
-                button_send_to.visible = value;
             }
         }
 
