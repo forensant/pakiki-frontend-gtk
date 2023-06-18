@@ -3,7 +3,7 @@ using Soup;
 namespace Proximity {
     
     [GtkTemplate (ui = "/com/forensant/proximity/payload-selection-widget.ui")]
-    class PayloadSelectionWidget : Gtk.Grid {
+    class PayloadSelectionWidget : Gtk.Box {
 
         [GtkChild]
         private unowned Gtk.Entry entry_from;
@@ -12,13 +12,13 @@ namespace Proximity {
         [GtkChild]
         private unowned Gtk.Entry entry_to;
         [GtkChild]
-        private unowned Gtk.Frame frame_iterate;
-        [GtkChild]
-        private unowned Gtk.Label label_iterate;
+        private unowned Gtk.Label label_payload_selection_count;
         [GtkChild]
         private unowned Gtk.ListStore liststore_custom_files;
         [GtkChild]
         private unowned Gtk.TreeStore treestore_fuzzdb;
+        [GtkChild]
+        private unowned Gtk.Notebook notebook;
         [GtkChild]
         private unowned Gtk.TreeView treeview_custom_files;
         [GtkChild]
@@ -55,7 +55,8 @@ namespace Proximity {
             CHECKED,
             TITLE,
             FILENAME,
-            PAYLOADS
+            PAYLOADS,
+            PAYLOAD_COUNT
         }
 
         public PayloadSelectionWidget (ApplicationWindow application_window, bool show_iterator) {
@@ -65,8 +66,7 @@ namespace Proximity {
             populate_payloads ();
 
             if (show_iterator == false) {
-                frame_iterate.hide ();
-                label_iterate.hide ();
+                notebook.remove_page (2);
             }
 
             treeview_model_filter = new Gtk.TreeModelFilter (treestore_fuzzdb, null);
@@ -139,7 +139,8 @@ namespace Proximity {
                     Column.CHECKED, false,
                     Column.TITLE, payload.get_string_member ("Title"),
                     Column.FILENAME, payload.get_string_member ("ResourcePath"),
-                    Column.PAYLOADS, payloads);
+                    Column.PAYLOADS, payloads,
+                    Column.PAYLOAD_COUNT, payload.get_int_member ("PayloadCount"));
 
                 add_to_fuzzdb_tree (payload.get_array_member ("SubEntries"), iter);
             }
@@ -234,6 +235,8 @@ namespace Proximity {
             }
             
             dialog.destroy ();
+
+            update_payload_count ();
         }
 
         [GtkCallback]
@@ -245,6 +248,8 @@ namespace Proximity {
             if (selection.get_selected (out model, out iter)) {
                 liststore_custom_files.remove (ref iter);
             }
+
+            update_payload_count ();
         }
 
         [GtkCallback]
@@ -284,6 +289,8 @@ namespace Proximity {
             set_fuzzdb_child_status (iter, value_to_set);
 
             is_checked.unset();
+
+            update_payload_count ();
         }
 
         private void populate_payloads () {
@@ -331,6 +338,7 @@ namespace Proximity {
             entry_from.text = "0";
             entry_to.text = "0";
             populate_payloads ();
+            update_payload_count ();
         }
 
         private void set_fuzzdb_child_status (Gtk.TreeIter iter, string value_to_set) {
@@ -469,6 +477,35 @@ namespace Proximity {
             }
             
             return false;
+        }
+
+        [GtkCallback]
+        private void update_payload_count() {
+            var fuzzdb_payload_count = 0;
+
+            treeview_fuzzdb.model.@foreach ((model, path, iter) => {
+                Value is_checked;
+                model.get_value (iter, Column.CHECKED, out is_checked);
+
+                if (is_checked.get_string () == "Checked" && model.iter_n_children (iter) == 0) {
+                    Value payload_count;
+                    model.get_value (iter, Column.PAYLOAD_COUNT, out payload_count);
+                    fuzzdb_payload_count += payload_count.get_int ();
+                }
+
+                return false; // iterate until the end
+            });
+
+            var payload_count = get_custom_file_payloads_internal ().length + (iterate_to - iterate_from).abs () + fuzzdb_payload_count;
+
+            if (payload_count == 0) {
+                label_payload_selection_count.label = "No payloads selected";
+            } else if (payload_count == 1) {
+                label_payload_selection_count.label = "1 payload selected";
+            } else {
+                label_payload_selection_count.label = payload_count.to_string () + " payloads selected";
+            }
+            
         }
     }
 }
