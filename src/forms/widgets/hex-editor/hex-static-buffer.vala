@@ -1,4 +1,4 @@
-namespace Proximity {
+namespace Pakiki {
     public class HexStaticBuffer : HexBuffer {
         
         private uint8[] buffer;

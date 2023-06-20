@@ -1,4 +1,4 @@
-namespace Proximity {
+namespace Pakiki {
     public class RoundProgressBar : Gtk.DrawingArea {
 
         private double _fraction = 0.0;

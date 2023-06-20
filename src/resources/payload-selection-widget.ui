@@ -34,7 +34,7 @@
       <column type="gint"/>
     </columns>
   </object>
-  <template class="ProximityPayloadSelectionWidget" parent="GtkBox">
+  <template class="PakikiPayloadSelectionWidget" parent="GtkBox">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <property name="orientation">vertical</property>

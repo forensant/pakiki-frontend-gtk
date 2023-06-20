@@ -1,6 +1,6 @@
 using Soup;
 
-namespace Proximity {
+namespace Pakiki {
     
     class InjectNew : Gtk.Box {
 

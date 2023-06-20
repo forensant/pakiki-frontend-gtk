@@ -1,4 +1,4 @@
-namespace Proximity {
+namespace Pakiki {
     using WebKit;
     
     class RequestPreview : WebKit.WebView {

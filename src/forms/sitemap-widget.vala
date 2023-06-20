@@ -1,6 +1,6 @@
 using Soup;
 
-namespace Proximity {
+namespace Pakiki {
     class SitemapWidget : Gtk.TreeView {
         public signal void loaded ();
         public signal void url_filter_set (string url);

@@ -1,4 +1,4 @@
-namespace Proximity {
+namespace Pakiki {
 
     class RequestTextView : Gtk.Box {
         private SearchableSourceView searchable_source_view;

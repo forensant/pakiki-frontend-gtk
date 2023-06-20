@@ -1,7 +1,7 @@
 using Soup;
 
-namespace Proximity {
-    [GtkTemplate (ui = "/com/forensant/proximity/inject-pane.ui")]
+namespace Pakiki {
+    [GtkTemplate (ui = "/com/forensant/pakiki/inject-pane.ui")]
     class InjectPane : Gtk.Paned, MainApplicationPane {
 
         [GtkChild]
@@ -221,10 +221,10 @@ namespace Proximity {
                     exists = true;
 
                     if (row.inject_operation.get_status () == InjectOperation.Status.UNDERWAY && inject_operation.get_status () == InjectOperation.Status.COMPLETED) {
-                        var message = "Proximity has finished an inject scan.";
+                        var message = "Pakiki has finished an inject scan.";
 
                         if (row.inject_operation.title != "") {
-                            message = "Proximity has finished the following scan: " + row.inject_operation.title;
+                            message = "Pakiki has finished the following scan: " + row.inject_operation.title;
                         }
 
                         application_window.display_notification ("Inject scan completed",

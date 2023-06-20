@@ -1,4 +1,4 @@
-namespace Proximity {
+namespace Pakiki {
     
     public class InjectOperation {
         public enum Status {

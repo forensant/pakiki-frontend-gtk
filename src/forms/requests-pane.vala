@@ -1,6 +1,6 @@
 using Soup;
 
-namespace Proximity {
+namespace Pakiki {
     class RequestsPane : Gtk.Paned, MainApplicationPane {
 
         public signal void request_double_clicked (string guid);

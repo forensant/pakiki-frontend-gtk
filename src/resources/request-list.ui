@@ -28,7 +28,7 @@
       <column type="gchararray"/>
     </columns>
   </object>
-  <template class="ProximityRequestList" parent="GtkPaned">
+  <template class="PakikiRequestList" parent="GtkPaned">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <property name="margin-left">18</property>

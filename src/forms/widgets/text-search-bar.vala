@@ -1,5 +1,5 @@
-namespace Proximity {
-    [GtkTemplate (ui = "/com/forensant/proximity/text-search-bar.ui")]
+namespace Pakiki {
+    [GtkTemplate (ui = "/com/forensant/pakiki/text-search-bar.ui")]
     public class TextSearchBar : Gtk.SearchBar {
         
         public signal void search_next ();

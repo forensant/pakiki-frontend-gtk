@@ -4,7 +4,7 @@
 
 # if you update this, make sure you also update the manual build files
 cat >.debpkg/DEBIAN/control <<EOL
-Package: Proximity
+Package: Pakiki
 Version: `cat src/resources/version`
 Architecture: `dpkg --print-architecture`
 Essential: no
@@ -13,4 +13,4 @@ Depends: libc6 (>= 2.2.1), libgtk-3-0, libpython3.10, libsoup2.4-1, libjson-glib
 Description: Native next generation intercepting proxy, designed for security testing of web applications.
 EOL
 
-dpkg-deb -Zxz --build .debpkg "Proximity-Community-v`cat src/resources/version`-Linux-`uname -m`.deb"
+dpkg-deb -Zxz --build .debpkg "Pakiki-Community-v`cat src/resources/version`-Linux-`uname -m`.deb"

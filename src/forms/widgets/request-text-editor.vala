@@ -1,4 +1,4 @@
-namespace Proximity {   
+namespace Pakiki {   
     class RequestTextEditor : Gtk.SourceView {
         public signal void long_running_task (bool running);
 

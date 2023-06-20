@@ -1,8 +1,8 @@
 using Soup;
 
-namespace Proximity {
+namespace Pakiki {
     
-    [GtkTemplate (ui = "/com/forensant/proximity/request-new.ui")]
+    [GtkTemplate (ui = "/com/forensant/pakiki/request-new.ui")]
     class RequestNew : Gtk.Paned, MainApplicationPane {
 
         [GtkChild]

@@ -1,4 +1,4 @@
-namespace Proximity {
+namespace Pakiki {
     
     class AuthenticationDialog : Gtk.Dialog {
 

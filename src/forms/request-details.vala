@@ -1,9 +1,9 @@
 using Soup;
 using WebKit;
 
-namespace Proximity {
+namespace Pakiki {
     
-    [GtkTemplate (ui = "/com/forensant/proximity/request-details.ui")]
+    [GtkTemplate (ui = "/com/forensant/pakiki/request-details.ui")]
     class RequestDetails : Gtk.Notebook {
 
         [GtkChild]

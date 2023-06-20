@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
-    <schema path="/com/forensant/proximity/" id="com.forensant.proximity">
+    <schema path="/com/forensant/pakiki/" id="com.forensant.pakiki">
         <key name="request-double-click" type="s">
             <choices>
                 <choice value="new-window"/>

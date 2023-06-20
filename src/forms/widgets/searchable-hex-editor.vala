@@ -1,5 +1,5 @@
 
-namespace Proximity {
+namespace Pakiki {
     class SearchableHexEditor : Gtk.Box {
 
         public HexEditor hex_editor;

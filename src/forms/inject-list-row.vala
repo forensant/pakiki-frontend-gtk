@@ -1,4 +1,4 @@
-namespace Proximity {
+namespace Pakiki {
     class InjectListRow : Gtk.ListBoxRow {
 
         public enum Type {

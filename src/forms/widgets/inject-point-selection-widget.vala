@@ -1,8 +1,8 @@
 using Soup;
 
-namespace Proximity {
+namespace Pakiki {
     
-    [GtkTemplate (ui = "/com/forensant/proximity/inject-point-selection-widget.ui")]
+    [GtkTemplate (ui = "/com/forensant/pakiki/inject-point-selection-widget.ui")]
     class InjectPointSelectionWidget : Gtk.Box {
         [GtkChild]
         private unowned Gtk.ComboBox combobox_protocol;
@@ -530,7 +530,7 @@ namespace Proximity {
             requests_pane.on_search (search_entry.get_text (),
                 checkbutton_negative_filter.get_active (),
                 checkbutton_exclude_resources.get_active (),
-                "HTTP/1.1");
+                "HTTP");
         }
     }
 }

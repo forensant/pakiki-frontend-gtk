@@ -1,4 +1,4 @@
-namespace Proximity {
+namespace Pakiki {
     class RequestCompare : Gtk.Notebook {
         private ApplicationWindow application_window;
 

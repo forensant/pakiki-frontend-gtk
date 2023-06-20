@@ -1,8 +1,8 @@
-app-id: com.forensant.proximity
+app-id: com.forensant.pakiki
 runtime: org.gnome.Platform
 runtime-version: '42'
 sdk: org.gnome.Sdk
-command: com.forensant.proximity
+command: com.forensant.pakiki
 finish-args:
   # X11 access
   - --socket=fallback-x11
@@ -23,21 +23,21 @@ modules:
         url: https://download.gnome.org/sources/gtksourceview/3.24/gtksourceview-3.24.11.tar.xz
         sha256: 691b074a37b2a307f7f48edc5b8c7afa7301709be56378ccf9cc9735909077fd
 
-  - name: proximity
+  - name: pakiki
     buildsystem: meson
     sources:
       - type: dir
         path: .
         
-  - name: proximitycore
+  - name: pakikicore
     buildsystem: simple
     build-commands:
       - chmod +x *
       - cp *.so* /app/lib/
-      - install -D proximitycore /app/bin/
-      - install -D proximitypythoninterpreter /app/bin/
+      - install -D pakikicore /app/bin/
+      - install -D pakikipythoninterpreter /app/bin/
       - ls -lah
       - cp -r python310 /app/bin/
     sources:
       - type: dir
-        path: proximity-core
+        path: pakiki-core

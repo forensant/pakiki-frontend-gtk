@@ -1,4 +1,4 @@
-namespace Proximity {
+namespace Pakiki {
     class RequestDiff : Gtk.SourceView {
         public RequestDiff () {
             this.editable = false;

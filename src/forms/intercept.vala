@@ -1,9 +1,9 @@
 using Soup;
 using Gtk;
 
-namespace Proximity {
+namespace Pakiki {
     
-    [GtkTemplate (ui = "/com/forensant/proximity/intercept.ui")]
+    [GtkTemplate (ui = "/com/forensant/pakiki/intercept.ui")]
     class Intercept : Gtk.Paned, MainApplicationPane {
 
         [GtkChild]

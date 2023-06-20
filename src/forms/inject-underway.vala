@@ -1,8 +1,8 @@
 using Soup;
 
-namespace Proximity {
+namespace Pakiki {
     
-    [GtkTemplate (ui = "/com/forensant/proximity/inject-underway.ui")]
+    [GtkTemplate (ui = "/com/forensant/pakiki/inject-underway.ui")]
     class InjectUnderway : Gtk.Grid {
 
         [GtkChild]

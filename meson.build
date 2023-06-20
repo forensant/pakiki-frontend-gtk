@@ -1,4 +1,4 @@
-project('com.forensant.proximity', 'vala', 'c',
+project('com.forensant.pakiki', 'vala', 'c',
   version: run_command('cat', 'src/resources/version', check : true).stdout().strip(),
   license: 'MIT')
 
@@ -19,11 +19,11 @@ sources = []
 
 sources += import( 'gnome' ).compile_resources(
     'project-resources',
-    'src/resources/proximityapp.gresource.xml',
+    'src/resources/pakikiapp.gresource.xml',
     source_dir: 'src/resources',
 )
 
 subdir('data')
 subdir('src')
 
-executable('com.forensant.proximity', sources, dependencies: dependencies, install: true)
+executable('com.forensant.pakiki', sources, dependencies: dependencies, install: true)

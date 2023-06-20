@@ -9,11 +9,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Clone Proximity HTML Frontend
+      - name: Clone Pakiki HTML Frontend
         uses: GuillaumeFalourd/clone-github-repo-action@v2
         with:
-          owner: 'pipeline'
-          repository: 'proximity-frontend-html'
+          owner: 'forensant'
+          repository: 'pakiki-frontend-html'
 
       
       - name: Use Node.js 16.x
@@ -22,32 +22,32 @@ jobs:
           node-version: 16.x
 
       - name: Install Node dependencies
-        working-directory: 'proximity-frontend-html'
+        working-directory: 'pakiki-frontend-html'
         run: npm install
         
       - name: Build the frontend
-        working-directory: 'proximity-frontend-html'
+        working-directory: 'pakiki-frontend-html'
         run: npm run build
 
       - name: Upload frontend build
         uses: actions/upload-artifact@v2.2.3
         with:
-          name: proximity-frontend-html
+          name: pakiki-frontend-html
           # A file, directory or wildcard pattern that describes what to upload
-          path: proximity-frontend-html/dist
+          path: pakiki-frontend-html/dist
 
-  Proximity-Core:
-    name: 'Proximity Core'
+  Pakiki-Core:
+    name: 'Pakiki Core'
     runs-on: ubuntu-20.04
     
     needs: HTML-Frontend
       
     steps:
-      - name: Clone Proximity Core
+      - name: Clone Pakiki Core
         uses: GuillaumeFalourd/clone-github-repo-action@v2
         with:
           owner: 'pipeline'
-          repository: 'proximity-core'
+          repository: 'pakiki-core'
           
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -57,8 +57,8 @@ jobs:
       - name: Download frontend
         uses: actions/download-artifact@v2
         with:
-          name: proximity-frontend-html
-          path: proximity-core/www/html_frontend/dist/
+          name: pakiki-frontend-html
+          path: pakiki-core/www/html_frontend/dist/
             
       - name: Install system dependencies
         run: sudo apt install build-essential
@@ -69,7 +69,7 @@ jobs:
           go-version: '1.19' # The Go version to download (if necessary) and use.
         
       - name: Build golang executable
-        working-directory: proximity-core
+        working-directory: pakiki-core
         run: |
           go install github.com/swaggo/swag/cmd/swag
           ./scripts/build.sh
@@ -80,28 +80,28 @@ jobs:
           ruby-version: 2.6 # Not needed with a .ruby-version file
 
       - name: Copy Dependencies
-        working-directory: proximity-core/build
+        working-directory: pakiki-core/build
         run: ../scripts/copy_lib_linux.rb ./
 
       - name: List files and their types (for debug)
-        working-directory: proximity-core/build
+        working-directory: pakiki-core/build
         run: |
           ls -lah
 
       - name: Set permissions
-        working-directory: proximity-core
+        working-directory: pakiki-core
         run: chmod +x build/*
 
       - name: Upload core build
         uses: actions/upload-artifact@v2.2.3
         with:
-          name: proximity-core
+          name: pakiki-core
           # A file, directory or wildcard pattern that describes what to upload
-          path: proximity-core/build
+          path: pakiki-core/build
 
   GTK-Frontend-Flatpak:
     name: 'GTK Frontend Flatpak'
-    needs: Proximity-Core
+    needs: Pakiki-Core
     
     runs-on: ubuntu-latest
 
@@ -116,19 +116,19 @@ jobs:
       - name: Download core
         uses: actions/download-artifact@v2
         with:
-          name: proximity-core
-          path: proximity-core
+          name: pakiki-core
+          path: pakiki-core
 
       - name: Build and package
         uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v4
         with:
-          bundle: Proximity.flatpak
-          manifest-path: com.forensant.proximity-github.yml
+          bundle: Pakiki.flatpak
+          manifest-path: com.forensant.pakiki-github.yml
           cache-key: flatpak-builder-${{ github.sha }}  
 
   GTK-Frontend-Deb:
     name: 'GTK Frontend - .deb'
-    needs: Proximity-Core
+    needs: Pakiki-Core
     
     runs-on: ubuntu-20.04
 
@@ -139,8 +139,8 @@ jobs:
       - name: Download core
         uses: actions/download-artifact@v2
         with:
-          name: proximity-core
-          path: proximity-core
+          name: pakiki-core
+          path: pakiki-core
 
       - name: Update system repositories
         run: sudo apt update
@@ -157,7 +157,7 @@ jobs:
 
       - uses: jiro4989/build-deb-action@v2
         with:
-          package: Proximity
+          package: Pakiki
           package_root: .debpkg
           maintainer: Forensant
           version: ${{ steps.getversion.outputs.version }} # refs/tags/v*.*.*

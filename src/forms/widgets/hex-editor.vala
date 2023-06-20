@@ -1,4 +1,4 @@
-namespace Proximity {
+namespace Pakiki {
 
     public class HexEditor : Gtk.DrawingArea, Gtk.Scrollable {
         public signal void buffer_assigned ();

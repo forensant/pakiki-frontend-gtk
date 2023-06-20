@@ -1,10 +1,10 @@
 using Notify;
 
-namespace Proximity {
+namespace Pakiki {
 
-    [GtkTemplate (ui = "/com/forensant/proximity/window.ui")]
+    [GtkTemplate (ui = "/com/forensant/pakiki/window.ui")]
     public class ApplicationWindow : Gtk.ApplicationWindow {
-        public const string UPDATE_HOST = "https://proximityhq.com";
+        public const string UPDATE_HOST = "https://pakikiproxy.com";
 
         public signal void settings_changed ();
 
@@ -58,7 +58,7 @@ namespace Proximity {
         private Intercept intercept;
         private Gtk.Label label_overlay;
         private RequestNew new_request;
-        private Application proximity_application;
+        private Application pakiki_application;
         private RequestsPane requests_pane;
         private SavingDialog saving_dialog;
         private GLib.Settings settings;
@@ -73,9 +73,9 @@ namespace Proximity {
                 generate_api_key ();
             }
 
+            this.pakiki_application = application;
             core_process = new CoreProcess (this, this.api_key);
             this.authentication_displayed = false;
-            this.proximity_application = application;
             this._core_address = core_address;
             this.preview_proxy_address = preview_proxy_address;
             timeout_started = false;
@@ -98,7 +98,7 @@ namespace Proximity {
             label_overlay.name = "lbl_overlay";
             overlay.add_overlay (label_overlay);
             
-            settings = new GLib.Settings ("com.forensant.proximity");
+            settings = new GLib.Settings ("com.forensant.pakiki");
             
             var accel_group = new Gtk.AccelGroup ();
             accel_group.connect ('f', Gdk.ModifierType.CONTROL_MASK, 0, (group, accel, keyval, modifier) => {
@@ -114,7 +114,7 @@ namespace Proximity {
             });
             add_accel_group (accel_group);
 
-            var builder = new Gtk.Builder.from_resource ("/com/forensant/proximity/app-menu.ui");
+            var builder = new Gtk.Builder.from_resource ("/com/forensant/pakiki/app-menu.ui");
             var menu_model = (GLib.MenuModel) builder.get_object ("menu");
             var menu = new Gtk.Menu.from_model (menu_model);
             
@@ -131,7 +131,7 @@ namespace Proximity {
             
             gears.popup = menu;
 
-            Notify.init ("com.forensant.proximity");
+            Notify.init ("com.forensant.pakiki");
 
             WebKit.WebContext.get_default ().set_sandbox_enabled (true);
             // works around a webkit bug
@@ -226,7 +226,7 @@ namespace Proximity {
         }
 
         public InputStream banner_logo_svg () {
-            return get_coloured_svg("resource:///com/forensant/proximity/Logo-banner.svg");
+            return get_coloured_svg("resource:///com/forensant/pakiki/Logo-banner.svg");
         }
 
         private void create_http_session () {
@@ -341,7 +341,7 @@ namespace Proximity {
                 else {
                     // if the proxy settings haven't been successfully loaded, there will be another message already displayed to the user
                     if (label_overlay.visible == false && proxy_settings.successful) {
-                        label_overlay.label = "Connection to Proximity Core lost. Retrying...\n\nOnce the connection is re-established, the data will be reloaded.";
+                        label_overlay.label = "Connection to Pakiki Core lost. Retrying...\n\nOnce the connection is re-established, the data will be reloaded.";
                         label_overlay.show ();
                     }
                 }
@@ -624,7 +624,7 @@ namespace Proximity {
         }
 
         private void set_filter_icon () {
-            var image_src = this.get_coloured_svg ("resource:///com/forensant/proximity/funnel-outline-symbolic.svg");
+            var image_src = this.get_coloured_svg ("resource:///com/forensant/pakiki/funnel-outline-symbolic.svg");
             image_filter_icon.pixbuf = new Gdk.Pixbuf.from_stream (image_src);
         }
 
@@ -640,12 +640,12 @@ namespace Proximity {
         private void set_window_icon (Gtk.Window window) {
             var icons = new List<Gdk.Pixbuf> ();
             try {
-                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/proximity/Logo256.png"));
-                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/proximity/Logo128.png"));
-                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/proximity/Logo64.png"));
-                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/proximity/Logo48.png"));
-                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/proximity/Logo32.png"));
-                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/proximity/Logo16.png"));
+                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/pakiki/Logo256.png"));
+                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/pakiki/Logo128.png"));
+                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/pakiki/Logo64.png"));
+                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/pakiki/Logo48.png"));
+                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/pakiki/Logo32.png"));
+                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/pakiki/Logo16.png"));
             } catch (Error err) {
                 stdout.printf ("Could not create icon pack");
                 return;
@@ -657,12 +657,12 @@ namespace Proximity {
         private string writeBrowserConfig() {
             // generate a temporary path
             try {
-                var basedir = GLib.DirUtils.make_tmp ("proximity-XXXXXX");
+                var basedir = GLib.DirUtils.make_tmp ("pakiki-XXXXXX");
 
                 var dir = basedir + "/chromedata/Default/";
                 GLib.DirUtils.create_with_parents (dir, 448); // 448 == 0700 in octal
                 
-                var file = File.new_for_uri ("resource:///com/forensant/proximity/chrome-preferences.json");
+                var file = File.new_for_uri ("resource:///com/forensant/pakiki/chrome-preferences.json");
                 var contents = "";
 
                 var dis = new DataInputStream (file.read ());
@@ -691,7 +691,7 @@ namespace Proximity {
         }
 
         private void do_update_check () {
-            var url = UPDATE_HOST + "/api/application/updates?edition=Community&version=" + proximity_application.get_version ();
+            var url = UPDATE_HOST + "/api/application/updates?edition=Community&version=" + pakiki_application.get_version ();
 
             Soup.Session session = new Soup.Session ();
             var message = new Soup.Message ("GET", url);
@@ -709,7 +709,7 @@ namespace Proximity {
                     if (should_update) {
                         if (!this.info_bar_bind_error.revealed) {
                             this.info_bar_bind_error.revealed = true;
-                            label_proxy_bind_error.label = "An update is available, visit <a href=\"https://proximityhq.com/\">https://proximityhq.com/</a> to download it.";
+                            label_proxy_bind_error.label = "An update is available, visit <a href=\"https://pakikiproxy.com/\">https://pakikiproxy.com/</a> to download it.";
                         }
                     }
                 }

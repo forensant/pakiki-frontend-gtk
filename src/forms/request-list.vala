@@ -1,8 +1,8 @@
 using Soup;
 
-namespace Proximity {
+namespace Pakiki {
     
-    [GtkTemplate (ui = "/com/forensant/proximity/request-list.ui")]
+    [GtkTemplate (ui = "/com/forensant/pakiki/request-list.ui")]
     class RequestList : Gtk.Paned {
 
         public signal void requests_loaded (bool present);

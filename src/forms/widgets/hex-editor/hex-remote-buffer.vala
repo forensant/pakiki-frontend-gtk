@@ -1,4 +1,4 @@
-namespace Proximity {
+namespace Pakiki {
     public class HexRemoteBuffer : HexBuffer {
         
         public string guid { get; private set; }

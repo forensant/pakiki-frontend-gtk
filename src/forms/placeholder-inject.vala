@@ -1,6 +1,6 @@
-namespace Proximity {
+namespace Pakiki {
     
-    [GtkTemplate (ui = "/com/forensant/proximity/placeholder-inject.ui")]
+    [GtkTemplate (ui = "/com/forensant/pakiki/placeholder-inject.ui")]
     class PlaceholderInject : Gtk.Box {
 
         public PlaceholderInject () {

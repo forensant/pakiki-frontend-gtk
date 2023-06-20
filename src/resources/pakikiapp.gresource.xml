@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
-  <gresource prefix="/com/forensant/proximity">
+  <gresource prefix="/com/forensant/pakiki">
     <file preprocess="xml-stripblanks">app-menu.ui</file>
     <file preprocess="xml-stripblanks">inject-pane.ui</file>
     <file preprocess="xml-stripblanks">inject-point-selection-widget.ui</file>

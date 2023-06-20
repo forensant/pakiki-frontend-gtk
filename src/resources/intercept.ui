@@ -2,7 +2,7 @@
 <!-- Generated with glade 3.22.2 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
-  <template class="ProximityIntercept" parent="GtkPaned">
+  <template class="PakikiIntercept" parent="GtkPaned">
     <property name="visible">True</property>
     <property name="can_focus">True</property>
     <property name="margin_left">18</property>

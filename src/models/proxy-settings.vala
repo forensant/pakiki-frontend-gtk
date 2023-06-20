@@ -1,4 +1,4 @@
-namespace Proximity {
+namespace Pakiki {
     public class ProxySettings {
 
         private ApplicationWindow application_window;

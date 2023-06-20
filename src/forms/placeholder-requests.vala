@@ -1,6 +1,6 @@
-namespace Proximity {
+namespace Pakiki {
     
-    [GtkTemplate (ui = "/com/forensant/proximity/placeholder-requests.ui")]
+    [GtkTemplate (ui = "/com/forensant/pakiki/placeholder-requests.ui")]
     class PlaceholderRequests : Gtk.Box {
 
         [GtkChild]
@@ -32,7 +32,7 @@ namespace Proximity {
         public PlaceholderRequests (ApplicationWindow application_window) {
             this.application_window = application_window;
 
-            settings = new GLib.Settings ("com.forensant.proximity");
+            settings = new GLib.Settings ("com.forensant.pakiki");
             
             expander_manual_instructions.expanded = settings.get_boolean ("manual-instructions-expanded");
 
@@ -92,9 +92,9 @@ namespace Proximity {
 
         public void set_error (string core_address) {
             if (core_address == "") {
-                label_error.set_text ("An error has occurred when launching the core. Ensure that 'proximitycore' is in the directory next to Proximity.");
+                label_error.set_text ("An error has occurred when launching the core. Ensure that 'pakikicore' is in the directory next to Pakiki.");
             } else {
-                label_error.set_markup ("An error has occurred when connecting to Proximity Core at <a href=\"http://" + core_address + "\">http://" + core_address + "</a>. Ensure that Proximity Core is running and that the address is correct.");
+                label_error.set_markup ("An error has occurred when connecting to Pakiki Core at <a href=\"http://" + core_address + "\">http://" + core_address + "</a>. Ensure that Pakiki Core is running and that the address is correct.");
             }
             
             frame_error.visible = true;

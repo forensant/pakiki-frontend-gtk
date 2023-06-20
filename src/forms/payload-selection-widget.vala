@@ -1,8 +1,8 @@
 using Soup;
 
-namespace Proximity {
+namespace Pakiki {
     
-    [GtkTemplate (ui = "/com/forensant/proximity/payload-selection-widget.ui")]
+    [GtkTemplate (ui = "/com/forensant/pakiki/payload-selection-widget.ui")]
     class PayloadSelectionWidget : Gtk.Box {
 
         [GtkChild]
