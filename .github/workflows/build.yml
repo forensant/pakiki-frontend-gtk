@@ -38,7 +38,7 @@ jobs:
 
   Pakiki-Core:
     name: 'Pākiki Core'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     
     needs: HTML-Frontend
       
@@ -46,7 +46,7 @@ jobs:
       - name: Clone Pākiki Core
         uses: GuillaumeFalourd/clone-github-repo-action@v2
         with:
-          owner: 'pipeline'
+          owner: 'forensant'
           repository: 'pakiki-core'
           
       - name: Set up Python
