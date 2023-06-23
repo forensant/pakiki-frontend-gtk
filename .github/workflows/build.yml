@@ -52,7 +52,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.10.10
+          python-version: 3.11.4
       
       - name: Download frontend
         uses: actions/download-artifact@v2
@@ -130,7 +130,7 @@ jobs:
     name: 'GTK Frontend - .deb'
     needs: Pakiki-Core
     
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Check out repository code
@@ -162,7 +162,7 @@ jobs:
           maintainer: Forensant
           version: ${{ steps.getversion.outputs.version }} # refs/tags/v*.*.*
           arch: 'amd64'
-          depends: 'libc6 (>= 2.2.1), libgtk-3-0, libpython3.10, libsoup2.4-1, libjson-glib-1.0-0, libwebkit2gtk-4.1-0, libgtksourceview-3.0-1, libgee-0.8-2, libnotify4'
+          depends: 'libc6 (>= 2.2.1), libgtk-3-0, libpython3.11, libsoup2.4-1, libjson-glib-1.0-0, libwebkit2gtk-4.1-0, libgtksourceview-3.0-1, libgee-0.8-2, libnotify4'
           desc: 'Native next generation intercepting proxy, designed for security testing of web applications.'
 
       - uses: actions/upload-artifact@v3
