@@ -8,6 +8,7 @@ namespace Pakiki {
         public Application () {
             application_id = "com.forensant.pakiki";
             flags |= GLib.ApplicationFlags.HANDLES_COMMAND_LINE;
+            GLib.Environment.set_application_name ("Pākiki Proxy");
             GLib.Environment.set_prgname("Pakiki Proxy");
 
             set_temp_environment_var ();
@@ -18,8 +19,9 @@ namespace Pakiki {
             dialog.set_destroy_with_parent (true);
             dialog.set_transient_for (window);
             dialog.set_modal (true);
+            dialog.set_title ("About Pākiki");
 
-            dialog.program_name = "Pakiki Community Edition";
+            dialog.program_name = "Pākiki Community Edition";
             dialog.comments = "Intercepting proxy";
             dialog.copyright = "Copyright © %d Forensant Ltd".printf (new DateTime.now ().get_year ());
             dialog.version = get_version ();
@@ -74,9 +76,9 @@ namespace Pakiki {
     
             OptionEntry[] options = new OptionEntry[4];
             options[0] = { "version", 0, 0, OptionArg.NONE, ref version, "Display version number", null };
-            options[1] = { "core", 0, 0, OptionArg.STRING, ref core_address, "Address for a running Pakiki Core instance to connect to", "HOST:PORT" };
-            options[2] = { "preview-proxy", 0, 0, OptionArg.STRING, ref preview_proxy_address, "Address for a running Pakiki Core's preview proxy instance to connect to", "HOST:PORT" };
-            options[3] = { "api-key", 0, 0, OptionArg.STRING, ref api_key, "The API Key when connecting to an external Pakiki Core instance", null };
+            options[1] = { "core", 0, 0, OptionArg.STRING, ref core_address, "Address for a running Pākiki Core instance to connect to", "HOST:PORT" };
+            options[2] = { "preview-proxy", 0, 0, OptionArg.STRING, ref preview_proxy_address, "Address for a running Pākiki Core's preview proxy instance to connect to", "HOST:PORT" };
+            options[3] = { "api-key", 0, 0, OptionArg.STRING, ref api_key, "The API Key when connecting to an external Pākiki Core instance", null };
     
             // We have to make an extra copy of the array, since .parse assumes
             // that it can remove strings from the array without freeing them.
@@ -99,7 +101,7 @@ namespace Pakiki {
             }
     
             if (version) {
-                command_line.print ("Pakiki Proxy Community Edition " + get_version () + "\n");
+                command_line.print ("Pākiki Proxy Community Edition " + get_version () + "\n");
                 return 0;
             }
 

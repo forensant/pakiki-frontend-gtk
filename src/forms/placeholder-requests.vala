@@ -92,9 +92,9 @@ namespace Pakiki {
 
         public void set_error (string core_address) {
             if (core_address == "") {
-                label_error.set_text ("An error has occurred when launching the core. Ensure that 'pakikicore' is in the directory next to Pakiki.");
+                label_error.set_text ("An error has occurred when launching the core. Ensure that 'pakikicore' is in the directory next to Pākiki.");
             } else {
-                label_error.set_markup ("An error has occurred when connecting to Pakiki Core at <a href=\"http://" + core_address + "\">http://" + core_address + "</a>. Ensure that Pakiki Core is running and that the address is correct.");
+                label_error.set_markup ("An error has occurred when connecting to Pākiki Core at <a href=\"http://" + core_address + "\">http://" + core_address + "</a>. Ensure that Pākiki Core is running and that the address is correct.");
             }
             
             frame_error.visible = true;

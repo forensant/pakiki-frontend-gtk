@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=Pakiki
+Name=Pākiki Proxy
 Icon=/usr/share/pixmaps/pakiki.svg
 StartupNotify=true
 Exec=pakiki

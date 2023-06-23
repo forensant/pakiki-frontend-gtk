@@ -1,11 +1,11 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/resources/Banner-Dark.svg">
-  <img alt="Text changing depending on mode. Light: 'So light!' Dark: 'So dark!'" src="docs/resources/Banner-Light.svg" width="50%">
+  <img alt="Logo" src="docs/resources/Banner-Light.svg" width="50%">
 </picture>
 
 ## Overview
-Pakiki is an intercepting proxy, allowing you to view and manipulate network requests between your web browser and the servers its communicating with. It is designed for web application penetration testing, but could be used for general debugging of applications, etc. It is similar in principle to mitmproxy or OWASP ZAP.
+Pākiki is an intercepting proxy, allowing you to view and manipulate network requests between your web browser and the servers its communicating with. It is designed for web application penetration testing, but could be used for general debugging of applications, etc. It is similar in principle to mitmproxy or OWASP ZAP.
 
 It takes the philosophy of do one thing, and do it well. The intent is not to pack in features which are rarely, if ever, used in practice. This is especially true where good quality standalone tools already exist.
 
@@ -52,7 +52,7 @@ You'll need repository which contains the Flatpak platform it's based on:
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 ```
 
-Then you can install Pakiki (you can download the latest version from the releases page):
+Then you can install Pākiki (you can download the latest version from the releases page):
 ```
 flatpak install Pakiki-Community-[version].flatpak
 ```
@@ -62,7 +62,7 @@ To run this on Windows Subsystem for Linux (Windows 11), you'll need a headless 
 ## Development/build instructions
 
 ### Dependencies
-You'll require the following dependencies to develop Pakiki:
+You'll require the following dependencies to develop Pākiki:
  * Meson build system
  * GTK3+
  * C compiler/Vala
@@ -73,20 +73,20 @@ You'll require the following dependencies to develop Pakiki:
  * libnotify
 
 On Debian based distributions, these can be downloaded with:
- ```sudo apt install build-essential valac meson libgtk-3-dev libsoup2.4-dev libjson-glib-dev libwebkit2gtk-4.0-dev libgtksourceview-3.0-dev libgee-0.8-dev libnotify-dev ```
+ ```sudo apt install build-essential valac meson libgtk-3-dev libsoup2.4-dev libjson-glib-dev libwebkit2gtk-4.1-dev libgtksourceview-3.0-dev libgee-0.8-dev libnotify-dev ```
 
-If you're going to be building/packaging Pakiki, you'll also require the Flatpak dependencies:
+If you're going to be building/packaging Pākiki, you'll also require the Flatpak dependencies:
 ```
 flatpak install org.gnome.Sdk
 flatpak install org.gnome.Platform
 ```
 
-Select version 42
+Select version 44
 
 ### Building
 Setup the build directory with ```meson setup builddir``` then run ```ninja -C builddir``` to start the build.
 
-To run, you'll require Pakiki Core in the same directory [https://github.com/forensant/pakiki-core/](https://github.com/forensant/pakiki-core/)
+To run, you'll require Pākiki Core in the same directory [https://github.com/forensant/pakiki-core/](https://github.com/forensant/pakiki-core/)
 
  ## Running
  A basic run can be launched with:

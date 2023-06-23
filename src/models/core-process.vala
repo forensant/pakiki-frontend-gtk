@@ -156,7 +156,7 @@ namespace Pakiki {
                     this.child_pid = child_pid;
                     ChildWatch.add (child_pid, (pid, status) => {
                         // Triggered when the child indicated by child_pid exits
-                        stdout.printf("Pakiki core closed with status %d\n", status);
+                        stdout.printf("Pākiki core closed with status %d\n", status);
                         Process.close_pid (pid);
                     });
 
@@ -246,7 +246,7 @@ namespace Pakiki {
             try {
                 string line;
                 channel.read_line (out line, null, null);
-                print ("[Pakiki Core] %s: %s", stream_name, line);
+                print ("[Pākiki Core] %s: %s", stream_name, line);
                 
                 if (line.contains ("Web frontend is available at:")) {
                     var scheme_idx = line.index_of ("://");
@@ -376,8 +376,8 @@ namespace Pakiki {
             dialog.add_filter (filter);
 
             filter = new Gtk.FileFilter ();
-            filter.add_pattern ("*.prx");
-            filter.set_filter_name ("Pakiki Project");
+            filter.add_pattern ("*.pkk");
+            filter.set_filter_name ("Pākiki Project");
             dialog.add_filter (filter);
             dialog.set_filter (filter);
         }

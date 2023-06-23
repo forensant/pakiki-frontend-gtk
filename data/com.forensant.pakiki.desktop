@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=Pakiki
+Name=Pākiki Proxy
 Icon=com.forensant.pakiki
 StartupNotify=true
 Exec=com.forensant.pakiki

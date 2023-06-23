@@ -74,6 +74,7 @@ namespace Pakiki {
             }
 
             this.pakiki_application = application;
+            this.set_title ("Pākiki Proxy");
             core_process = new CoreProcess (this, this.api_key);
             this.authentication_displayed = false;
             this._core_address = core_address;
@@ -341,7 +342,7 @@ namespace Pakiki {
                 else {
                     // if the proxy settings haven't been successfully loaded, there will be another message already displayed to the user
                     if (label_overlay.visible == false && proxy_settings.successful) {
-                        label_overlay.label = "Connection to Pakiki Core lost. Retrying...\n\nOnce the connection is re-established, the data will be reloaded.";
+                        label_overlay.label = "Connection to Pākiki Core lost. Retrying...\n\nOnce the connection is re-established, the data will be reloaded.";
                         label_overlay.show ();
                     }
                 }

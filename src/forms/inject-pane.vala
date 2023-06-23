@@ -221,10 +221,10 @@ namespace Pakiki {
                     exists = true;
 
                     if (row.inject_operation.get_status () == InjectOperation.Status.UNDERWAY && inject_operation.get_status () == InjectOperation.Status.COMPLETED) {
-                        var message = "Pakiki has finished an inject scan.";
+                        var message = "Pākiki has finished an inject scan.";
 
                         if (row.inject_operation.title != "") {
-                            message = "Pakiki has finished the following scan: " + row.inject_operation.title;
+                            message = "Pākiki has finished the following scan: " + row.inject_operation.title;
                         }
 
                         application_window.display_notification ("Inject scan completed",
