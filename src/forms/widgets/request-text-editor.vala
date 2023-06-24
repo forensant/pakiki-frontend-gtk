@@ -20,15 +20,20 @@ namespace Pakiki {
 
             var message = new Soup.Message ("GET", url);
 
-            application_window.http_session.queue_message (message, (sess, mess) => {
+            application_window.http_session.send_and_read_async.begin (message, GLib.Priority.DEFAULT, null, (obj, res) => {
                 if (message.status_code == 200) {
-                    var domain = (string) message.response_body.flatten ().data;
-                    buffer.begin_user_action ();
-                    buffer.delete_selection (true, true);
-                    buffer.insert_at_cursor (domain, domain.length);
-                    buffer.end_user_action ();
+                    try {
+                        var bytes = application_window.http_session.send_and_read_async.end (res);
+                        var domain = (string) bytes.get_data ();
+                        buffer.begin_user_action ();
+                        buffer.delete_selection (true, true);
+                        buffer.insert_at_cursor (domain, domain.length);
+                        buffer.end_user_action ();
+                    }
+                    catch (Error err) {
+                        stdout.printf ("Could not insert out-of-band domain: %s\n", err.message);
+                    }
                 }
-
                 long_running_task (false);
             });
         }
@@ -56,7 +61,7 @@ namespace Pakiki {
 
             var menu_item_cyberchef = new Gtk.MenuItem.with_label ("Send to Cyberchef");
             menu_item_cyberchef.activate.connect ( () => {
-                var uri = "https://gchq.github.io/CyberChef/#input=" + Soup.URI.encode (Base64.encode (selected_text.data), "");
+                var uri = "https://gchq.github.io/CyberChef/#input=" + GLib.Uri.escape_string (Base64.encode (selected_text.data));
 
                 try {
                     AppInfo.launch_default_for_uri (uri, null);
@@ -69,7 +74,7 @@ namespace Pakiki {
 
             var menu_item_encode = new Gtk.MenuItem.with_label ("URL Encode");
             menu_item_encode.activate.connect ( () => {
-                var encoded_text = Soup.URI.encode (selected_text, "&+");
+                var encoded_text = GLib.Uri.escape_string (selected_text, "&+");
                 this.replace_selected_text (encoded_text);
             });
             menu_item_encode.show ();
@@ -77,7 +82,7 @@ namespace Pakiki {
 
             var menu_item_decode = new Gtk.MenuItem.with_label ("URL Decode");
             menu_item_decode.activate.connect ( () => {
-                var decoded_text = Soup.URI.decode (selected_text);
+                var decoded_text = GLib.Uri.unescape_string (selected_text);
                 this.replace_selected_text (decoded_text);
             });
             menu_item_decode.show ();

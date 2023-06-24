@@ -70,80 +70,99 @@ namespace Pakiki {
             var url = "http://" + application_window.core_address + "/requests/" + base_guid + "/compare/" + compare_guid;
             var message = new Soup.Message ("GET", url);
 
-            application_window.http_session.queue_message (message, (sess, mess) => {
-                var response = (string) message.response_body.flatten ().data;
+            application_window.http_session.send_async.begin (message, GLib.Priority.HIGH, null, (obj, res) => {
+                try {
+                    var response = application_window.http_session.send_async.end (res);
 
-                if (message.status_code != 200) {
+                    if (message.status_code != 200) {
+                        var buffer = new uint8[10240];
+                        size_t bytes_read;
+
+                        var error_message = "The status code was: " + message.status_code.to_string ();
+                    
+                        if (response.read_all (buffer, out bytes_read, null)) {
+                            error_message = (string) buffer;
+                        }
+                        throw new IOError.CONNECTION_REFUSED ("Could not compare requests: " + error_message);
+                    }
+
+                    var parser = new Json.Parser ();
+                    parser.load_from_stream_async.begin (response, null, (obj2, res2) => {
+                        try {
+                            parser.load_from_stream_async.end (res2);
+
+                            var root_array = parser.get_root ().get_array ();
+
+                            request_diff_1.set_diff (root_array, 1);
+                            request_diff_2.set_diff (root_array, 2);
+        
+                            load_web_preview (base_guid, 1);
+                            load_web_preview (compare_guid, 2);
+        
+                            label_error.hide ();
+                            scrolled_window_request_differences.show ();
+                            scrolled_window_request_preview.show ();
+                        } catch (Error err) {
+                            scrolled_window_request_differences.hide ();
+                            scrolled_window_request_preview.hide ();
+                            label_error.label = "Error loading differences 1: " + err.message;
+                            label_error.show ();
+                            return;
+                        }
+                    });
+                } catch (Error err) {
                     scrolled_window_request_differences.hide ();
                     scrolled_window_request_preview.hide ();
-                    label_error.label = response;
+                    label_error.label = "Error loading differences 2: " + err.message;
                     label_error.show ();
                     return;
-                }
-
-                try {
-                    var parser = new Json.Parser ();
-                    parser.load_from_data ((string) message.response_body.flatten ().data, -1);
-
-                    var root_array = parser.get_root ().get_array ();
-
-                    request_diff_1.set_diff (root_array, 1);
-                    request_diff_2.set_diff (root_array, 2);
-
-                    load_web_preview (base_guid, 1);
-                    load_web_preview (compare_guid, 2);
-
-                    label_error.hide ();
-                    scrolled_window_request_differences.show ();
-                    scrolled_window_request_preview.show ();
-                } catch (Error err) {
-                    paned_preview.hide ();
-                    paned_text.hide ();
-                    label_error.label = "Could not compare requests: " + err.message;
-                    label_error.show ();
-                }
+                }                
             });
         }
 
         private void load_web_preview (string guid, int request_preview_id) {
             var message = new Soup.Message ("GET", "http://" + application_window.core_address + "/requests/" + guid + "/contents");
 
-            application_window.http_session.queue_message (message, (sess, mess) => {
-                if (mess.status_code != 200) {
-                    return;
-                }
-
-                var parser = new Json.Parser ();
-                var jsonData = (string)mess.response_body.flatten().data;
+            application_window.http_session.send_async.begin (message, GLib.Priority.HIGH, null, (obj, res) => {
                 try {
-                    if (!parser.load_from_data (jsonData, -1)) {
-                        return;
+                    var response = application_window.http_session.send_async.end (res);
+
+                    if (message.status_code != 200) {
+                        throw new IOError.CONNECTION_REFUSED ("Could not load request contents");
                     }
 
-                    var root_obj = parser.get_root().get_object();
+                    var parser = new Json.Parser ();
+                    parser.load_from_stream_async.begin (response, null, (obj2, res2) => {
+                        try {
+                            parser.load_from_stream_async.end (res2);
 
-                    var original_response = Base64.decode (root_obj.get_string_member ("Response"));
-                    var modified_response = Base64.decode (root_obj.get_string_member ("ModifiedResponse"));
+                            var root_obj = parser.get_root ().get_object ();
 
-                    var url = root_obj.get_string_member ("URL");
-                    var mimetype = root_obj.get_string_member ("MimeType");
+                            var original_response = Base64.decode (root_obj.get_string_member ("Response"));
+                            var modified_response = Base64.decode (root_obj.get_string_member ("ModifiedResponse"));
 
-                    var response_to_use = original_response;
-                    if (modified_response.length != 0) {
-                        response_to_use = modified_response;
-                    }
-                    response_to_use += '\0';
+                            var url = root_obj.get_string_member ("URL");
+                            var mimetype = root_obj.get_string_member ("MimeType");
 
-                    if (request_preview_id == 1) {
-                        request_preview_1.set_content (response_to_use, mimetype, url);
-                    } else {
-                        request_preview_2.set_content (response_to_use, mimetype, url);
-                    }
+                            var response_to_use = original_response;
+                            if (modified_response.length != 0) {
+                                response_to_use = modified_response;
+                            }
+                            response_to_use += '\0';
 
-                    scrolled_window_request_preview.visible = (request_preview_1.has_content || request_preview_2.has_content);
-                }
-                catch(Error e) {
-                    stdout.printf ("Could not parse JSON data, error: %s\nData: %s\n", e.message, jsonData);
+                            if (request_preview_id == 1) {
+                                request_preview_1.set_content (response_to_use, mimetype, url);
+                            } else {
+                                request_preview_2.set_content (response_to_use, mimetype, url);
+                            }
+
+                            scrolled_window_request_preview.visible = (request_preview_1.has_content || request_preview_2.has_content);
+                        } catch (Error err) {
+                            stdout.printf ("Could not parse JSON data, error: %s\n", err.message);
+                        }
+                    });
+                } catch (Error err) {
+                    stdout.printf ("Could not load request contents: %s\n", err.message);
                 }
             });
         }

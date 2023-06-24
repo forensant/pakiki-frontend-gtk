@@ -478,10 +478,13 @@ namespace Pakiki {
 
             var message = new Soup.Message ("GET", url);
 
-            application_window.http_session.queue_message (message, (sess, mess) => {
-                var parser = new Json.Parser ();
+            application_window.http_session.send_and_read_async.begin (message, GLib.Priority.DEFAULT, null, (obj, res) => {
                 try {
-                    parser.load_from_data ((string) message.response_body.flatten ().data, -1);
+                    var resp = application_window.http_session.send_and_read_async.end (res);
+                    var resp_body = (string) resp.get_data ();
+
+                    var parser = new Json.Parser ();
+                    parser.load_from_data (resp_body, -1);
 
                     var root_obj = parser.get_root().get_object();
 
@@ -507,7 +510,6 @@ namespace Pakiki {
 
                         correct_separators_and_tag ();
                     }
-                    
                 } catch (Error err) {
                     stdout.printf("Error retrieving request details: %s\n", err.message);
                 }

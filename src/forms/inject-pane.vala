@@ -53,8 +53,8 @@ namespace Pakiki {
             placeholder_form.hide ();
             inject_new_form.show ();
             list_box_injection_scans.unselect_all ();
-            pane_changed ();
             inject_new_form.clone_inject_operation (operation);
+            pane_changed ();
         }
 
         public bool find_activated () {
@@ -67,8 +67,8 @@ namespace Pakiki {
             var session = application_window.http_session;
             var message = new Soup.Message ("GET", url);
 
-            session.queue_message (message, (sess, mess) => {
-                if (mess.status_code != 200) {
+            session.send_and_read_async.begin (message, GLib.Priority.DEFAULT, null, (obj, res) => {
+                if (message.status_code != 200) {
                     return;
                 }
 
@@ -83,9 +83,10 @@ namespace Pakiki {
                 list_box_injection_scans.insert (new InjectListRow.label(InjectOperation.Status.UNDERWAY,  "Underway"),  -1);
                 list_box_injection_scans.insert (new InjectListRow.label(InjectOperation.Status.ARCHIVED,  "Archived"),  -1);
                 
-                var parser = new Json.Parser ();
                 try {
-                    parser.load_from_data ((string) message.response_body.flatten ().data, -1);
+                    var bytes = session.send_and_read_async.end (res);
+                    var parser = new Json.Parser ();
+                    parser.load_from_data ((string) bytes.get_data (), -1);
 
                     var rootArray = parser.get_root().get_array();
 
@@ -107,7 +108,7 @@ namespace Pakiki {
             url = CoreProcess.websocket_url (application_window, "Inject Operation");
             
             var wsmessage = new Soup.Message("GET", url);
-            session.websocket_connect_async.begin(wsmessage, "localhost", null, null, (obj, res) => {
+            session.websocket_connect_async.begin(wsmessage, "localhost", null, GLib.Priority.DEFAULT, null, (obj, res) => {
                 try {
                     websocket = session.websocket_connect_async.end(res);
                     websocket.max_incoming_payload_size = 0;

@@ -8,16 +8,16 @@ namespace Pakiki {
         public signal void text_changed ();
 
         [GtkChild]
-        private Gtk.ComboBox combobox_format;
+        private unowned Gtk.ComboBox combobox_format;
 
         [GtkChild]
-        private Gtk.Label label_count;
+        private unowned Gtk.Label label_count;
 
         [GtkChild]
-        private Gtk.SearchEntry search_entry_text;
+        private unowned Gtk.SearchEntry search_entry_text;
 
         [GtkChild]
-        private Gtk.Spinner spinner;
+        private unowned Gtk.Spinner spinner;
 
         public string format {
             get { return combobox_format.active_id == "0" ? "ASCII" : "Hex"; }

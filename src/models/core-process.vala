@@ -194,7 +194,11 @@ namespace Pakiki {
                     this.opening_file (true);
 
                     if (new_file && file.query_exists ()) {
-                        file.@delete ();
+                        try {
+                            file.@delete ();
+                        } catch (Error e) {
+                            stdout.printf("Colud not delete file: %s\n", e.message);
+                        }
                     }
 
                     if (child_pid != 0) {
@@ -401,7 +405,8 @@ namespace Pakiki {
 
             string json_str = generator.to_data (null);
 
-            url += "?objectfieldfilter=" + Soup.URI.encode (json_str, null);
+            
+            url += "?objectfieldfilter=" + GLib.Uri.escape_string (json_str, null);
 
             url += "&api_key=" + application_window.api_key;
             

@@ -336,39 +336,43 @@ namespace Pakiki {
             }
 
             var message = new Soup.Message ("GET", "http://" + application_window.core_address + "/requests/" + guid + "/contents");
-
-            application_window.http_session.queue_message (message, (sess, mess) => {
-                if (ended || mess.status_code != 200) {
+            application_window.http_session.send_async.begin (message, GLib.Priority.HIGH, null, (obj, res) => {
+                if (ended) {
                     return;
                 }
 
-                var parser = new Json.Parser ();
-                var jsonData = (string)mess.response_body.flatten().data;
                 try {
-                    if (!parser.load_from_data (jsonData, -1)) {
+                    var response = application_window.http_session.send_async.end (res);
+                    if (message.status_code != 200) {
                         return;
                     }
 
-                    var root_obj = parser.get_root().get_object();
+                    var parser = new Json.Parser ();
+                    parser.load_from_stream_async.begin (response, null, (obj2, res2) => {
+                        try {
+                            parser.load_from_stream_async.end (res2);
 
-                    var protocol = root_obj.get_string_member ("Protocol");
-
-                    set_controls_visible (protocol.contains("HTTP"), protocol == "Websocket", protocol == "Out of Band");
-
-                    if (protocol == "Websocket") {
-                        populate_websocket_data (root_obj, request_updated);
-                    }
-                    else if (protocol == "Out of Band") {
-                        var packets = root_obj.get_array_member ("DataPackets");
-                        out_of_band_display.render_interaction (packets);
-                    } else {
-                        populate_http_data (root_obj);
-                    }
+                            var root_obj = parser.get_root().get_object();
+                            var protocol = root_obj.get_string_member ("Protocol");
+    
+                            set_controls_visible (protocol.contains("HTTP"), protocol == "Websocket", protocol == "Out of Band");
+    
+                            if (protocol == "Websocket") {
+                                populate_websocket_data (root_obj, request_updated);
+                            }
+                            else if (protocol == "Out of Band") {
+                                var packets = root_obj.get_array_member ("DataPackets");
+                                out_of_band_display.render_interaction (packets);
+                            } else {
+                                populate_http_data (root_obj);
+                            }
+                        } catch (Error err) {
+                            stdout.printf ("Could not parse JSON data, error: %s\n", err.message);
+                        }
+                    });
+                } catch (Error e) {
+                    stdout.printf ("Could not get request contents: %s\n", e.message);
                 }
-                catch(Error e) {
-                    stdout.printf ("Could not parse JSON data, error: %s\nData: %s\n", e.message, jsonData);
-                }
-                
             });
         }
 

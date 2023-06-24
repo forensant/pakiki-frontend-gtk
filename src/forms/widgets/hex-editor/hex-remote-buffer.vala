@@ -40,11 +40,12 @@ namespace Pakiki {
                 var url = "http://" + application_window.core_address + "/requests/" + guid+ "/partial_data?from=" + from.to_string ();
 
                 var message = new Soup.Message ("GET", url);
-                application_window.http_session.send_message (message);
 
-                var response = (string)message.response_body.flatten ().data;
-                var parser = new Json.Parser ();
                 try {
+                    var bytes = application_window.http_session.send_and_read (message);
+                    var response = (string) bytes.get_data ();
+                    var parser = new Json.Parser ();
+                    
                     if (message.status_code != 200) {
                         stderr.printf("Could not connect to %s, response: %s\n", url, response);
                         return blank_data;
@@ -90,9 +91,11 @@ namespace Pakiki {
         }
 
         private Soup.Message current_search_message = null;
+        private GLib.Cancellable search_cancellable = new GLib.Cancellable ();
         public override void search (string query, string format) {
-            if (current_search_message != null) {
-                application_window.http_session.cancel_message (current_search_message, Soup.Status.CANCELLED);
+            if (!search_cancellable.is_cancelled ()) {
+                search_cancellable.cancel ();
+                search_cancellable.reset ();
             }
 
             if (query == "") {
@@ -116,13 +119,18 @@ namespace Pakiki {
 
             current_search_message = new Soup.Message ("GET", url);
 
-            application_window.http_session.queue_message (current_search_message, (sess, mess) => {
-                if (mess.status_code != 200) {
-                    return;
-                }
-                var parser = new Json.Parser ();
+            application_window.http_session.send_and_read_async.begin (current_search_message, GLib.Priority.DEFAULT, search_cancellable, (obj, resp) => {
                 try {
-                    parser.load_from_data ((string) mess.response_body.flatten ().data, -1);
+                    var bytes = application_window.http_session.send_and_read_async.end (resp);
+                    
+                    if (current_search_message.status_code != 200) {
+                        return;
+                    }
+
+                    var response = (string) bytes.get_data ();
+                    var parser = new Json.Parser ();
+                    
+                    parser.load_from_data (response, -1);
 
                     HexBuffer.SearchResult[] results_to_set = {};
 

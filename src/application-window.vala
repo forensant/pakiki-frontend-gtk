@@ -331,15 +331,23 @@ namespace Pakiki {
         private bool monitor_core_connection () {
             Soup.Session session = new Soup.Session ();
             var message = new Soup.Message ("GET", "http://" + core_address + "/ping");
+            
+            session.send_async.begin (message, GLib.Priority.DEFAULT, null, (obj, res) => {
+                try {
+                    session.send_async.end (res);
 
-            session.queue_message (message, (sess, mess) => {
-                if (mess.status_code == 200) {
-                    if (label_overlay.visible == true || proxy_settings.successful == false) {
-                        label_overlay.hide ();
-                        on_core_started (core_address);
+                    if (message.status_code == 200) {
+                        if (label_overlay.visible == true || proxy_settings.successful == false) {
+                            label_overlay.hide ();
+                            on_core_started (core_address);
+                        }
                     }
-                }
-                else {
+                    else {
+                        throw new IOError.CONNECTION_REFUSED ("Server did not respond with 200 status code");
+                    }
+                } catch (Error e) {
+                    stdout.printf ("Error monitoring core connection: %s\n", e.message);
+                    
                     // if the proxy settings haven't been successfully loaded, there will be another message already displayed to the user
                     if (label_overlay.visible == false && proxy_settings.successful) {
                         label_overlay.label = "Connection to Pākiki Core lost. Retrying...\n\nOnce the connection is re-established, the data will be reloaded.";
@@ -626,7 +634,11 @@ namespace Pakiki {
 
         private void set_filter_icon () {
             var image_src = this.get_coloured_svg ("resource:///com/forensant/pakiki/funnel-outline-symbolic.svg");
-            image_filter_icon.pixbuf = new Gdk.Pixbuf.from_stream (image_src);
+            try {
+                image_filter_icon.pixbuf = new Gdk.Pixbuf.from_stream (image_src);
+            } catch (Error e) {
+                stdout.printf ("Error setting filter icon: %s\n", e.message);
+            }
         }
 
         public void set_intercepted_request_count(int count) {
@@ -694,13 +706,15 @@ namespace Pakiki {
         private void do_update_check () {
             var url = UPDATE_HOST + "/api/application/updates?edition=Community&version=" + pakiki_application.get_version ();
 
-            Soup.Session session = new Soup.Session ();
+            var session = new Soup.Session ();
             var message = new Soup.Message ("GET", url);
             
-            session.queue_message (message, (sess, mess) => {
+            session.send_and_read_async.begin (message, GLib.Priority.DEFAULT, null, (obj, res) => {
                 try {
+                    var bytes = session.send_and_read_async.end (res);
+
                     var parser = new Json.Parser ();
-                    parser.load_from_data ((string)mess.response_body.data);
+                    parser.load_from_data ((string)bytes.get_data ());
                     if (parser.get_root () == null) {
                         return;
                     }
@@ -713,8 +727,7 @@ namespace Pakiki {
                             label_proxy_bind_error.label = "An update is available, visit <a href=\"https://pakikiproxy.com/\">https://pakikiproxy.com/</a> to download it.";
                         }
                     }
-                }
-                catch (GLib.Error err) {
+                } catch (Error err) {
                     stdout.printf("Error checking for updates: %s\n", err.message);
                 }
             });

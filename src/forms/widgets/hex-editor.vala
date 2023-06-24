@@ -1085,7 +1085,7 @@ namespace Pakiki {
 
             var menu_item = new Gtk.MenuItem.with_label ("Send to Cyberchef");
             menu_item.activate.connect ( () => {
-                var uri = "https://gchq.github.io/CyberChef/#input=" + Soup.URI.encode (Base64.encode (selected_text.data), "");
+                var uri = "https://gchq.github.io/CyberChef/#input=" + GLib.Uri.escape_string (Base64.encode (selected_text.data));
 
                 try {
                     AppInfo.launch_default_for_uri (uri, null);

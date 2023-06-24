@@ -107,32 +107,33 @@ namespace Pakiki {
             generator.set_root (root);
             string parameters = generator.to_data (null);
 
-            message.set_request("application/json", Soup.MemoryUse.COPY, parameters.data);
+            message.set_request_body_from_bytes ("application/json", new Bytes (parameters.data ));
             
-            application_window.http_session.queue_message (message, (sess, mess) => {
-                if (mess.status_code != 200) {
-                    label_error.visible = true;
-                    label_error.label = (string)mess.response_body.flatten().data;
-                    spinner.stop();
-                    return;
-                }
-
-                var parser = new Json.Parser ();
-                var jsonData = (string)mess.response_body.flatten().data;
+            application_window.http_session.send_and_read_async.begin (message, GLib.Priority.HIGH, null, (obj, res) => {
                 try {
-                    parser.load_from_data (jsonData, -1);
-
-                    var rootObj = parser.get_root().get_object();
+                    var response = application_window.http_session.send_and_read_async.end (res);
+                    var str_resp = (string) response.get_data ();
+                    if (message.status_code != 200) {
+                        label_error.visible = true;
+                        label_error.label = str_resp;
+                        spinner.stop();
+                        return;
+                    }
+    
+                    var parser = new Json.Parser ();
+                    parser.load_from_data (str_resp, -1);
                     
+                    var rootObj = parser.get_root().get_object();    
                     var guid = rootObj.get_string_member("GUID");
                     request_details.set_request (guid);
-
                 }
-                catch(Error e) {
-                    stdout.printf("Could not parse JSON data, error: %s\nData: %s\n", e.message, jsonData);
+                catch (Error err) {
+                    stdout.printf ("Error sending request: %s\n", err.message);
+                    label_error.visible = true;
+                    label_error.label = "Error sending request: " + err.message;
                 }
 
-                spinner.stop ();
+                spinner.stop();
             });
         }
 
@@ -141,14 +142,21 @@ namespace Pakiki {
 
             var message = new Soup.Message ("GET", url);
 
-            application_window.http_session.queue_message (message, (sess, mess) => {
-                var parser = new Json.Parser ();
-
+            application_window.http_session.send_and_read_async.begin (message, GLib.Priority.HIGH, null, (obj, res) => {
                 try {
-                    parser.load_from_data ((string) message.response_body.flatten ().data, -1);
-
-                    var rootObj = parser.get_root().get_object();
-
+                    var response = application_window.http_session.send_and_read_async.end (res);
+                    var str_resp = (string) response.get_data () ;
+                    if (message.status_code != 200) {
+                        label_error.visible = true;
+                        label_error.label = str_resp;
+                        spinner.stop();
+                        return;
+                    }
+    
+                    var parser = new Json.Parser ();
+                    parser.load_from_data (str_resp, -1);
+                    
+                    var rootObj = parser.get_root().get_object();    
                     var raw_request_data = Base64.decode (rootObj.get_string_member ("RequestData"));
                     var req_data_str = (string) raw_request_data;
 
@@ -174,6 +182,8 @@ namespace Pakiki {
                     
                 } catch (Error err) {
                     stdout.printf ("Error retrieving/populating request: %s\n", err.message);
+                    label_error.visible = true;
+                    label_error.label = "Error retrieving request: " + err.message;
                 }
             });
         }

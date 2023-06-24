@@ -138,25 +138,26 @@ namespace Pakiki {
             generator.set_root (root);
             string parameters = generator.to_data (null);
 
-            message.set_request("application/json", Soup.MemoryUse.COPY, parameters.data);
+            message.set_request_body_from_bytes ("application/json", new Bytes (parameters.data));
 
-            application_window.http_session.queue_message (message, (sess, mess) => {
-                var response_data = (string)mess.response_body.flatten().data;
-                
-                if (mess.status_code != 200) {
-                    label_error.label = "Error: " + response_data;
-                    label_error.visible = true;
-                    button_run.sensitive = true;
-                    spinner.active = false;
-                    return;
-                } else {
-                    label_error.visible = false;
-                }
-
-                var parser = new Json.Parser ();
+            application_window.http_session.send_and_read_async.begin (message, GLib.Priority.DEFAULT, null, (obj, res) => {
                 try {
+                    var response = application_window.http_session.send_and_read_async.end (res);
+                    var response_data = (string) response.get_data ();
+                    
+                    if (message.status_code != 200) {
+                        label_error.label = "Error: " + response_data;
+                        label_error.visible = true;
+                        button_run.sensitive = true;
+                        spinner.active = false;
+                        return;
+                    } else {
+                        label_error.visible = false;
+                    }
+    
+                    var parser = new Json.Parser ();
+                    
                     parser.load_from_data (response_data, -1);
-
                     var rootObj = parser.get_root().get_object();
                     
                     var guid = rootObj.get_string_member("GUID");
@@ -165,12 +166,13 @@ namespace Pakiki {
                     inject_pane.select_when_received (guid);
                 }
                 catch(Error e) {
-                    stdout.printf("Could not parse JSON data, error: %s\nData: %s\n", e.message, response_data);
+                    stdout.printf("Could not parse JSON data, error: %s\n", e.message);
                 }
 
                 button_run.sensitive = true;
                 spinner.active = false;
             });
+
         }
 
         public void populate_request (string guid) {

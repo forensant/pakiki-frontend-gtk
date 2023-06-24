@@ -175,14 +175,15 @@ namespace Pakiki {
 
             var message = new Soup.Message ("GET", url);
 
-            application_window.http_session.queue_message (message, (sess, mess) => {
-                if (mess.status_code != 200) {
-                    return;
-                }
-                this.updating = true;
-                var parser = new Json.Parser ();
+            application_window.http_session.send_and_read_async.begin (message, GLib.Priority.DEFAULT, null, (obj, res) => {
                 try {
-                    parser.load_from_data ((string) message.response_body.flatten ().data, -1);
+                    var response = application_window.http_session.send_and_read_async.end (res);
+                    if (message.status_code != 200) {
+                        return;
+                    }
+                    this.updating = true;
+                    var parser = new Json.Parser ();
+                    parser.load_from_data ((string) response.get_data ());
 
                     var settings = parser.get_root ().get_object ();
                     checkbox_intercept_to_browser.active = settings.get_boolean_member ("ServerToBrowser");
@@ -193,7 +194,6 @@ namespace Pakiki {
 
                 this.updating = false;
             });
-
         }
 
         private void get_requests () {
@@ -202,15 +202,16 @@ namespace Pakiki {
             var session = application_window.http_session;
             var message = new Soup.Message ("GET", url);
 
-            session.queue_message (message, (sess, mess) => {
-                if (mess.status_code != 200) {
-                    return;
-                }
-                liststore_requests.clear ();
-                this.updating = true;
-                var parser = new Json.Parser ();
+            session.send_and_read_async.begin (message, GLib.Priority.HIGH, null, (obj, res) => {
                 try {
-                    parser.load_from_data ((string) message.response_body.flatten ().data, -1);
+                    var response = session.send_and_read_async.end (res);
+                    if (message.status_code != 200) {
+                        return;
+                    }
+                    liststore_requests.clear ();
+                    this.updating = true;
+                    var parser = new Json.Parser ();
+                    parser.load_from_data ((string) response.get_data (), -1);
 
                     var rootArray = parser.get_root ().get_array ();
 
@@ -232,7 +233,7 @@ namespace Pakiki {
             url = CoreProcess.websocket_url (application_window, "Intercepted Request");
 
             var wsmessage = new Soup.Message ("GET", url);
-            session.websocket_connect_async.begin (wsmessage, "localhost", null, null, (obj, res) => {
+            session.websocket_connect_async.begin (wsmessage, "localhost", null, GLib.Priority.HIGH, null, (obj, res) => {
                 try {
                     websocket = session.websocket_connect_async.end (res);
                     websocket.max_incoming_payload_size = 0;
@@ -372,9 +373,9 @@ namespace Pakiki {
             generator.set_root (root);
             string parameters = generator.to_data (null);
 
-            message.set_request("application/json", Soup.MemoryUse.COPY, parameters.data);
+            message.set_request_body_from_bytes ("application/json", new Bytes(parameters.data));
             
-            application_window.http_session.queue_message (message, null);
+            application_window.http_session.send_async.begin (message, GLib.Priority.DEFAULT, null);
         }
 
         private void send_request_response (string action) {
@@ -430,9 +431,8 @@ namespace Pakiki {
             generator.set_root (root);
             string parameters = generator.to_data (null);
 
-            message.set_request("application/json", Soup.MemoryUse.COPY, parameters.data);
-            
-            application_window.http_session.queue_message (message, null);
+            message.set_request_body_from_bytes ("application/json", new Bytes(parameters.data));
+            application_window.http_session.send_async.begin (message, GLib.Priority.DEFAULT, null);
         }
 
         public void reset_state () {
