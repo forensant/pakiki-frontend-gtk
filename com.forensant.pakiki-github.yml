@@ -37,7 +37,7 @@ modules:
       - install -D pakikicore /app/bin/
       - install -D pakikipythoninterpreter /app/bin/
       - ls -lah
-      - cp -r python310 /app/bin/
+      - cp -r python311 /app/bin/
     sources:
       - type: dir
         path: pakiki-core
