@@ -1,4 +1,4 @@
-# Contributing to Pkiki
+# Contributing to Pākiki
 
 Thanks for wanting to contribute to Pākiki.
 
