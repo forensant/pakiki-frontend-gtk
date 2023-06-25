@@ -88,6 +88,8 @@ Setup the build directory with ```meson setup builddir``` then run ```ninja -C b
 
 To run, you'll require Pākiki Core in the same directory [https://github.com/forensant/pakiki-core/](https://github.com/forensant/pakiki-core/)
 
+If you're also updating the code within that, a symlink is recommended.
+
  ## Running
  A basic run can be launched with:
  ```GSETTINGS_SCHEMA_DIR=src/ ./com.forensant.pakiki```

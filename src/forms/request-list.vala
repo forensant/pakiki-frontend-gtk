@@ -314,6 +314,10 @@ namespace Pakiki {
         }
 
         private void get_requests () {
+            if (application_window.core_address == "") {
+                return;
+            }
+
             label_no_requests.visible = false;
             this.updating = true;
             guid_set.clear ();
@@ -361,7 +365,7 @@ namespace Pakiki {
             application_window.http_session.send_async.begin (message, GLib.Priority.HIGH, null, (obj, res) => {
                 try {
                     var response = application_window.http_session.send_async.end (res);
-
+                    
                     this.updating = true;
                     fetched_data = true;
                     var parser = new Json.Parser ();

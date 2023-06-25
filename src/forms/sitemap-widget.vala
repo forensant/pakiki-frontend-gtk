@@ -213,6 +213,10 @@ namespace Pakiki {
         }
 
         public void populate_sitemap () {
+            if (application_window.core_address == "") {
+                return;
+            }
+            
             tree_store_site_map.clear ();
             var url = "http://" + application_window.core_address + "/requests/sitemap";
 
