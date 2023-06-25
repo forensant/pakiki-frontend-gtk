@@ -2,7 +2,7 @@
 <!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
-  <template class="ProximityPlaceholderRequests" parent="GtkBox">
+  <template class="PakikiPlaceholderRequests" parent="GtkBox">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <property name="orientation">vertical</property>
@@ -105,7 +105,7 @@
                 <property name="margin-left">24</property>
                 <property name="xalign">1</property>
                 <property name="yalign">0.20000000298023224</property>
-                <property name="resource">/com/forensant/proximity/HappyLaptop.svg</property>
+                <property name="resource">/com/forensant/pakiki/HappyLaptop.svg</property>
               </object>
               <packing>
                 <property name="left-attach">1</property>
@@ -292,7 +292,7 @@ If you're unsure how to do it, consult your browser's documentation, or search o
                           <object class="GtkLabel" id="label_setup_proxy">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
-                            <property name="label" translatable="yes">Proximity is listening for traffic on &lt;a href="PROXYADDRESS"&gt;PROXYADDRESS&lt;/a&gt;. You'll need to configure your browser to use Proximity as an upstream proxy.
+                            <property name="label" translatable="yes">Pākiki Proxy is listening for traffic on &lt;a href="PROXYADDRESS"&gt;PROXYADDRESS&lt;/a&gt;. You'll need to configure your browser to use Pākiki as an upstream proxy.
 Browser plugins such as &lt;a href="https://addons.mozilla.org/en-US/firefox/addon/foxyproxy-standard/"&gt;FoxyProxy&lt;/a&gt; for Firefox, and &lt;a href="https://chrome.google.com/webstore/detail/smartproxy/jogcnplbkgkfdakgdenhlpcfhjioidoj"&gt;SmartProxy&lt;/a&gt; for Chrome can be set up to only proxy the traffic you want to intercept.</property>
                             <property name="use-markup">True</property>
                             <property name="justify">fill</property>

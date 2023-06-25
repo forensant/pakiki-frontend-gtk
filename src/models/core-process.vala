@@ -1,4 +1,4 @@
-namespace Proximity {
+namespace Pakiki {
     class CoreProcess : Object {
         public signal void copying_file (bool start);
         public signal void core_started (string location);
@@ -42,10 +42,10 @@ namespace Proximity {
             FileIOStream iostream;
             File file;
             try {
-                file = File.new_tmp ("proximity-XXXXXX.prx", out iostream);
+                file = File.new_tmp ("pakiki-XXXXXX.prx", out iostream);
             } catch (Error err) {
-                stdout.printf ("Error getting temporary path, using /tmp/proximity_temp instead (%s)\n", err.message);
-                return "/tmp/proximity_temp";
+                stdout.printf ("Error getting temporary path, using /tmp/pakiki_temp instead (%s)\n", err.message);
+                return "/tmp/pakiki_temp";
             }
             return file.get_path ();            
         }
@@ -108,7 +108,7 @@ namespace Proximity {
             foreach (string core_exe_path in paths) {
                 try {
                     string[] spawn_args = {
-                        core_exe_path + "proximitycore",
+                        core_exe_path + "pakikicore",
                         "-project", path, 
                         "-parentpid", pid.to_string (),
                         "-api-key", api_key
@@ -156,7 +156,7 @@ namespace Proximity {
                     this.child_pid = child_pid;
                     ChildWatch.add (child_pid, (pid, status) => {
                         // Triggered when the child indicated by child_pid exits
-                        stdout.printf("Proximity core closed with status %d\n", status);
+                        stdout.printf("Pākiki core closed with status %d\n", status);
                         Process.close_pid (pid);
                     });
 
@@ -194,7 +194,11 @@ namespace Proximity {
                     this.opening_file (true);
 
                     if (new_file && file.query_exists ()) {
-                        file.@delete ();
+                        try {
+                            file.@delete ();
+                        } catch (Error e) {
+                            stdout.printf("Colud not delete file: %s\n", e.message);
+                        }
                     }
 
                     if (child_pid != 0) {
@@ -246,7 +250,7 @@ namespace Proximity {
             try {
                 string line;
                 channel.read_line (out line, null, null);
-                print ("[Proximity Core] %s: %s", stream_name, line);
+                print ("[Pākiki Core] %s: %s", stream_name, line);
                 
                 if (line.contains ("Web frontend is available at:")) {
                     var scheme_idx = line.index_of ("://");
@@ -376,8 +380,8 @@ namespace Proximity {
             dialog.add_filter (filter);
 
             filter = new Gtk.FileFilter ();
-            filter.add_pattern ("*.prx");
-            filter.set_filter_name ("Proximity Project");
+            filter.add_pattern ("*.pkk");
+            filter.set_filter_name ("Pākiki Project");
             dialog.add_filter (filter);
             dialog.set_filter (filter);
         }
@@ -401,7 +405,8 @@ namespace Proximity {
 
             string json_str = generator.to_data (null);
 
-            url += "?objectfieldfilter=" + Soup.URI.encode (json_str, null);
+            
+            url += "?objectfieldfilter=" + GLib.Uri.escape_string (json_str, null);
 
             url += "&api_key=" + application_window.api_key;
             

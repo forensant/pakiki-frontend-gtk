@@ -1,4 +1,4 @@
-namespace Proximity {
+namespace Pakiki {
     public class Application : Gtk.Application {
         private string? api_key;
         private string? core_address;
@@ -6,9 +6,10 @@ namespace Proximity {
         private ApplicationWindow window;
 
         public Application () {
-            application_id = "com.forensant.proximity";
+            application_id = "com.forensant.pakiki";
             flags |= GLib.ApplicationFlags.HANDLES_COMMAND_LINE;
-            GLib.Environment.set_prgname("Proximity");
+            GLib.Environment.set_application_name ("Pākiki Proxy");
+            GLib.Environment.set_prgname("Pakiki Proxy");
 
             set_temp_environment_var ();
         }
@@ -18,16 +19,17 @@ namespace Proximity {
             dialog.set_destroy_with_parent (true);
             dialog.set_transient_for (window);
             dialog.set_modal (true);
+            dialog.set_title ("About Pākiki");
 
-            dialog.program_name = "Proximity Community Edition";
+            dialog.program_name = "Pākiki Community Edition";
             dialog.comments = "Intercepting proxy";
             dialog.copyright = "Copyright © %d Forensant Ltd".printf (new DateTime.now ().get_year ());
             dialog.version = get_version ();
 
             dialog.license_type = Gtk.License.MIT_X11;
 
-            dialog.website = "https://proximityhq.com/";
-            dialog.website_label = "proximityhq.com";
+            dialog.website = "https://pakikiproxy.com/";
+            dialog.website_label = "pakikiproxy.com";
 
             try {
                 var logo = new Gdk.Pixbuf.from_stream_at_scale (window.banner_logo_svg (), 350, 64, true, null);
@@ -53,7 +55,7 @@ namespace Proximity {
             window.present ();
 
             Gtk.CssProvider css_provider = new Gtk.CssProvider ();
-            css_provider.load_from_resource ("/com/forensant/proximity/style.css");
+            css_provider.load_from_resource ("/com/forensant/pakiki/style.css");
             Gtk.StyleContext.add_provider_for_screen (Gdk.Screen.get_default (), css_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
     
             var action = new SimpleAction("new", null);
@@ -74,9 +76,9 @@ namespace Proximity {
     
             OptionEntry[] options = new OptionEntry[4];
             options[0] = { "version", 0, 0, OptionArg.NONE, ref version, "Display version number", null };
-            options[1] = { "core", 0, 0, OptionArg.STRING, ref core_address, "Address for a running Proximity Core instance to connect to", "HOST:PORT" };
-            options[2] = { "preview-proxy", 0, 0, OptionArg.STRING, ref preview_proxy_address, "Address for a running Proximity Core's preview proxy instance to connect to", "HOST:PORT" };
-            options[3] = { "api-key", 0, 0, OptionArg.STRING, ref api_key, "The API Key when connecting to an external Proximity Core instance", null };
+            options[1] = { "core", 0, 0, OptionArg.STRING, ref core_address, "Address for a running Pākiki Core instance to connect to", "HOST:PORT" };
+            options[2] = { "preview-proxy", 0, 0, OptionArg.STRING, ref preview_proxy_address, "Address for a running Pākiki Core's preview proxy instance to connect to", "HOST:PORT" };
+            options[3] = { "api-key", 0, 0, OptionArg.STRING, ref api_key, "The API Key when connecting to an external Pākiki Core instance", null };
     
             // We have to make an extra copy of the array, since .parse assumes
             // that it can remove strings from the array without freeing them.
@@ -99,7 +101,7 @@ namespace Proximity {
             }
     
             if (version) {
-                command_line.print ("Proximity Community Edition " + get_version () + "\n");
+                command_line.print ("Pākiki Proxy Community Edition " + get_version () + "\n");
                 return 0;
             }
 
@@ -133,7 +135,7 @@ namespace Proximity {
         }
 
         public string get_version () {
-            var file = File.new_for_uri ("resource:///com/forensant/proximity/version");
+            var file = File.new_for_uri ("resource:///com/forensant/pakiki/version");
 
             var contents = "";
 

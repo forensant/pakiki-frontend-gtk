@@ -1,4 +1,4 @@
-namespace Proximity {
+namespace Pakiki {
     public interface MainApplicationPane : Object {
         public signal void pane_changed ();
         

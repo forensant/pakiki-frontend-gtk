@@ -1,4 +1,4 @@
-namespace Proximity {   
+namespace Pakiki {   
     class RequestWindow : Gtk.Window {
         public RequestWindow (ApplicationWindow application_window, string request_guid) {
             this.title = "Request Details";

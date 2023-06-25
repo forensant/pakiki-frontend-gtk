@@ -1,8 +1,8 @@
 using Soup;
 
-namespace Proximity {
+namespace Pakiki {
     
-    [GtkTemplate (ui = "/com/forensant/proximity/request-list.ui")]
+    [GtkTemplate (ui = "/com/forensant/pakiki/request-list.ui")]
     class RequestList : Gtk.Paned {
 
         public signal void requests_loaded (bool present);
@@ -314,6 +314,10 @@ namespace Proximity {
         }
 
         private void get_requests () {
+            if (application_window.core_address == "") {
+                return;
+            }
+
             label_no_requests.visible = false;
             this.updating = true;
             guid_set.clear ();
@@ -325,7 +329,7 @@ namespace Proximity {
             var url = "http://" + application_window.core_address + "/requests?exclude_resources=" + (exclude_resources ? "true" : "false");
 
             if (search_query != null && search_query != "") {
-                url += "&filter=" + Soup.URI.encode(search_query, null);
+                url += "&filter=" + GLib.Uri.escape_string (search_query);
             }
 
             if (search_negative_filter) {
@@ -338,7 +342,7 @@ namespace Proximity {
             }
 
             if (url_filter != "") {
-                url += "&url_filter=" + Soup.URI.encode("://" + url_filter, null);
+                url += "&url_filter=" + GLib.Uri.escape_string ("://" + url_filter);
             }
 
             if (search_protocol != "" && search_protocol != "all") {
@@ -358,44 +362,53 @@ namespace Proximity {
                 return GLib.Source.REMOVE;
             });
             
-            application_window.http_session.queue_message (message, (sess, mess) => {
-                this.updating = true;
-                fetched_data = true;
-                var parser = new Json.Parser ();
+            application_window.http_session.send_async.begin (message, GLib.Priority.HIGH, null, (obj, res) => {
                 try {
+                    var response = application_window.http_session.send_async.end (res);
+                    
+                    this.updating = true;
+                    fetched_data = true;
+                    var parser = new Json.Parser ();
+
                     if (message.status_code != 200) {
                         stderr.printf("Could not connect to %s\n", url);
                         return;
                     }
 
-                    parser.load_from_data ((string) message.response_body.flatten ().data, -1);
+                    parser.load_from_stream_async.begin (response, null, (obj2, res2) => {
+                        try {
+                            parser.load_from_stream_async.end (res2);
 
-                    var rootArray = parser.get_root ().get_array ();
+                            var rootArray = parser.get_root ().get_array ();
 
-                    show_controls (rootArray.get_length ());
-
-                    foreach (var reqElement in rootArray.get_elements ()) {
-                        var request = reqElement.get_object ();
-                        add_request_to_table (request);
-                    }
-
-                    var should_scroll = true;
-                    Timeout.add_full (GLib.Priority.HIGH, 1000, () => {
-                        should_scroll = false;
-                        label_overlay.visible = false;
-                        return GLib.Source.REMOVE;
-                    });
-
-                    GLib.Idle.add_full (GLib.Priority.DEFAULT_IDLE, () => {
-                        if (should_scroll) {
-                            scroll_to_bottom ();
+                            show_controls (rootArray.get_length ());
+        
+                            foreach (var reqElement in rootArray.get_elements ()) {
+                                var request = reqElement.get_object ();
+                                add_request_to_table (request);
+                            }
+        
+                            var should_scroll = true;
+                            Timeout.add_full (GLib.Priority.HIGH, 1000, () => {
+                                should_scroll = false;
+                                label_overlay.visible = false;
+                                return GLib.Source.REMOVE;
+                            });
+        
+                            GLib.Idle.add_full (GLib.Priority.DEFAULT_IDLE, () => {
+                                if (should_scroll) {
+                                    scroll_to_bottom ();
+                                    label_overlay.visible = false;
+                                }
+                                return GLib.Source.REMOVE;
+                            });
+        
+                            this.requests_loaded (rootArray.get_length () > 0);        
+                        } catch (Error err) {
+                            stdout.printf ("Could not populate request list: %s\n", err.message);
                             label_overlay.visible = false;
                         }
-                        return GLib.Source.REMOVE;
                     });
-
-                    this.requests_loaded (rootArray.get_length () > 0);
-
                 } catch (Error err) {
                     stdout.printf ("Could not populate request list: %s\n", err.message);
                     label_overlay.visible = false;
@@ -431,7 +444,7 @@ namespace Proximity {
             }
 
             if (search_query != null && search_query != "") {
-                filter += Soup.URI.encode (" " + search_query, null);
+                filter += GLib.Uri.escape_string (" " + search_query);
             }
 
             if (filter != "") {
@@ -441,7 +454,7 @@ namespace Proximity {
             url += "&api_key=" + application_window.api_key;
 
             var wsmessage = new Soup.Message ("GET", url);
-            application_window.http_session.websocket_connect_async.begin (wsmessage, "localhost", null, null, (obj, res) => {
+            application_window.http_session.websocket_connect_async.begin (wsmessage, "localhost", null, GLib.Priority.DEFAULT, null, (obj, res) => {
                 try {
                     websocket = application_window.http_session.websocket_connect_async.end (res);
                     websocket.max_incoming_payload_size = 0;
@@ -567,10 +580,10 @@ namespace Proximity {
 
             var message = new Soup.Message ("PATCH", "http://" + application_window.core_address + "/requests/" + guid.get_string () + "/notes");
 
-            var parameters = "notes=" + Soup.URI.encode (newtext, null);
-            message.set_request ("application/x-www-form-urlencoded", Soup.MemoryUse.COPY, parameters.data);
+            var parameters = "notes=" + GLib.Uri.escape_string (newtext, null);
+            message.set_request_body_from_bytes ("application/x-www-form-urlencoded", new Bytes(parameters.data));
             
-            application_window.http_session.send_async.begin (message);
+            application_window.http_session.send_async.begin (message, GLib.Priority.DEFAULT, null);
 
             liststore.set_value (iter, Column.NOTES, newtext);
             guid.unset ();
@@ -645,14 +658,9 @@ namespace Proximity {
                     }
 
                     var url = urls[0];
-                    try {
-                        Gdk.Display display = Gdk.Display.get_default ();
-                        Gtk.Clipboard clipboard = Gtk.Clipboard.get_for_display (display, Gdk.SELECTION_CLIPBOARD);
-
-                        clipboard.set_text (url, url.length);
-                    } catch (Error err) {
-                        stdout.printf ("Could not launch browser: %s\n", err.message);
-                    }
+                    Gdk.Display display = Gdk.Display.get_default ();
+                    Gtk.Clipboard clipboard = Gtk.Clipboard.get_for_display (display, Gdk.SELECTION_CLIPBOARD);
+                    clipboard.set_text (url, url.length);
                 });
                 copy_url.show ();
                 menu.append (copy_url);

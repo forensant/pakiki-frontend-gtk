@@ -16,7 +16,7 @@
       </row>
     </data>
   </object>
-  <template class="ProximityInjectPointSelectionWidget" parent="GtkBox">
+  <template class="PakikiInjectPointSelectionWidget" parent="GtkBox">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <property name="hexpand">True</property>

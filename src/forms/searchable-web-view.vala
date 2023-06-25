@@ -1,5 +1,5 @@
 
-namespace Proximity {
+namespace Pakiki {
     class SearchableWebView : Gtk.Box {
 
         private WebKit.WebView webview;

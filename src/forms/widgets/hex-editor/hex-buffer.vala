@@ -1,4 +1,4 @@
-namespace Proximity {
+namespace Pakiki {
     public class HexBuffer : Object {
         public signal void length_changed ();
 

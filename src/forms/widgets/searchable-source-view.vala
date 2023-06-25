@@ -1,5 +1,5 @@
-namespace Proximity {
-    [GtkTemplate (ui = "/com/forensant/proximity/searchable-source-view.ui")]
+namespace Pakiki {
+    [GtkTemplate (ui = "/com/forensant/pakiki/searchable-source-view.ui")]
     public class SearchableSourceView : Gtk.Box {
         
         [GtkChild]
@@ -38,7 +38,7 @@ namespace Proximity {
         }
 
         public Gtk.SourceStyleScheme get_theme () {
-            var settings = new GLib.Settings ("com.forensant.proximity");
+            var settings = new GLib.Settings ("com.forensant.pakiki");
             var scheme = settings.get_string ("colour-scheme");
             var style_manager = Gtk.SourceStyleSchemeManager.get_default();
             return style_manager.get_scheme (scheme);

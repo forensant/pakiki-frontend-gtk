@@ -8,11 +8,11 @@
             "type": "lldb",
             "request": "launch",
             "name": "Debug",
-            "program": "${workspaceFolder}/builddir/com.forensant.proximity",
+            "program": "${workspaceFolder}/builddir/com.forensant.pakiki",
             "args": [
                 "--core=127.0.0.1:10101",
                 "--preview-proxy=127.0.0.1:10111",
-                "--api-key=8447177b6d06864d094e45cc26c842009d23e3873ea6e92b90d48a31ed4a6073"
+                "--api-key=6460ab6f425580aebe9cc53fb1ef124051de77e7c298f1aa21117d3e7984e1f0"
             ],
             "cwd": "${workspaceFolder}",
             "env": {

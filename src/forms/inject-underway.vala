@@ -1,8 +1,8 @@
 using Soup;
 
-namespace Proximity {
+namespace Pakiki {
     
-    [GtkTemplate (ui = "/com/forensant/proximity/inject-underway.ui")]
+    [GtkTemplate (ui = "/com/forensant/pakiki/inject-underway.ui")]
     class InjectUnderway : Gtk.Grid {
 
         [GtkChild]
@@ -131,8 +131,9 @@ namespace Proximity {
             if (archive != "") {
                 parameters += ("archive=" + archive);
             }
-            message.set_request ("application/x-www-form-urlencoded", Soup.MemoryUse.COPY, parameters.data);
-            application_window.http_session.send_async.begin (message);
+
+            message.set_request_body_from_bytes ("application/x-www-form-urlencoded", new Bytes (parameters.data));
+            application_window.http_session.send_async.begin (message, GLib.Priority.DEFAULT, null);
         }
 
         [GtkCallback]
@@ -155,9 +156,9 @@ namespace Proximity {
             
             var message = new Soup.Message ("PATCH", "http://" + application_window.core_address + "/inject_operations/" + operation.guid + "/title");
 
-            var parameters = "title=" + Soup.URI.encode (entry_title.text, null);
-            message.set_request ("application/x-www-form-urlencoded", Soup.MemoryUse.COPY, parameters.data);
-            application_window.http_session.send_async.begin (message);
+            var parameters = "title=" + GLib.Uri.escape_string (entry_title.text);
+            message.set_request_body_from_bytes ("application/x-www-form-urlencoded", new Bytes (parameters.data));
+            application_window.http_session.send_async.begin (message, GLib.Priority.DEFAULT, null);
         }
     }
 }

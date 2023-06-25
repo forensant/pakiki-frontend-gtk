@@ -1,8 +1,8 @@
 using Soup;
 
-namespace Proximity {
+namespace Pakiki {
     
-    [GtkTemplate (ui = "/com/forensant/proximity/payload-selection-widget.ui")]
+    [GtkTemplate (ui = "/com/forensant/pakiki/payload-selection-widget.ui")]
     class PayloadSelectionWidget : Gtk.Box {
 
         [GtkChild]
@@ -142,7 +142,10 @@ namespace Proximity {
                     Column.PAYLOADS, payloads,
                     Column.PAYLOAD_COUNT, payload.get_int_member ("PayloadCount"));
 
-                add_to_fuzzdb_tree (payload.get_array_member ("SubEntries"), iter);
+                var sub_entries = payload.get_array_member ("SubEntries");
+                if (sub_entries != null) {
+                    add_to_fuzzdb_tree (sub_entries, iter);
+                }
             }
         }
 
@@ -344,19 +347,25 @@ namespace Proximity {
             var url = "http://" + application_window.core_address + "/inject_operations/payloads";
             var message = new Soup.Message ("GET", url);
 
-            application_window.http_session.queue_message (message, (sess, mess) => {
-                if (mess.status_code != 200) {
+            application_window.http_session.send_and_read_async.begin (message, GLib.Priority.HIGH, null, (obj, res) => {
+                if (message.status_code != 200) {
                     return;
                 }
-                var parser = new Json.Parser ();
+
+                treestore_fuzzdb.clear ();
+
                 try {
-                    treestore_fuzzdb.clear ();
-                    parser.load_from_data ((string) message.response_body.flatten ().data, -1);
+                    var bytes = application_window.http_session.send_and_read_async.end (res);
+                    var data = ((string) bytes.get_data ());
 
+                    var parser = new Json.Parser ();
+                    parser.load_from_data (data, -1);
                     var root_obj = parser.get_root().get_object();
-
                     populating_fuzzdb = true;
-                    add_to_fuzzdb_tree (root_obj.get_array_member ("SubEntries"));
+                    var children = root_obj.get_array_member ("SubEntries");
+                    if (children != null) {
+                        add_to_fuzzdb_tree (children);
+                    }
                 } catch (Error err) {
                     stdout.printf("Error occurred while retrieving payloads: %s\n", err.message);
                 }
@@ -369,6 +378,7 @@ namespace Proximity {
                     path_to_set = "";
                 }
             });
+
         }
 
         public void reset_state () {

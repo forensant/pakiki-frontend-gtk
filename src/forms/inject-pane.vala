@@ -1,7 +1,7 @@
 using Soup;
 
-namespace Proximity {
-    [GtkTemplate (ui = "/com/forensant/proximity/inject-pane.ui")]
+namespace Pakiki {
+    [GtkTemplate (ui = "/com/forensant/pakiki/inject-pane.ui")]
     class InjectPane : Gtk.Paned, MainApplicationPane {
 
         [GtkChild]
@@ -53,8 +53,8 @@ namespace Proximity {
             placeholder_form.hide ();
             inject_new_form.show ();
             list_box_injection_scans.unselect_all ();
-            pane_changed ();
             inject_new_form.clone_inject_operation (operation);
+            pane_changed ();
         }
 
         public bool find_activated () {
@@ -67,8 +67,8 @@ namespace Proximity {
             var session = application_window.http_session;
             var message = new Soup.Message ("GET", url);
 
-            session.queue_message (message, (sess, mess) => {
-                if (mess.status_code != 200) {
+            session.send_and_read_async.begin (message, GLib.Priority.DEFAULT, null, (obj, res) => {
+                if (message.status_code != 200) {
                     return;
                 }
 
@@ -83,9 +83,10 @@ namespace Proximity {
                 list_box_injection_scans.insert (new InjectListRow.label(InjectOperation.Status.UNDERWAY,  "Underway"),  -1);
                 list_box_injection_scans.insert (new InjectListRow.label(InjectOperation.Status.ARCHIVED,  "Archived"),  -1);
                 
-                var parser = new Json.Parser ();
                 try {
-                    parser.load_from_data ((string) message.response_body.flatten ().data, -1);
+                    var bytes = session.send_and_read_async.end (res);
+                    var parser = new Json.Parser ();
+                    parser.load_from_data ((string) bytes.get_data (), -1);
 
                     var rootArray = parser.get_root().get_array();
 
@@ -107,7 +108,7 @@ namespace Proximity {
             url = CoreProcess.websocket_url (application_window, "Inject Operation");
             
             var wsmessage = new Soup.Message("GET", url);
-            session.websocket_connect_async.begin(wsmessage, "localhost", null, null, (obj, res) => {
+            session.websocket_connect_async.begin(wsmessage, "localhost", null, GLib.Priority.DEFAULT, null, (obj, res) => {
                 try {
                     websocket = session.websocket_connect_async.end(res);
                     websocket.max_incoming_payload_size = 0;
@@ -221,10 +222,10 @@ namespace Proximity {
                     exists = true;
 
                     if (row.inject_operation.get_status () == InjectOperation.Status.UNDERWAY && inject_operation.get_status () == InjectOperation.Status.COMPLETED) {
-                        var message = "Proximity has finished an inject scan.";
+                        var message = "Pākiki has finished an inject scan.";
 
                         if (row.inject_operation.title != "") {
-                            message = "Proximity has finished the following scan: " + row.inject_operation.title;
+                            message = "Pākiki has finished the following scan: " + row.inject_operation.title;
                         }
 
                         application_window.display_notification ("Inject scan completed",

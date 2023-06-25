@@ -1,4 +1,4 @@
-namespace Proximity {   
+namespace Pakiki {   
     class OutOfBandDisplay : Gtk.Grid {
         private ApplicationWindow application_window;
 

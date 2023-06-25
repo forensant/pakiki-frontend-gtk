@@ -1,4 +1,4 @@
-namespace Proximity {
+namespace Pakiki {
     public class ProxySettings {
 
         private ApplicationWindow application_window;
@@ -21,9 +21,9 @@ namespace Proximity {
             var url = "http://" + application_window.core_address + "/proxy/ca_certificate.pem";
             try {
                 // Request a file:
-                Soup.Request request = application_window.http_session.request (url);
-                InputStream stream = request.send ();
-
+                var message = new Soup.Message ("GET", url);
+                InputStream stream = application_window.http_session.send (message);
+                
                 // Print the content:
                 DataInputStream data_stream = new DataInputStream (stream);
         
@@ -44,9 +44,9 @@ namespace Proximity {
             var url = "http://" + application_window.core_address + "/proxy/settings";
             try {
                 // Request a file:
-                Soup.Request request = application_window.http_session.request (url);
-                InputStream stream = request.send ();
-        
+                var message = new Soup.Message ("GET", url);
+                InputStream stream = application_window.http_session.send (message);
+                
                 // Print the content:
                 DataInputStream data_stream = new DataInputStream (stream);
         
@@ -106,12 +106,20 @@ namespace Proximity {
             generator.set_root (root);
             string parameters = generator.to_data (null);
 
-            message.set_request("application/json", Soup.MemoryUse.COPY, parameters.data);
-            application_window.http_session.send_message(message);
-
-            if (message.status_code == 500) {
-                return (string)message.response_body.data;
+            message.set_request_body_from_bytes ("application/json", new Bytes(parameters.data));
+            try {
+                var response_body = application_window.http_session.send_and_read (message);
+                if (message.status_code != 200) {
+                    if (response_body != null) {
+                        return (string)response_body.get_data ();
+                    } else {
+                        return "Error: " + message.status_code.to_string ();
+                    }
+                }
+            } catch (Error e) {
+                return "Error: Could not save settings: " + e.message;
             }
+
             return "";
         }
 

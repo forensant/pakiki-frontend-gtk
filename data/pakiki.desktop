@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
-Name=Proximity
-Icon=com.forensant.proximity
+Name=Pākiki Proxy
+Icon=/usr/share/pixmaps/pakiki.svg
 StartupNotify=true
-Exec=com.forensant.proximity
+Exec=pakiki
 Categories=Network;Security;
 X-GNOME-UsesNotifications=true

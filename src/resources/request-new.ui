@@ -16,7 +16,7 @@
       </row>
     </data>
   </object>
-  <template class="ProximityRequestNew" parent="GtkPaned">
+  <template class="PakikiRequestNew" parent="GtkPaned">
     <property name="visible">True</property>
     <property name="can_focus">True</property>
     <property name="margin_left">18</property>

@@ -1,6 +1,6 @@
-namespace Proximity {
+namespace Pakiki {
 
-    [GtkTemplate (ui = "/com/forensant/proximity/prefs.ui")]
+    [GtkTemplate (ui = "/com/forensant/pakiki/prefs.ui")]
     public class ApplicationPreferences : Gtk.Dialog {
         public signal void settings_changed ();
 
@@ -45,7 +45,7 @@ namespace Proximity {
             combobox_colour_scheme.model = liststore_colour_schemes;
             combobox_colour_scheme.id_column = 1;
 
-            settings = new GLib.Settings("com.forensant.proximity");
+            settings = new GLib.Settings("com.forensant.pakiki");
             settings.bind("request-double-click", combobox_request_doubleclick, "active-id", GLib.SettingsBindFlags.DEFAULT);
             combobox_colour_scheme.active_id = (string) settings.get_value ("colour-scheme");
 

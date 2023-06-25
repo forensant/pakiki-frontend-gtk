@@ -1,6 +1,6 @@
 using Soup;
 
-namespace Proximity {
+namespace Pakiki {
     class SitemapWidget : Gtk.TreeView {
         public signal void loaded ();
         public signal void url_filter_set (string url);
@@ -213,39 +213,52 @@ namespace Proximity {
         }
 
         public void populate_sitemap () {
+            if (application_window.core_address == "") {
+                return;
+            }
+            
             tree_store_site_map.clear ();
             var url = "http://" + application_window.core_address + "/requests/sitemap";
 
             var session = application_window.http_session;
             var message = new Soup.Message ("GET", url);
 
-            session.queue_message (message, (sess, mess) => {
-                if (mess.status_code != 200) {
-                    return;
-                }
-
-                var parser = new Json.Parser ();
+            session.send_async.begin (message, GLib.Priority.DEFAULT, null, (obj, res) => {
                 try {
-                    Gtk.TreeIter iter;
-                    tree_store_site_map.append (out iter, null);
-                    tree_store_site_map.set (iter, 0, "All");
-
-                    parser.load_from_data ((string) message.response_body.flatten ().data, -1);
-
-                    var rootArray = parser.get_root().get_array();
-
-                    foreach (var element in rootArray.get_elements ()) {
-                        var path = element.get_string ();
-                        var scheme_idx = path.index_of ("://");
-                        if (scheme_idx != -1) {
-                            path = path.substring (scheme_idx + 3);
-                        }
-                        add_path_to_sitemap (path);
+                    var response = session.send_async.end (res);
+                    if (message.status_code != 200) {
+                        return;
                     }
 
-                    has_loaded = true;
-                    loaded ();
-                } catch (Error err) {
+                    var parser = new Json.Parser ();
+                    parser.load_from_stream_async.begin (response, null, (obj2, res2) => {
+                        try {
+                            parser.load_from_stream_async.end (res2);
+
+                            Gtk.TreeIter iter;
+                            tree_store_site_map.append (out iter, null);
+                            tree_store_site_map.set (iter, 0, "All");
+
+                            var rootArray = parser.get_root ().get_array ();
+
+                            foreach (var element in rootArray.get_elements ()) {
+                                var path = element.get_string ();
+                                var scheme_idx = path.index_of ("://");
+                                if (scheme_idx != -1) {
+                                    path = path.substring (scheme_idx + 3);
+                                }
+                                add_path_to_sitemap (path);
+                            }
+
+                            has_loaded = true;
+                            loaded ();
+                        }
+                        catch (Error err) {
+                            stdout.printf ("Could not retrieve site map: %s\n", err.message);
+                        }
+                    });
+                }
+                catch (Error err) {
                     stdout.printf ("Could not retrieve site map: %s\n", err.message);
                 }
             });
@@ -257,7 +270,7 @@ namespace Proximity {
             url = CoreProcess.websocket_url (application_window, "Site Map Path");
             
             var wsmessage = new Soup.Message("GET", url);
-            session.websocket_connect_async.begin(wsmessage, "localhost", null, null, (obj, res) => {
+            session.websocket_connect_async.begin (wsmessage, "localhost", null, GLib.Priority.DEFAULT, null, (obj, res) => {
                 try {
                     websocket = session.websocket_connect_async.end(res);
                     websocket.max_incoming_payload_size = 0;

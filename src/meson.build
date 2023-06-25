@@ -44,7 +44,7 @@ sources += files(
 )
 
 schemas_dir = get_option('prefix') / get_option('datadir') / 'glib-2.0' / 'schemas'
-settings_schemas = [ 'com.forensant.proximity.gschema.xml' ]
+settings_schemas = [ 'com.forensant.pakiki.gschema.xml' ]
 
 import( 'gnome' ).compile_schemas(
     build_by_default: true,
