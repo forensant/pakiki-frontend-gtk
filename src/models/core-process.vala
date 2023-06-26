@@ -42,7 +42,7 @@ namespace Pakiki {
             FileIOStream iostream;
             File file;
             try {
-                file = File.new_tmp ("pakiki-XXXXXX.prx", out iostream);
+                file = File.new_tmp ("pakiki-XXXXXX.pkk", out iostream);
             } catch (Error err) {
                 stdout.printf ("Error getting temporary path, using /tmp/pakiki_temp instead (%s)\n", err.message);
                 return "/tmp/pakiki_temp";
@@ -236,7 +236,7 @@ namespace Pakiki {
                 "_Cancel");
 
             set_common_file_dialog_properties (dialog);
-            dialog.set_current_name("project.prx");
+            dialog.set_current_name("project.pkk");
             var res = dialog.run ();
             handle_open_project_response (dialog, res, true);
         }
@@ -344,7 +344,7 @@ namespace Pakiki {
                 "_Cancel");
 
             set_common_file_dialog_properties (dialog);
-            dialog.set_current_name("project.prx");
+            dialog.set_current_name("project.pkk");
             var response_id = dialog.run ();
 
             if (response_id == Gtk.ResponseType.ACCEPT) {

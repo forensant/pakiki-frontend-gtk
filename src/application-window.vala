@@ -232,10 +232,14 @@ namespace Pakiki {
 
         private void create_http_session () {
             http_session = new Soup.Session ();
-
+            
             http_session.request_queued.connect ((msg) => {
                 msg.got_headers.connect (() => {
-                    if (msg.status_code == 401) {
+                    var host = msg.uri.get_host ();
+                    if (host == null) {
+                        host = "";
+                    }
+                    if (msg.status_code == 401 && !host.contains ("pakikiproxy.com")) {
                         authenticate_user ();
                     }
                 });
