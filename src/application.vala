@@ -152,6 +152,23 @@ namespace Pakiki {
             return contents;
         }
 
+        private void help () {
+            var url = "https://docs.pakikiproxy.com/";
+            if (window != null && window.core_address != "") {
+                url = "http://" + window.core_address + "/docs/";
+            }
+
+            var doc_window = new Gtk.Window (Gtk.WindowType.TOPLEVEL);
+            doc_window.set_default_size (1280, 768);
+            doc_window.set_title ("Pākiki Proxy Help");
+            
+            var web_view = new WebKit.WebView ();
+            web_view.load_uri (url);
+            doc_window.add (web_view);
+
+            doc_window.show_all ();
+        }
+
         private void preferences () {
             var prefs = new ApplicationPreferences (window);
             prefs.settings_changed.connect (() => {
@@ -180,6 +197,10 @@ namespace Pakiki {
 
             action = new SimpleAction("about", null);
             action.activate.connect (about);
+            add_action (action);
+
+            action = new SimpleAction("help", null);
+            action.activate.connect (help);
             add_action (action);
         }
     }
