@@ -1,13 +1,7 @@
 namespace Pakiki {
-    [GtkTemplate (ui = "/com/forensant/pakiki/searchable-source-view.ui")]
     public class SearchableSourceView : Gtk.Box {
-        
-        [GtkChild]
-        private unowned Gtk.ScrolledWindow scrolled_window_source_view;
-
-        [GtkChild]
-        public unowned Gtk.SourceView source_view;
-
+        private Gtk.ScrolledWindow scrolled_window_source_view;
+        public Gtk.TextView source_view;
         private TextSearchBar search_bar;
         private int total_count;
         private int upto;
@@ -26,7 +20,8 @@ namespace Pakiki {
             }
         }
 
-        public SearchableSourceView () {
+        public SearchableSourceView (Gtk.TextView text_view) {
+            this.orientation = Gtk.Orientation.VERTICAL;
             search_bar = new TextSearchBar ();
             this.pack_start (search_bar, false, false, 0);
 
@@ -35,6 +30,14 @@ namespace Pakiki {
             search_bar.search_prev.connect (this.search_prev);
             search_bar.stop.connect (this.search_stop);
             search_bar.text_changed.connect (this.search_text_changed);
+
+            var hadjustment = new Gtk.Adjustment (0, 0, 0, 0, 0, 0);
+            var vadjustment = new Gtk.Adjustment (0, 0, 0, 0, 0, 0);
+
+            this.source_view = text_view;
+            scrolled_window_source_view = new Gtk.ScrolledWindow (hadjustment, vadjustment);
+            scrolled_window_source_view.child = source_view;
+            this.pack_start (scrolled_window_source_view, true, true, 0);
         }
 
         public Gtk.SourceStyleScheme get_theme () {

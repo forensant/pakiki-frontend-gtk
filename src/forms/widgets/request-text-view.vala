@@ -2,14 +2,8 @@ namespace Pakiki {
 
     class RequestTextView : Gtk.Box {
         private SearchableSourceView searchable_source_view;
+        private Gtk.TextView text_view;
         private SearchableHexEditor searchable_hex_editor;
-
-        // Anything above this, and we won't try to syntax highlight as it causes performance issues - 10KB?
-        private long MAX_HIGHLIGHT_LINE_LENGTH = (1024*10); 
-
-        // for the requests/responses where we can render them
-        private Gtk.SourceLanguageManager language_manager;
-        private Gtk.SourceBuffer source_buffer;
 
         private ApplicationWindow application_window;
         private bool setting_selection;
@@ -20,6 +14,7 @@ namespace Pakiki {
             set { 
                 _editable = value;
                 searchable_source_view.source_view.editable = value;
+                text_view.editable = value;
                 // hex_editor.editable = value;
             }
         }
@@ -41,25 +36,23 @@ namespace Pakiki {
 
         public RequestTextView (ApplicationWindow application_window) {
             this.application_window = application_window;
-            searchable_source_view = new SearchableSourceView ();
-            searchable_source_view.show ();
+            text_view = new Gtk.TextView ();
+            text_view.monospace = true;
+            text_view.wrap_mode = Gtk.WrapMode.CHAR;
+            text_view.margin = 8;
+            text_view.show ();
+            text_view.expand = true;
+            SyntaxHighlighter.set_tags(text_view.buffer);
+
+            searchable_source_view = new SearchableSourceView (text_view);
+            searchable_source_view.expand = true;
+            searchable_source_view.show_all ();
             this.pack_start (searchable_source_view, true, true, 0);
             
             setting_selection = false;
-            language_manager = Gtk.SourceLanguageManager.get_default ();
-            var lang = language_manager.get_language ("xml");
-
-            source_buffer = new Gtk.SourceBuffer.with_language (lang);
-            source_buffer.style_scheme = searchable_source_view.get_theme ();
-            searchable_source_view.source_view.buffer = source_buffer;
-
-            application_window.settings_changed.connect ( () => {
-                var buffer = (Gtk.SourceBuffer)searchable_source_view.source_view.buffer;
-                buffer.style_scheme = searchable_source_view.get_theme ();
-            });
             
-            searchable_source_view.source_view.populate_popup.connect ( (menu) => {
-                on_request_response_popup (menu, source_buffer);
+            text_view.populate_popup.connect ( (menu) => {
+                on_request_response_popup (menu, text_view.buffer);
             });
 
             searchable_hex_editor = new SearchableHexEditor ();
@@ -76,17 +69,6 @@ namespace Pakiki {
             }
 
             return false;
-        }
-
-        private long longest_line_length (string req) {
-            var lines = req.split("\n");
-            long longest_line_length = 0;
-            foreach (string l in lines) {
-                if (l.length > longest_line_length) {
-                    longest_line_length = l.length;
-                }
-            }
-            return longest_line_length;
         }
 
         private void on_request_response_popup (Gtk.Menu menu, Gtk.TextBuffer buffer) {
@@ -117,7 +99,7 @@ namespace Pakiki {
         }
 
         public void reset_state () {
-            source_buffer.text = "";
+            text_view.buffer.text = "";
             searchable_hex_editor.hex_editor.buffer = new HexStaticBuffer ();
             show_hex (false);
         }
@@ -168,49 +150,10 @@ namespace Pakiki {
             }
         }
 
-        private void set_sourceview_language (string response) {
-            var language = "html";
-
-            try {
-                var re = new Regex ("\\s*Content-Type: [/A-Za-z0-9]*\\s*");
-                GLib.MatchInfo match_info;
-                var match_found = re.match (response, 0, out match_info);
-                
-                if (match_found && match_info.get_match_count () >= 1) {
-                    var content_type = match_info.fetch (0);
-                    if (content_type != null) {
-                        if (content_type.contains ("javascript")) {
-                            language = "javascript";
-                        }
-                        else if (content_type.contains ("json")) {
-                            language = "json";
-                        } else if (content_type.contains ("css") || content_type.contains ("stylesheet")) {
-                            language = "css";
-                        }
-                    }
-                }
-            } catch (Error e) {
-                stderr.printf ("Could not get the language of the response: %s\n", e.message);
-            }
-
-            source_buffer.language = language_manager.get_language (language);
-        }
-
         private void set_text (string request, string response) {
             show_hex (false);
-            if (should_syntax_highlight (request, response)) {
-                set_sourceview_language (response);
-            }
-            else {
-                source_buffer.language = language_manager.get_language ("text");
-            }
-            var newlines = _scroll ? "\n\n" : "";
-            source_buffer.text = request.make_valid () + newlines + response.make_valid ();
-        }
-
-        private bool should_syntax_highlight(string request, string response) {
-            return longest_line_length(request) <= MAX_HIGHLIGHT_LINE_LENGTH &&
-             longest_line_length(response) <= MAX_HIGHLIGHT_LINE_LENGTH;
+            var highlighter = new SyntaxHighlighter ();
+            highlighter.set_highlightjs_tags (text_view.buffer, request + "\r\n\r\n\r\n\r\n" + response);
         }
 
         private void show_hex (bool show) {

@@ -230,8 +230,6 @@ namespace Pakiki {
                 else {
                     text_view_request.set_request_response (modified_request, modified_response);
                     text_view_orig_request.set_request_response (original_request, original_response);
-                    var data_load_success = request_preview.set_content (modified_response, mimetype, url);
-                    searchable_web_view.visible = data_load_success;
                 }
                 
             } else {
@@ -243,9 +241,15 @@ namespace Pakiki {
                 }
                 else {
                     text_view_request.set_request_response (original_request, original_response);
-                    var data_load_success = request_preview.set_content (original_response, mimetype, url);
-                    searchable_web_view.visible = data_load_success;
                 }
+            }
+
+            var preview = root_obj.get_string_member ("Preview");
+            if (preview.length > 0) {
+                var preview_data = Base64.decode (preview);
+                var data_load_success = request_preview.set_content (preview_data, mimetype, url);
+                
+                searchable_web_view.visible = data_load_success;
             }
         }
 
@@ -335,7 +339,7 @@ namespace Pakiki {
                 return;
             }
 
-            var message = new Soup.Message ("GET", "http://" + application_window.core_address + "/requests/" + guid + "/contents");
+            var message = new Soup.Message ("GET", "http://" + application_window.core_address + "/requests/" + guid + "/contents?highlight=true");
             application_window.http_session.send_async.begin (message, GLib.Priority.HIGH, null, (obj, res) => {
                 if (ended) {
                     return;
