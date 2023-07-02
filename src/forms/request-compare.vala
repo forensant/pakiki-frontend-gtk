@@ -3,8 +3,6 @@ namespace Pakiki {
         private ApplicationWindow application_window;
 
         private Gtk.Label label_error;
-        private Gtk.Paned paned_preview;
-        private Gtk.Paned paned_text;
         private RequestDiff request_diff_1;
         private RequestDiff request_diff_2;
         private RequestPreview request_preview_1;
@@ -120,6 +118,22 @@ namespace Pakiki {
             });
         }
 
+        private Bytes parse_body (uchar[] full_response) {
+            int offset = -1;
+            for (int i = 0; i < full_response.length - 4; i++) {
+                if (full_response[i] == '\r' && full_response[i + 1] == '\n' && full_response[i + 2] == '\r' && full_response[i + 3] == '\n') {
+                    offset = i + 4;
+                    break;
+                }
+            }
+
+            if (offset == -1) {
+                return new Bytes(null);
+            }
+
+            return new Bytes (full_response[offset:full_response.length]);
+        }
+
         private void load_web_preview (string guid, int request_preview_id) {
             var message = new Soup.Message ("GET", "http://" + application_window.core_address + "/requests/" + guid + "/contents");
 
@@ -148,12 +162,13 @@ namespace Pakiki {
                             if (modified_response.length != 0) {
                                 response_to_use = modified_response;
                             }
-                            response_to_use += '\0';
-
+                
+                            var response_bytes = parse_body(response_to_use);
+                
                             if (request_preview_id == 1) {
-                                request_preview_1.set_content (response_to_use, mimetype, url);
+                                request_preview_1.set_content (response_bytes, mimetype, url);
                             } else {
-                                request_preview_2.set_content (response_to_use, mimetype, url);
+                                request_preview_2.set_content (response_bytes, mimetype, url);
                             }
 
                             scrolled_window_request_preview.visible = (request_preview_1.has_content || request_preview_2.has_content);

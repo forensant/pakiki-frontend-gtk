@@ -32,7 +32,7 @@ namespace Pakiki {
             return true;
         }
 
-        public bool set_content (uchar[] bytes, string mimetype, string url) {
+        public bool set_content (Bytes bytes, string mimetype, string url) {
             if ( mimetype.index_of ("application/") == 0) {
                 this.load_uri ("about:blank");
                 _has_content = false;
@@ -48,24 +48,13 @@ namespace Pakiki {
             data_manager.set_tls_errors_policy (WebKit.TLSErrorsPolicy.IGNORE);
             data_manager.set_network_proxy_settings (WebKit.NetworkProxyMode.CUSTOM, proxy_settings);
 
-            var bytes_str = (string)bytes;
-            var end_of_headers = bytes_str.index_of ("\r\n\r\n");
-
-            if (end_of_headers == -1) {
+            if (bytes.length == 0) {
                 this.load_uri ("about:blank");
                 _has_content = false;
                 return false;
             }
 
-            GLib.Bytes body = new GLib.Bytes (bytes[end_of_headers + 4:bytes.length - 1]);
-
-            if (body.length == 0) {
-                this.load_uri ("about:blank");
-                _has_content = false;
-                return false;
-            }
-
-            this.load_bytes (body, mimetype, null, url);
+            this.load_bytes (bytes, mimetype, null, url);
 
             _has_content = true;
             return true;

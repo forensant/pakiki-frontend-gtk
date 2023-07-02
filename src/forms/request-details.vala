@@ -247,7 +247,7 @@ namespace Pakiki {
             var preview = root_obj.get_string_member ("Preview");
             if (preview.length > 0) {
                 var preview_data = Base64.decode (preview);
-                var data_load_success = request_preview.set_content (preview_data, mimetype, url);
+                var data_load_success = request_preview.set_content (new Bytes(preview_data), mimetype, url);
                 
                 searchable_web_view.visible = data_load_success;
             }
@@ -339,7 +339,7 @@ namespace Pakiki {
                 return;
             }
 
-            var message = new Soup.Message ("GET", "http://" + application_window.core_address + "/requests/" + guid + "/contents?highlight=true");
+            var message = new Soup.Message ("GET", "http://" + application_window.core_address + "/requests/" + guid + "/contents?highlight=true&max_highlight_length=102400");
             application_window.http_session.send_async.begin (message, GLib.Priority.HIGH, null, (obj, res) => {
                 if (ended) {
                     return;

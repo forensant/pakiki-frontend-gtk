@@ -51,8 +51,7 @@ namespace Pakiki {
             public string tag;
         }
 
-        private string current_highlight_string = "";
-        private Gee.ArrayList<TagOffset> get_tags (GXml.DomNode? node) {
+        private Gee.ArrayList<TagOffset> get_tags (GXml.DomNode? node, ref string current_highlight_string, ref int current_highlight_length) {
             var tags = new Gee.ArrayList<TagOffset>();
 
             if (node == null) {
@@ -61,6 +60,7 @@ namespace Pakiki {
 
             if (node.node_type == GXml.DomNode.NodeType.TEXT_NODE) {
                 current_highlight_string += node.node_value;
+                current_highlight_length += node.node_value.char_count ();
                 if (node.child_nodes.size != 0) {
                     stdout.printf("WARNING: TEXT NODE HAS CHILDREN\n");
                 }
@@ -69,19 +69,19 @@ namespace Pakiki {
                 var element = (GXml.DomElement)node;
                 if (element.tag_name == "span") {
                     var tag_offset = new TagOffset();
-                    tag_offset.start = current_highlight_string.char_count ();
+                    tag_offset.start = current_highlight_length;
                     var child_tags = new Gee.ArrayList<TagOffset> ();
                     foreach (var child in node.child_nodes) {
-                        child_tags.add_all (get_tags (child));
+                        child_tags.add_all (get_tags (child, ref current_highlight_string, ref current_highlight_length));
                     }
                     
-                    tag_offset.end = current_highlight_string.char_count ();
+                    tag_offset.end = current_highlight_length;
                     tag_offset.tag = element.get_attribute ("class");
                     tags.add (tag_offset);
                     tags.add_all (child_tags);
                 } else if (element.tag_name == "html") {
                     foreach (var child in node.child_nodes) {
-                        tags.add_all (get_tags (child));
+                        tags.add_all (get_tags (child, ref current_highlight_string, ref current_highlight_length));
                     }
                 } else {
                     stdout.printf("UNKNOWN TAG TYPE: %s\n", element.tag_name);
@@ -93,35 +93,48 @@ namespace Pakiki {
             return tags;
         }
 
-        public void set_highlightjs_tags (Gtk.TextBuffer buffer, string input_text) {
-            current_highlight_string = "";
+        public void set_highlightjs_tags (Gtk.TextBuffer buffer, string input_text, Cancellable? cancellable) {
+            var current_highlight_string = "";
+            var current_highlight_length = 0;
             var document = new HtmlDocument ();
-            try {
-                document.read_from_string ("<html>" + input_text + "</html>");
-            } catch (GLib.Error e) {
-                stdout.printf("Could not parse HTML for syntax highlighting: %s\n", e.message);
-                buffer.text = input_text;
-                return;
-            }
             
-            var tags = get_tags (document.first_child);
-            buffer.text = current_highlight_string;
+            document.read_from_string_async.begin ("<html>" + input_text.make_valid () + "</html>", cancellable, (source, result) => {
+                try {
+                    document.read_from_string_async.end (result);
 
-            var table_tags = buffer.tag_table;
+                    var tags = get_tags (document.first_child, ref current_highlight_string, ref current_highlight_length);
+                    buffer.text = current_highlight_string;
 
-            tags.@foreach ((tag) => {
-                if (table_tags.lookup (tag.tag) == null) {
-                    return true;
+                    var table_tags = buffer.tag_table;
+
+                    tags.@foreach ((tag) => {
+                        if (table_tags.lookup (tag.tag) == null) {
+                            return true;
+                        }
+
+                        Gtk.TextIter start_iter;
+                        Gtk.TextIter end_iter;
+
+                        buffer.get_iter_at_offset (out start_iter, tag.start);
+                        buffer.get_iter_at_offset (out end_iter, tag.end);
+                        buffer.apply_tag_by_name (tag.tag, start_iter, end_iter);
+                        return true;
+                    });
+                } catch (GLib.Error e) {
+                    try {
+                        var regex = new Regex ("<[^>]*>");
+                        input_text = regex.replace (input_text, input_text.length, 0, "");
+                    }
+                    catch (GLib.Error e2) {
+                        stdout.printf("Could not remove HTML tags: %s\n", e2.message);
+                    }
+                    
+                    buffer.text = input_text;
+                    return;
                 }
-
-                Gtk.TextIter start_iter;
-                Gtk.TextIter end_iter;
-
-                buffer.get_iter_at_offset (out start_iter, tag.start);
-                buffer.get_iter_at_offset (out end_iter, tag.end);
-                buffer.apply_tag_by_name (tag.tag, start_iter, end_iter);
-                return true;
             });
+            
+            
         }
     }
 }
