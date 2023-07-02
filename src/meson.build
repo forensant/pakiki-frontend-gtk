@@ -35,7 +35,6 @@ sources += files(
     'forms/widgets/request-text-view.vala',
     'forms/widgets/round-progress-bar.vala',
     'forms/widgets/searchable-hex-editor.vala',
-    'forms/widgets/searchable-source-view.vala',
     'forms/widgets/text-search-bar.vala',
 
     'models/core-process.vala',
