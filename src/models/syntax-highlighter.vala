@@ -93,7 +93,7 @@ namespace Pakiki {
             return tags;
         }
 
-        public void set_highlightjs_tags (Gtk.TextBuffer buffer, string input_text, Cancellable? cancellable) {
+        public void set_highlightjs_tags (Gtk.TextBuffer buffer, string input_text, Cancellable? cancellable, bool set_string = true) {
             var current_highlight_string = "";
             var current_highlight_length = 0;
             var document = new HtmlDocument ();
@@ -103,9 +103,17 @@ namespace Pakiki {
                     document.read_from_string_async.end (result);
 
                     var tags = get_tags (document.first_child, ref current_highlight_string, ref current_highlight_length);
-                    buffer.text = current_highlight_string;
+                    
+                    if (set_string) {
+                        buffer.text = current_highlight_string;
+                    } else {
+                        if (buffer.text != current_highlight_string) {
+                            return;
+                        }
+                    }
 
                     var table_tags = buffer.tag_table;
+                    remove_existing_tags (buffer);
 
                     tags.@foreach ((tag) => {
                         if (table_tags.lookup (tag.tag) == null) {
@@ -114,13 +122,17 @@ namespace Pakiki {
 
                         Gtk.TextIter start_iter;
                         Gtk.TextIter end_iter;
-
+                    
                         buffer.get_iter_at_offset (out start_iter, tag.start);
                         buffer.get_iter_at_offset (out end_iter, tag.end);
                         buffer.apply_tag_by_name (tag.tag, start_iter, end_iter);
                         return true;
                     });
                 } catch (GLib.Error e) {
+                    stdout.printf ("Could not parse HTML: %s\n", e.message);
+                    if (!set_string) {
+                        return;
+                    }
                     try {
                         var regex = new Regex ("<[^>]*>");
                         input_text = regex.replace (input_text, input_text.length, 0, "");
@@ -133,8 +145,25 @@ namespace Pakiki {
                     return;
                 }
             });
-            
-            
+        }
+
+        private void remove_existing_tags (Gtk.TextBuffer buffer) {
+            var tag_names = new Gee.ArrayList<string> ();
+            buffer.tag_table.foreach ((texttag) => {
+                var name = texttag.name;
+                if (!tag_names.contains (name) && name.contains ("hljs")) {
+                    tag_names.add (name);
+                }
+            });
+
+            Gtk.TextIter start_iter;
+            Gtk.TextIter end_iter;
+            buffer.get_start_iter (out start_iter);
+            buffer.get_end_iter (out end_iter);
+
+            foreach (var name in tag_names) {
+                buffer.remove_tag_by_name (name, start_iter, end_iter);
+            }
         }
     }
 }

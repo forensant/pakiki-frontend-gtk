@@ -20,7 +20,7 @@ namespace Pakiki {
         [GtkChild]
         private unowned Gtk.ProgressBar progress_bar;
         [GtkChild]
-        private unowned Gtk.TextView text_view_request;
+        private unowned Gtk.ScrolledWindow scrollwindow_request;
 
         private ApplicationWindow application_window;
         public InjectOperation operation { get; private set; }
@@ -29,6 +29,7 @@ namespace Pakiki {
         private bool search_exclude_resources;
         private bool search_negative_filter;
         private string search_query;
+        private RequestTextEditor text_view_request;
 
         public InjectUnderway (ApplicationWindow application_window, InjectPane inject_pane) {
             this.application_window = application_window;
@@ -38,6 +39,10 @@ namespace Pakiki {
             string[] scan_ids = {"-"};
             request_list_full = new RequestList (application_window, false, scan_ids);
             this.attach (request_list_full, 0, 4, 2, 1);
+
+            text_view_request = new RequestTextEditor (application_window);
+            text_view_request.editable = false;
+            scrollwindow_request.add (text_view_request);
 
             label_title.set_text_with_mnemonic ("_Title");
             label_title.mnemonic_widget = entry_title;
@@ -59,7 +64,8 @@ namespace Pakiki {
             }
 
             if (different_operation) {
-                text_view_request.buffer.text = operation.request;
+                text_view_request.buffer.text = operation.request.replace ("\r\n", "\n");
+                text_view_request.on_text_changed (true);
                 label_injection_parameters.set_text (operation.inject_description);
                 label_injection_parameters.set_tooltip_text (operation.inject_description);
             }

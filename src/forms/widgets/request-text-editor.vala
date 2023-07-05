@@ -1,8 +1,10 @@
 namespace Pakiki {   
-    class RequestTextEditor : Gtk.SourceView {
+    class RequestTextEditor : Gtk.TextView {
         public signal void long_running_task (bool running);
 
         private ApplicationWindow application_window;
+        private Cancellable cancellable_highlighter = new Cancellable();
+        private SyntaxHighlighter syntax_highlighter = new SyntaxHighlighter ();
 
         public RequestTextEditor (ApplicationWindow application_window) {
             this.application_window = application_window;
@@ -11,6 +13,11 @@ namespace Pakiki {
             wrap_mode = Gtk.WrapMode.CHAR;
             visible = true;
             this.populate_popup.connect (on_populate_popup);
+            this.buffer.changed.connect (() => {
+                on_text_changed (false);
+            });
+            
+            SyntaxHighlighter.set_tags (buffer);
         }
 
         private void insert_oob_domain () {
@@ -35,6 +42,45 @@ namespace Pakiki {
                     }
                 }
                 long_running_task (false);
+            });
+        }
+
+        private string prev_text = "";
+        public void on_text_changed (bool force_refresh = false) {
+            if ((prev_text == buffer.text || buffer.text.chomp () == "") && !force_refresh) {
+                return;
+            }
+
+            if (buffer.text.chomp () == "") {
+                return;
+            }
+
+            prev_text = buffer.text;
+
+            var url = "http://" + application_window.core_address + "/requests/highlight";
+            var message = new Soup.Message ("POST", url);
+            var encoded_text = Base64.encode (buffer.text.data);
+            message.set_request_body_from_bytes ("text/text", new Bytes (encoded_text.data));
+
+            application_window.http_session.send_and_read_async.begin (message, GLib.Priority.DEFAULT, null, (obj, res) => {
+                if (message.status_code == 200) {
+                    try {
+                        var bytes = application_window.http_session.send_and_read_async.end (res);
+                        
+                        if (bytes.get_data () == null) {
+                            return;
+                        }
+                        
+                        var html = (string) Base64.decode ((string) bytes.get_data());
+                        if (html == "" || prev_text != buffer.text) {
+                            return;
+                        }
+
+                        syntax_highlighter.set_highlightjs_tags (buffer, html, null, false);
+                    } catch (Error err) {
+                        stdout.printf ("Could not syntax highlight text: %s\n", err.message);
+                    }
+                }
             });
         }
 

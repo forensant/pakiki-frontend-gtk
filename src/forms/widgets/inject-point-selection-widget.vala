@@ -136,14 +136,14 @@ namespace Pakiki {
             entry_hostname.text = operation.host;
             combobox_protocol.active = (operation.ssl ? 0 : 1);
             host_error_visible = false;
-            text_view_request.buffer.text = operation.request;
+            text_view_request.buffer.text = operation.request.replace ("\r\n", "\n");
             correct_separators_and_tag ();
         }
 
         private void correct_separators_and_tag () {
             Gtk.TextIter start_pos, end_pos;
             text_view_request.buffer.get_bounds (out start_pos, out end_pos);
-            text_view_request.buffer.remove_all_tags (start_pos, end_pos);
+            text_view_request.buffer.remove_tag_by_name ("selection", start_pos, end_pos);
 
             var in_inject_point = false;
             Gtk.TextIter selection_start = start_pos;
@@ -469,7 +469,9 @@ namespace Pakiki {
         }
 
         private bool on_text_view_request_key_release_event (Gdk.EventKey event) {
-            correct_separators_and_tag ();
+            if (event.keyval == Gdk.Key.KP_Enter || event.keyval == Gdk.Key.Return || event.is_modifier != 0) {
+                correct_separators_and_tag ();
+            }
             return false;
         }
 
@@ -495,7 +497,7 @@ namespace Pakiki {
                     var request_parts = root_obj.get_array_member ("SplitRequest");
 
                     if (request_parts.get_length () == 0) {
-                        text_view_request.buffer.text = (string) Base64.decode (root_obj.get_string_member ("RequestData"));
+                        text_view_request.buffer.text = ((string) Base64.decode (root_obj.get_string_member ("RequestData"))).replace ("\r\n", "\n");
                     } else {
                         text_view_request.buffer.text = "";
                         for (int i = 0; i < request_parts.get_length (); i++) {
@@ -505,7 +507,7 @@ namespace Pakiki {
                                 text = "»" + text + "«";
                             }
 
-                            text_view_request.buffer.text += text;
+                            text_view_request.buffer.text += text.replace ("\r\n", "\n");
                         }
 
                         correct_separators_and_tag ();

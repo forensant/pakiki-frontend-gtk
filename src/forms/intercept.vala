@@ -309,7 +309,7 @@ namespace Pakiki {
                     } else {
                         scrolled_window_hex_request.hide ();
                         scrolled_window_text_request.show ();
-                        text_view_request.buffer.text = (string) body_bytes;
+                        text_view_request.buffer.text = ((string) body_bytes).replace("\r\n", "\n");
                     }
 
                     var is_request = (direction == "Browser to server");

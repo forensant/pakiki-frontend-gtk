@@ -163,7 +163,7 @@ namespace Pakiki {
                     if (req_data_str.validate (raw_request_data.length - 1, null)) {
                         scrolled_window_text_view_request.visible = true;
                         scrolled_window_hex_editor.visible = false;
-                        request_text_editor.buffer.set_text (req_data_str);
+                        request_text_editor.buffer.set_text (req_data_str.replace ("\r\n", "\n"));
                         label_request.mnemonic_widget = request_text_editor;
                     }
                     else {
