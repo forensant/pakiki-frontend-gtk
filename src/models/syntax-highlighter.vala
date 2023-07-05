@@ -2,47 +2,111 @@ using GXml;
 
 namespace Pakiki {
     class SyntaxHighlighter {
-        public static void set_tags (Gtk.TextBuffer buffer) {
-            buffer.create_tag("hljs-comment", "foreground", "#a0a1a7", "style", Pango.Style.ITALIC);
-            buffer.create_tag("hljs-quote", "foreground", "#a0a1a7", "style", Pango.Style.ITALIC);
 
-            buffer.create_tag("hljs-doctag", "foreground", "#a626a4");
-            buffer.create_tag("hljs-keyword", "foreground", "#a626a4");
-            buffer.create_tag("hljs-formula", "foreground", "#a626a4");
+        private bool is_dark_mode () {
+            var schemaSource = SettingsSchemaSource.get_default();
+            var schema = schemaSource.lookup("org.gnome.desktop.interface", true);
+        
+            if (schema == null) { 
+                return false;
+            }
 
-            buffer.create_tag("hljs-selection", "foreground", "#e45649");
-            buffer.create_tag("hljs-name", "foreground", "#e45649");
-            buffer.create_tag("hljs-selector-tag", "foreground", "#e45649");
-            buffer.create_tag("hljs-deletion", "foreground", "#e45649");
-            buffer.create_tag("hljs-subst", "foreground", "#e45649");
+            var settings = new Settings("org.gnome.desktop.interface");
+            string? value = settings.get_string("color-scheme");
+    
+            if (value.contains ("dark")) {
+                return true;
+            }
 
-            buffer.create_tag("hljs-literal", "foreground", "#0184bb");
+            return false;
+        }
 
-            buffer.create_tag("hljs-string", "foreground", "#50a14f");
-            buffer.create_tag("hljs-regexp", "foreground", "#50a14f");
-            buffer.create_tag("hljs-addition", "foreground", "#50a14f");
-            buffer.create_tag("hljs-attribute", "foreground", "#50a14f");
+        public void set_tags (Gtk.TextBuffer buffer) {
+            var is_currently_dark = is_dark_mode ();            
             
-            buffer.create_tag("hljs-attr", "foreground", "#986801");
-            buffer.create_tag("hljs-variable", "foreground", "#986801");
-            buffer.create_tag("hljs-template-variable", "foreground", "#986801");
-            buffer.create_tag("hljs-type", "foreground", "#986801");
-            buffer.create_tag("hljs-selector-class", "foreground", "#986801");
-            buffer.create_tag("hljs-selector-attr", "foreground", "#986801");
-            buffer.create_tag("hljs-selector-pseudo", "foreground", "#986801");
-            buffer.create_tag("hljs-number", "foreground", "#986801");
+            if (is_currently_dark) {
+                buffer.create_tag("hljs-comment", "foreground", "#5c6370", "style", Pango.Style.ITALIC);
+                buffer.create_tag("hljs-quote", "foreground", "#5c6370", "style", Pango.Style.ITALIC);
 
-            buffer.create_tag("hljs-symbol", "foreground", "#4078f2");
-            buffer.create_tag("hljs-bullet", "foreground", "#4078f2");
-            buffer.create_tag("hljs-link", "foreground", "#4078f2", "underline", true);
-            buffer.create_tag("hljs-meta", "foreground", "#4078f2");
-            buffer.create_tag("hljs-selector-id", "foreground", "#4078f2");
-            buffer.create_tag("hljs-title", "foreground", "#4078f2");
+                buffer.create_tag("hljs-doctag", "foreground", "#c678dd");
+                buffer.create_tag("hljs-keyword", "foreground", "#c678dd");
+                buffer.create_tag("hljs-formula", "foreground", "#c678dd");
 
-            buffer.create_tag("hljs-built_in", "foreground", "#c18401");
+                buffer.create_tag("hljs-selection", "foreground", "#e06c75");
+                buffer.create_tag("hljs-name", "foreground", "#e06c75");
+                buffer.create_tag("hljs-selector-tag", "foreground", "#e06c75");
+                buffer.create_tag("hljs-deletion", "foreground", "#e06c75");
+                buffer.create_tag("hljs-subst", "foreground", "#e06c75");
 
-            buffer.create_tag("hljs-emphasis", "style", Pango.Style.ITALIC);
-            buffer.create_tag("hljs-strong", "weight", 700);
+                buffer.create_tag("hljs-literal", "foreground", "#56b6c2");
+
+                buffer.create_tag("hljs-string", "foreground", "#98c379");
+                buffer.create_tag("hljs-regexp", "foreground", "#98c379");
+                buffer.create_tag("hljs-addition", "foreground", "#98c379");
+                buffer.create_tag("hljs-attribute", "foreground", "#98c379");
+                
+                buffer.create_tag("hljs-attr", "foreground", "#d19a66");
+                buffer.create_tag("hljs-variable", "foreground", "#d19a66");
+                buffer.create_tag("hljs-template-variable", "foreground", "#d19a66");
+                buffer.create_tag("hljs-type", "foreground", "#d19a66");
+                buffer.create_tag("hljs-selector-class", "foreground", "#d19a66");
+                buffer.create_tag("hljs-selector-attr", "foreground", "#d19a66");
+                buffer.create_tag("hljs-selector-pseudo", "foreground", "#d19a66");
+                buffer.create_tag("hljs-number", "foreground", "#d19a66");
+
+                buffer.create_tag("hljs-symbol", "foreground", "#4078f2");
+                buffer.create_tag("hljs-bullet", "foreground", "#4078f2");
+                buffer.create_tag("hljs-link", "foreground", "#4078f2", "underline", true);
+                buffer.create_tag("hljs-meta", "foreground", "#4078f2");
+                buffer.create_tag("hljs-selector-id", "foreground", "#4078f2");
+                buffer.create_tag("hljs-title", "foreground", "#4078f2");
+
+                buffer.create_tag("hljs-built_in", "foreground", "#c18401");
+
+                buffer.create_tag("hljs-emphasis", "style", Pango.Style.ITALIC);
+                buffer.create_tag("hljs-strong", "weight", 700);
+            } else {
+                buffer.create_tag("hljs-comment", "foreground", "#a0a1a7", "style", Pango.Style.ITALIC);
+                buffer.create_tag("hljs-quote", "foreground", "#a0a1a7", "style", Pango.Style.ITALIC);
+
+                buffer.create_tag("hljs-doctag", "foreground", "#a626a4");
+                buffer.create_tag("hljs-keyword", "foreground", "#a626a4");
+                buffer.create_tag("hljs-formula", "foreground", "#a626a4");
+
+                buffer.create_tag("hljs-selection", "foreground", "#e45649");
+                buffer.create_tag("hljs-name", "foreground", "#e45649");
+                buffer.create_tag("hljs-selector-tag", "foreground", "#e45649");
+                buffer.create_tag("hljs-deletion", "foreground", "#e45649");
+                buffer.create_tag("hljs-subst", "foreground", "#e45649");
+
+                buffer.create_tag("hljs-literal", "foreground", "#0184bb");
+
+                buffer.create_tag("hljs-string", "foreground", "#50a14f");
+                buffer.create_tag("hljs-regexp", "foreground", "#50a14f");
+                buffer.create_tag("hljs-addition", "foreground", "#50a14f");
+                buffer.create_tag("hljs-attribute", "foreground", "#50a14f");
+                
+                buffer.create_tag("hljs-attr", "foreground", "#986801");
+                buffer.create_tag("hljs-variable", "foreground", "#986801");
+                buffer.create_tag("hljs-template-variable", "foreground", "#986801");
+                buffer.create_tag("hljs-type", "foreground", "#986801");
+                buffer.create_tag("hljs-selector-class", "foreground", "#986801");
+                buffer.create_tag("hljs-selector-attr", "foreground", "#986801");
+                buffer.create_tag("hljs-selector-pseudo", "foreground", "#986801");
+                buffer.create_tag("hljs-number", "foreground", "#986801");
+
+                buffer.create_tag("hljs-symbol", "foreground", "#61aeee");
+                buffer.create_tag("hljs-bullet", "foreground", "#61aeee");
+                buffer.create_tag("hljs-link", "foreground", "#61aeee", "underline", true);
+                buffer.create_tag("hljs-meta", "foreground", "#61aeee");
+                buffer.create_tag("hljs-selector-id", "foreground", "#61aeee");
+                buffer.create_tag("hljs-title", "foreground", "#61aeee");
+
+                buffer.create_tag("hljs-built_in", "foreground", "#e6c07b");
+
+                buffer.create_tag("hljs-emphasis", "style", Pango.Style.ITALIC);
+                buffer.create_tag("hljs-strong", "weight", 700);
+            }
         }
 
         class TagOffset {
@@ -147,7 +211,7 @@ namespace Pakiki {
             });
         }
 
-        private void remove_existing_tags (Gtk.TextBuffer buffer) {
+        public static void remove_existing_tags (Gtk.TextBuffer buffer) {
             var tag_names = new Gee.ArrayList<string> ();
             buffer.tag_table.foreach ((texttag) => {
                 var name = texttag.name;

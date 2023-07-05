@@ -16,6 +16,7 @@ namespace Pakiki {
         private int search_upto;
 
         private ApplicationWindow application_window;
+        private SyntaxHighlighter syntax_highlighter = new SyntaxHighlighter ();
         private bool setting_selection;
 
         private bool _editable;
@@ -50,7 +51,6 @@ namespace Pakiki {
             text_view_request.wrap_mode = Gtk.WrapMode.CHAR;
             text_view_request.margin = 8;
             text_view_request.visible = true;
-            SyntaxHighlighter.set_tags(text_view_request.buffer);
 
             text_view_response = new Gtk.TextView ();
             text_view_response.wrap_mode = Gtk.WrapMode.CHAR;
@@ -58,7 +58,6 @@ namespace Pakiki {
             text_view_response.wrap_mode = Gtk.WrapMode.CHAR;
             text_view_response.margin = 8;
             text_view_response.visible = true;
-            SyntaxHighlighter.set_tags(text_view_response.buffer);
 
             scroll_view_request = new Gtk.ScrolledWindow (null, null);
             scroll_view_request.expand = true;
@@ -88,6 +87,9 @@ namespace Pakiki {
             this.pack_start (box_search_container, true, true, 0);
             this.pack_start (text_view_placeholder, true, true, 0);
             
+            syntax_highlighter.set_tags(text_view_request.buffer);
+            syntax_highlighter.set_tags(text_view_response.buffer);
+
             setting_selection = false;
             
             text_view_request.populate_popup.connect ( (menu) => {

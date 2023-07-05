@@ -3,7 +3,6 @@ namespace Pakiki {
         public signal void long_running_task (bool running);
 
         private ApplicationWindow application_window;
-        private Cancellable cancellable_highlighter = new Cancellable();
         private SyntaxHighlighter syntax_highlighter = new SyntaxHighlighter ();
 
         public RequestTextEditor (ApplicationWindow application_window) {
@@ -12,12 +11,12 @@ namespace Pakiki {
             left_margin = right_margin = top_margin = bottom_margin = 6;
             wrap_mode = Gtk.WrapMode.CHAR;
             visible = true;
+            syntax_highlighter.set_tags (buffer);
             this.populate_popup.connect (on_populate_popup);
             this.buffer.changed.connect (() => {
                 on_text_changed (false);
             });
             
-            SyntaxHighlighter.set_tags (buffer);
         }
 
         private void insert_oob_domain () {

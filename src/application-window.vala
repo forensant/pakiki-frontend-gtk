@@ -100,7 +100,7 @@ namespace Pakiki {
             overlay.add_overlay (label_overlay);
             
             settings = new GLib.Settings ("com.forensant.pakiki");
-            
+
             var accel_group = new Gtk.AccelGroup ();
             accel_group.connect ('f', Gdk.ModifierType.CONTROL_MASK, 0, (group, accel, keyval, modifier) => {
                 var pane = selected_pane ();
