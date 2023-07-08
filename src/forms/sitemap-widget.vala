@@ -145,7 +145,7 @@ namespace Pakiki {
                     if (path_value.get_string () == split_paths[0]) {
                         paths.remove_at (0);
 
-                        if (paths.size == 0) {
+                        if (paths.size == 0 || (paths.size == 1 && paths[0] == "")) {
                             this.expand_to_path (tree_store_site_map.get_path (iter));
                             this.get_selection ().select_iter (iter);
                             return;
