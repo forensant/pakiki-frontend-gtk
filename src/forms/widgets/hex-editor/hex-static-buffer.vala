@@ -77,7 +77,7 @@ namespace Pakiki {
 
         public override bool pos_in_headers (uint64 pos) {
             var str = (string)data;
-            return str.index_of ("\x0a\x0d\x0a\x0d") > pos;
+            return str.index_of ("\x0d\x0a\x0d\x0a") > pos;
         }
 
         public override void remove (uint64 from, uint64 to) {
