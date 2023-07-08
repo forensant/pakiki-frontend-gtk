@@ -1,0 +1,3 @@
+[submodule "subprojects/gxml"]
+	path = subprojects/gxml
+	url = https://gitlab.gnome.org/GNOME/gxml.git

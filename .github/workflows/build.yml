@@ -44,11 +44,12 @@ jobs:
       
     steps:
       - name: Clone Pākiki Core
-        uses: GuillaumeFalourd/clone-github-repo-action@v2
+        uses: actions/checkout@v3
         with:
-          owner: 'forensant'
-          repository: 'pakiki-core'
-          
+          repository: forensant/pakiki-core
+          submodules: recursive
+          path: pakiki-core
+                    
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
