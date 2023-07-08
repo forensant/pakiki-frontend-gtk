@@ -29,7 +29,7 @@
         </child>
         <child>
           <object class="GtkCheckButton" id="checkbox_intercept_to_server">
-            <property name="label" translatable="yes">Web browser &gt; _Server</property>
+            <property name="label" translatable="yes">_Requests</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
@@ -45,7 +45,7 @@
         </child>
         <child>
           <object class="GtkCheckButton" id="checkbox_intercept_to_browser">
-            <property name="label" translatable="yes">Server &gt; _Web Browser</property>
+            <property name="label" translatable="yes">R_esponses</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>

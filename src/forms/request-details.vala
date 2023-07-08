@@ -270,12 +270,6 @@ namespace Pakiki {
                 var packet_modified = packet_obj.get_boolean_member ("Modified");
                 var packet_data = packet_obj.get_string_member ("Data");
 
-                if (packet_direction == "Request") {
-                    packet_direction = "Client > Server";
-                } else {
-                    packet_direction = "Server > Client";
-                }
-
                 var packet_opcode = "";
                 var parser = new Json.Parser ();
                 try {

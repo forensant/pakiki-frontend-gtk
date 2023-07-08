@@ -43,7 +43,7 @@
         </child>
         <child>
           <object class="GtkCheckButton">
-            <property name="label" translatable="yes">Server &gt; Web Browser</property>
+            <property name="label" translatable="yes">Responses</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>

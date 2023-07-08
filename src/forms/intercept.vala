@@ -130,9 +130,9 @@ namespace Pakiki {
                 var body = request_data.get_string_member ("Body");
 
                 if (direction == "browser_to_server") {
-                    direction = "Browser to server";
+                    direction = "Request";
                 } else {
-                    direction = "Server to browser";
+                    direction = "Response";
                 }
 
                 Gtk.TreeIter iter;
