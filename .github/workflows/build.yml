@@ -49,7 +49,7 @@ jobs:
           repository: forensant/pakiki-core
           submodules: recursive
           path: pakiki-core
-                    
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -113,6 +113,8 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
+        with:
+          submodules: recursive
 
       - name: Download core
         uses: actions/download-artifact@v2
@@ -136,6 +138,8 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
+        with:
+          submodules: recursive
 
       - name: Download core
         uses: actions/download-artifact@v2
