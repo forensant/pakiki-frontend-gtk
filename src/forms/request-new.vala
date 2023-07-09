@@ -32,7 +32,7 @@ namespace Pakiki {
             combobox_protocol.add_attribute (renderer_text, "text", 0);
             combobox_protocol.set_active (0);
 
-            hex_editor = new HexEditor ();
+            hex_editor = new HexEditor (application_window);
             hex_editor.show ();
             scrolled_window_hex_editor.add (hex_editor);
 

@@ -23,6 +23,7 @@ namespace Pakiki {
             }
         }
 
+        private ApplicationWindow application_window;
         private bool half_selection = false;
         private Area insertion_area = Area.NONE;
         private bool selecting = false;
@@ -74,7 +75,8 @@ namespace Pakiki {
             }
         }
 
-        public HexEditor () {
+        public HexEditor (ApplicationWindow application_window) {
+            this.application_window = application_window;
             var bytes = new uint8[0];
             buffer = new HexStaticBuffer.from_bytes (bytes);
 
@@ -514,6 +516,22 @@ namespace Pakiki {
 
         public override Gtk.SizeRequestMode get_request_mode () {
             return Gtk.SizeRequestMode.WIDTH_FOR_HEIGHT;
+        }
+
+        private uint8[] get_selected_data (Area area) {
+            if (area == Area.NONE) {
+                return new uint8[0];
+            }
+
+            var start = selection_start_charidx;
+            var end = selection_end_charidx;
+            if (start > end) {
+                var tmp = start;
+                start = end;
+                end = tmp;
+            }
+
+            return buffer.data (start, end + 1);
         }
 
         private string get_selected_text (Area area) {
@@ -1052,6 +1070,7 @@ namespace Pakiki {
                 return;
             }
 
+            var selected_data = get_selected_data (area);
             var selected_text = get_selected_text (area);
 
             if (buffer.read_only () == false) {
@@ -1083,9 +1102,19 @@ namespace Pakiki {
             separator.show ();
             menu.append (separator);
 
-            var menu_item = new Gtk.MenuItem.with_label ("Send to Cyberchef");
+            var title = "Send selection to CyberChef";
+
+            if (selected_data.length == 0) {
+                var all_data = buffer.all_data ();
+                if (all_data.length != 0) {
+                    title = "Send request/response to CyberChef";
+                    selected_data = all_data;
+                }
+            }
+
+            var menu_item = new Gtk.MenuItem.with_label (title);
             menu_item.activate.connect ( () => {
-                var uri = "https://gchq.github.io/CyberChef/#input=" + GLib.Uri.escape_string (Base64.encode (selected_text.data));
+                var uri = "http://" + application_window.core_address + "/cyberchef/#input=" + GLib.Uri.escape_string (Base64.encode (selected_data));
 
                 try {
                     AppInfo.launch_default_for_uri (uri, null);

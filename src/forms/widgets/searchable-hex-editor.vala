@@ -20,12 +20,12 @@ namespace Pakiki {
             }
         }
 
-        public SearchableHexEditor () {
+        public SearchableHexEditor (ApplicationWindow application_window) {
             this.orientation = Gtk.Orientation.VERTICAL;
             scrolled_window_hex_editor = new Gtk.ScrolledWindow (null, null);
             scrolled_window_hex_editor.show ();
 
-            hex_editor = new HexEditor ();
+            hex_editor = new HexEditor (application_window);
             hex_editor.expand = true;
             hex_editor.show ();
             scrolled_window_hex_editor.add (hex_editor);

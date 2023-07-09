@@ -100,7 +100,7 @@ namespace Pakiki {
                 on_request_response_popup (menu, text_view_response.buffer);
             });
 
-            searchable_hex_editor = new SearchableHexEditor ();
+            searchable_hex_editor = new SearchableHexEditor (application_window);
             searchable_hex_editor.show ();
             this.pack_start (searchable_hex_editor, true, true, 0);
         }
@@ -129,23 +129,31 @@ namespace Pakiki {
             Gtk.TextIter selection_start, selection_end;
             var text_selected = buffer.get_selection_bounds (out selection_start, out selection_end);
 
-            if (!text_selected) {
-                return;
+            var title = "Send selection to CyberChef";
+            var text_to_encode = "";
+            if (text_selected) {
+                text_to_encode = buffer.get_slice (selection_start, selection_end, true);
+            } else {
+                var direction = "request";
+                if (buffer == text_view_response.buffer) {
+                    direction = "response";
+                }
+                title = "Send " + direction + " to CyberChef";
+                text_to_encode = buffer.text;
             }
 
             var separator = new Gtk.SeparatorMenuItem ();
             separator.show ();
             menu.append (separator);
 
-            var menu_item = new Gtk.MenuItem.with_label ("Send to Cyberchef");
+            var menu_item = new Gtk.MenuItem.with_label (title);
             menu_item.activate.connect ( () => {
-                var selected_text = buffer.get_slice (selection_start, selection_end, true);
-                var uri = "https://gchq.github.io/CyberChef/#input=" + GLib.Uri.escape_string (Base64.encode (selected_text.data));
+                var uri = "http://" + application_window.core_address + "/cyberchef/#input=" + GLib.Uri.escape_string (Base64.encode (text_to_encode.data));
 
                 try {
                     AppInfo.launch_default_for_uri (uri, null);
                 } catch (Error err) {
-                    stdout.printf ("Could not launch Cyberchef: %s\n", err.message);
+                    stdout.printf ("Could not launch CyberChef: %s\n", err.message);
                 }
             });
             menu_item.show ();

@@ -72,7 +72,7 @@ namespace Pakiki {
             text_view_request.show ();
             scrolled_window_text_request.add (text_view_request);
 
-            hex_editor = new HexEditor ();
+            hex_editor = new HexEditor (application_window);
             hex_editor.show ();
             scrolled_window_hex_request.add (hex_editor);
 
@@ -310,9 +310,10 @@ namespace Pakiki {
                         scrolled_window_hex_request.hide ();
                         scrolled_window_text_request.show ();
                         text_view_request.buffer.text = ((string) body_bytes).replace("\r\n", "\n");
+                        text_view_request.direction = direction.down ();
                     }
 
-                    var is_request = (direction == "Browser to server");
+                    var is_request = (direction == "Request");
                     button_forward.sensitive = true;
                     button_drop.sensitive = is_request;
                     button_intercept_response.sensitive = is_request && (protocol != "Websocket");
@@ -403,7 +404,7 @@ namespace Pakiki {
                     }
                 }
 
-                if (direction == "Browser to server") {
+                if (direction == "Request") {
                     direction = "browser_to_server";
                 } else {
                     direction = "server_to_browser";

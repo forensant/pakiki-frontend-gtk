@@ -30,6 +30,10 @@ namespace Pakiki {
             }
         }
 
+        public override uint8[] all_data () {
+            return buffer;
+        }
+
         public override uint8 byte_at (uint64 offset) {
             if (offset >= buffer.length) {
                 return '0';

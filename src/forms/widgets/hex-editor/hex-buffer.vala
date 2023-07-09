@@ -3,6 +3,7 @@ namespace Pakiki {
         public signal void length_changed ();
 
         // this block needs to be implemented within child classes
+        public virtual uint8[] all_data () { return new uint8[0]; }
         public virtual uint8[] data (uint64 from, uint64 to) { return new uint8[0]; }
         public virtual bool data_cached (uint64 from, uint64 to) { return true; }
         public virtual uint64 length () { return 0; }
