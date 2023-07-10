@@ -472,6 +472,7 @@ namespace Pakiki {
                 "--disable-sync",
                 "--metrics-recording-only",
                 "--disable-features=MediaRouter",
+                "--disable-features=OptimizationGuideModelDownloading,OptimizationHintsFetching,OptimizationTargetPrediction,OptimizationHints",
                 "http://" + core_address + "/browser_home/",
             };
 

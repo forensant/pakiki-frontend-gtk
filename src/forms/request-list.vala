@@ -528,6 +528,29 @@ namespace Pakiki {
             var should_scroll_to_bottom = ((request_list.vadjustment.value + request_list.vadjustment.page_size + 150.0) > request_list.vadjustment.upper);
 
             var request_guid = request.get_string_member ("GUID");
+            var action = "";
+            if (request.has_member ("Action")) {
+                action = request.get_string_member ("Action");
+            }
+
+            if (action == "filtered") {
+                if (guid_set.contains (request_guid)) {
+                    liststore.@foreach ((model, path, iter) => {
+                        Value guid;
+                        model.get_value (iter, Column.GUID, out guid);
+
+                        if (request_guid == guid.get_string ()) {
+                            liststore.remove (ref iter);
+                            guid_set.remove (request_guid);
+                            return true;
+                        }
+
+                        return false; // continue iterating
+                    });
+                }
+
+                return;
+            }
 
             if (!guid_set.contains (request_guid)) {
                 add_request_to_table (request);
