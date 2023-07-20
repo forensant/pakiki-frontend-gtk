@@ -847,9 +847,11 @@ namespace Pakiki {
             request_list.vadjustment.value = request_list.vadjustment.upper;
         }
 
-        public void set_scan_ids (string[] guids) {
+        public void set_scan_ids (string[] guids, bool refresh_list = true) {
             this.scan_ids = guids;
-            this.get_requests ();
+            if (refresh_list) {
+                this.get_requests ();
+            }
         }
 
         public void set_url_filter (string url) {

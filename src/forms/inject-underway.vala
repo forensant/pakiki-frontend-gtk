@@ -92,7 +92,7 @@ namespace Pakiki {
 
             if (different_operation) {
                 string[] scan_ids = {operation.guid};
-                request_list_full.set_scan_ids (scan_ids);
+                request_list_full.set_scan_ids (scan_ids, false);
                 request_list_full.on_search (search_query, search_negative_filter, search_exclude_resources);
             }
 
