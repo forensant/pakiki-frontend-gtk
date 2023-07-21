@@ -1,14 +1,15 @@
 namespace Pakiki {   
-    class RequestTextEditor : Gtk.TextView {
+    class RequestTextEditor : Gtk.SourceView {
         public signal void long_running_task (bool running);
 
         private ApplicationWindow application_window;
+        private Gtk.SourceBuffer source_buffer = new Gtk.SourceBuffer (null);
         private SyntaxHighlighter syntax_highlighter = new SyntaxHighlighter ();
-
         public string direction = "request";
 
         public RequestTextEditor (ApplicationWindow application_window) {
             this.application_window = application_window;
+            this.buffer = source_buffer;
             monospace = true;
             left_margin = right_margin = top_margin = bottom_margin = 6;
             wrap_mode = Gtk.WrapMode.CHAR;
