@@ -511,6 +511,25 @@ namespace Pakiki {
             return "";
         }
 
+        public void launch_documentation (string path = "/") {
+            var url = "https://docs.pakikiproxy.com";
+            if (core_address != "") {
+                url = "http://" + core_address + "/docs";
+            }
+
+            url += path;
+
+            var doc_window = new Gtk.Window (Gtk.WindowType.TOPLEVEL);
+            doc_window.set_default_size (1280, 768);
+            doc_window.set_title ("Pākiki Proxy Help");
+            
+            var web_view = new WebKit.WebView ();
+            web_view.load_uri (url);
+            doc_window.add (web_view);
+
+            doc_window.show_all ();
+        }
+
         public void on_open_project () {
             core_process.open_project ();
         }

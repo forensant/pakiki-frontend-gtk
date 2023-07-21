@@ -70,6 +70,11 @@ namespace Pakiki {
         }
 
         [GtkCallback]
+        public void on_btn_launch_documentation_clicked (Gtk.Button button) {
+            application_window.launch_documentation ("/#/getting_started/intercepting");
+        }
+
+        [GtkCallback]
         public void on_expander_manual_instructions_activate (Gtk.Expander expander) {
             settings.set_boolean ("manual-instructions-expanded", !expander.expanded);
         }

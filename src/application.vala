@@ -153,20 +153,7 @@ namespace Pakiki {
         }
 
         private void help () {
-            var url = "https://docs.pakikiproxy.com/";
-            if (window != null && window.core_address != "") {
-                url = "http://" + window.core_address + "/docs/";
-            }
-
-            var doc_window = new Gtk.Window (Gtk.WindowType.TOPLEVEL);
-            doc_window.set_default_size (1280, 768);
-            doc_window.set_title ("Pākiki Proxy Help");
-            
-            var web_view = new WebKit.WebView ();
-            web_view.load_uri (url);
-            doc_window.add (web_view);
-
-            doc_window.show_all ();
+            window.launch_documentation ();
         }
 
         private void preferences () {
