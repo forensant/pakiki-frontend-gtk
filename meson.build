@@ -7,7 +7,7 @@ dependencies = [
     dependency('gobject-2.0'),
     dependency('gtk+-3.0'),
     dependency('gee-0.8'),
-    dependency('gxml-0.18', fallback : [ 'gxml', 'libgxml_dep' ], static: true),
+    dependency('gxml-0.18', fallback : [ 'gxml', 'libgxml_dep' ], default_options: ['default_library=static']),
     dependency('json-glib-1.0'),
     dependency('libsoup-3.0'),
     meson.get_compiler('vala').find_library('posix'),
