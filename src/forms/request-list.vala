@@ -62,7 +62,9 @@ namespace Pakiki {
             ERROR,
             NOTES
         }
-        
+
+        private int COLUMN_COUNT = 12;
+
         public RequestList (ApplicationWindow application_window, bool initial_launch, string[] scan_ids = {}) {
             this.application_window = application_window;
             this.scan_ids = scan_ids;
@@ -112,66 +114,75 @@ namespace Pakiki {
             notes_renderer.edited.connect(on_notes_updated);
 
             /*columns*/
-            request_list.insert_column_with_attributes (-1, "GUID",
+            request_list.insert_column_with_attributes (get_col_pos ("GUID"),
+                                                    "GUID",
                                                     new Gtk.CellRendererText(),
                                                     "text", Column.GUID);
 
-            request_list.insert_column_with_attributes (-1, "Protocol",
+            request_list.insert_column_with_attributes (get_col_pos ("Protocol"),
+                                                    "Protocol",
                                                     new Gtk.CellRendererText(),
                                                     "text", Column.PROTOCOL);
 
-            request_list.insert_column_with_attributes (-1, "Time",
+            request_list.insert_column_with_attributes (get_col_pos ("Time"),
+                                                    "Time",
                                                     time_cell_renderer,
                                                     "text", Column.TIME);
 
-            request_list.insert_column_with_attributes (-1, "URL",
+            request_list.insert_column_with_attributes (get_col_pos ("URL"),
+                                                    "URL",
                                                     url_renderer,
                                                     "text", Column.URL);
 
-            request_list.insert_column_with_attributes (-1, "Size",
+            request_list.insert_column_with_attributes (get_col_pos ("Size"),
+                                                    "Size",
                                                     response_length_renderer,
                                                     "text", Column.RESPONSE_CONTENT_LENGTH);
 
-            request_list.insert_column_with_attributes (-1, "Content Type",
+            request_list.insert_column_with_attributes (get_col_pos ("Content Type"),
+                                                    "Content Type",
                                                     content_type_renderer,
                                                     "text", Column.RESPONSE_CONTENT_TYPE);
 
-            request_list.insert_column_with_attributes (-1, "Duration",
+            request_list.insert_column_with_attributes (get_col_pos ("Duration"),
+                                                    "Duration",
                                                     duration_renderer,
                                                     "text", Column.DURATION);
 
-            request_list.insert_column_with_attributes (-1, "Verb",
+            request_list.insert_column_with_attributes (get_col_pos ("Verb"),
+                                                    "Verb",
                                                     new Gtk.CellRendererText (),
                                                     "text", Column.VERB);
 
-            request_list.insert_column_with_attributes (-1, "Status",
+            request_list.insert_column_with_attributes (get_col_pos ("Status"),
+                                                    "Status",
                                                     status_renderer,
                                                     "text", Column.STATUS);
 
-            request_list.insert_column_with_attributes (-1, "Payloads",
+            request_list.insert_column_with_attributes (get_col_pos ("Payloads"),
+                                                    "Payloads",
                                                     payload_renderer,
                                                     "text", Column.PAYLOADS);
 
-            request_list.insert_column_with_attributes (-1, "Error",
+            request_list.insert_column_with_attributes (get_col_pos ("Error"),
+                                                    "Error",
                                                     error_renderer,
                                                     "text", Column.ERROR);
 
-            request_list.insert_column_with_attributes (-1, "Notes",
+            request_list.insert_column_with_attributes (get_col_pos ("Notes"),
+                                                    "Notes",
                                                     notes_renderer,
                                                     "text", Column.NOTES);
 
                                                     
-            var guid_column = request_list.get_column(Column.GUID);
+            var guid_column = request_list.get_column ( get_col_pos ("GUID"));
             guid_column.visible = false;
 
-            var protocol_column = request_list.get_column(Column.PROTOCOL);
-            protocol_column.visible = false;
-
-            var url_column = request_list.get_column(Column.URL);
+            var url_column = request_list.get_column (get_col_pos ("URL"));
             url_column.expand = true;
             url_column.min_width = 200;
 
-            var time_column = request_list.get_column(Column.TIME);
+            var time_column = request_list.get_column (get_col_pos ("Time"));
             time_column.set_cell_data_func(time_cell_renderer, (cell_layout, cell, tree_model, iter) => {
                 Value val;
                 tree_model.get_value(iter, Column.TIME, out val);
@@ -180,7 +191,7 @@ namespace Pakiki {
             });
             time_column.min_width = 100;
 
-            var response_size_column = request_list.get_column(Column.RESPONSE_CONTENT_LENGTH);
+            var response_size_column = request_list.get_column (get_col_pos ("Size"));
             response_size_column.set_cell_data_func(response_length_renderer, (cell_layout, cell, tree_model, iter) => {
                 Value val;
                 tree_model.get_value(iter, Column.RESPONSE_CONTENT_LENGTH, out val);
@@ -188,7 +199,7 @@ namespace Pakiki {
                 val.unset();
             });
 
-            var response_type_column = request_list.get_column(Column.RESPONSE_CONTENT_TYPE);
+            var response_type_column = request_list.get_column (get_col_pos ("Content Type"));
             response_type_column.set_cell_data_func(content_type_renderer, (cell_layout, cell, tree_model, iter) => {
                 Value val;
                 tree_model.get_value(iter, Column.RESPONSE_CONTENT_TYPE, out val);
@@ -199,7 +210,7 @@ namespace Pakiki {
                 val.unset();
             });
 
-            var duration_column = request_list.get_column(Column.DURATION);
+            var duration_column = request_list.get_column (get_col_pos ("Duration"));
             duration_column.set_cell_data_func(duration_renderer, (cell_layout, cell, tree_model, iter) => {
                 Value val;
                 tree_model.get_value(iter, Column.DURATION, out val);
@@ -207,7 +218,7 @@ namespace Pakiki {
                 val.unset();
             });
 
-            var status_column = request_list.get_column(Column.STATUS);
+            var status_column = request_list.get_column (get_col_pos ("Status"));
             status_column.set_cell_data_func(status_renderer, (cell_layout, cell, tree_model, iter) => {
                 Value val;
                 tree_model.get_value(iter, Column.STATUS, out val);
@@ -221,7 +232,7 @@ namespace Pakiki {
                 val.unset();
             });
 
-            var payload_column = request_list.get_column(Column.PAYLOADS);
+            var payload_column = request_list.get_column (get_col_pos ("Payloads"));
             payload_column.set_cell_data_func(payload_renderer, (cell_layout, cell, tree_model, iter) => {
                 Value val;
                 tree_model.get_value(iter, Column.PAYLOADS, out val);
@@ -239,16 +250,16 @@ namespace Pakiki {
                 request_list.get_column(i).reorderable = true;
             }
 
-            request_list.get_column(Column.TIME).sort_column_id                    = Column.TIME;
-            request_list.get_column(Column.URL).sort_column_id                     = Column.URL;
-            request_list.get_column(Column.RESPONSE_CONTENT_LENGTH).sort_column_id = Column.RESPONSE_CONTENT_LENGTH;
-            request_list.get_column(Column.RESPONSE_CONTENT_TYPE).sort_column_id   = Column.RESPONSE_CONTENT_TYPE;
-            request_list.get_column(Column.DURATION).sort_column_id                = Column.DURATION;
-            request_list.get_column(Column.VERB).sort_column_id                    = Column.VERB;
-            request_list.get_column(Column.STATUS).sort_column_id                  = Column.STATUS;
-            request_list.get_column(Column.PAYLOADS).sort_column_id                = Column.PAYLOADS;
-            request_list.get_column(Column.ERROR).sort_column_id                   = Column.ERROR;
-            request_list.get_column(Column.NOTES).sort_column_id                   = Column.NOTES;
+            request_list.get_column (get_col_pos ("Time")).sort_column_id         = Column.TIME;
+            request_list.get_column (get_col_pos ("URL")).sort_column_id          = Column.URL;
+            request_list.get_column (get_col_pos ("Size")).sort_column_id         = Column.RESPONSE_CONTENT_LENGTH;
+            request_list.get_column (get_col_pos ("Content Type")).sort_column_id = Column.RESPONSE_CONTENT_TYPE;
+            request_list.get_column (get_col_pos ("Duration")).sort_column_id     = Column.DURATION;
+            request_list.get_column (get_col_pos ("Verb")).sort_column_id         = Column.VERB;
+            request_list.get_column (get_col_pos ("Status")).sort_column_id       = Column.STATUS;
+            request_list.get_column (get_col_pos ("Payloads")).sort_column_id     = Column.PAYLOADS;
+            request_list.get_column (get_col_pos ("Error")).sort_column_id        = Column.ERROR;
+            request_list.get_column (get_col_pos ("Notes")).sort_column_id        = Column.NOTES;
 
             var visible_columns = this.visible_columns ();
             foreach (var col in request_list.get_columns ()) {
@@ -273,6 +284,8 @@ namespace Pakiki {
             request_compare = new RequestCompare (application_window);
             request_compare.hide ();
             box_request_details.add (request_compare);
+
+            request_list.columns_changed.connect (save_column_settings);
 
             this.add2 (box_request_details);
             
@@ -346,31 +359,22 @@ namespace Pakiki {
             menu.popup_at_pointer (event);
         }
 
-        private void show_controls (uint request_count) {
-            if (request_count == 0 && scan_ids.length == 0) {
-                if (search_query != "" || url_filter != "" || (search_protocol != "" && search_protocol != "all")) {
-                    label_no_requests.visible = true;
-                } else {
-                    placeholder_requests.show ();
-                }
-                scrolled_window_requests.hide ();
-                box_request_details.hide ();
-                request_details.hide ();
-                request_compare.hide ();
-            } else {
-                label_no_requests.visible = false;
-                placeholder_requests.hide ();
-                overlay.show ();
-                scrolled_window_requests.show ();
-                box_request_details.show ();
-                request_details.show ();
-                request_compare.hide ();
-                this.requests_loaded (true);
-            }
-        }
-
         public bool find_activated () {
             return request_details.find_activated ();
+        }
+
+        private int get_col_pos (string title) {
+            var settings = application_window.settings.get_string (scan_ids.length == 0 ? "grid-columns" : "scan-grid-columns");
+            var columns = settings.split (";");
+            
+            for (int i = 0; i < columns.length; i++) {
+                if (columns[i].index_of (title, 0) == 0) {
+                    stdout.printf("Column %s at position %d\n", title, i);
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         private void get_requests () {
@@ -925,16 +929,11 @@ namespace Pakiki {
         }
 
         private void save_column_settings () {
+            if (request_list.get_columns ().length () != COLUMN_COUNT) {
+                return;
+            }
             var settings = "";
             request_list.get_columns ().foreach ((col) => {
-                if (col.title == "GUID") {
-                    return;
-                }
-
-                if (col.title == "Payloads" && scan_ids.length == 0) {
-                    return;
-                }
-
                 if (settings != "") {
                     settings += ";";
                 }
@@ -973,6 +972,29 @@ namespace Pakiki {
             }
         }
 
+        private void show_controls (uint request_count) {
+            if (request_count == 0 && scan_ids.length == 0) {
+                if (search_query != "" || url_filter != "" || (search_protocol != "" && search_protocol != "all")) {
+                    label_no_requests.visible = true;
+                } else {
+                    placeholder_requests.show ();
+                }
+                scrolled_window_requests.hide ();
+                box_request_details.hide ();
+                request_details.hide ();
+                request_compare.hide ();
+            } else {
+                label_no_requests.visible = false;
+                placeholder_requests.hide ();
+                overlay.show ();
+                scrolled_window_requests.show ();
+                box_request_details.show ();
+                request_details.show ();
+                request_compare.hide ();
+                this.requests_loaded (true);
+            }
+        }
+
         private Gee.HashMap<string, bool> visible_columns () {
             var settings = application_window.settings.get_string (scan_ids.length == 0 ? "grid-columns" : "scan-grid-columns");
             var visible_columns = new Gee.HashMap<string, bool> ();
@@ -985,6 +1007,11 @@ namespace Pakiki {
             foreach (var column in columns) {
                 var parts = column.split (":");
                 visible_columns[parts[0]] = parts[1] == "1";
+            }
+
+            visible_columns["GUID"] = false;
+            if (scan_ids.length == 0) {
+                visible_columns["Payloads"] = false;
             }
 
             return visible_columns;
