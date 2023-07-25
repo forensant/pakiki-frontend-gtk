@@ -50,6 +50,7 @@ namespace Pakiki {
         public Soup.Session http_session;
         public string preview_proxy_address;
         public ProxySettings proxy_settings;
+        public GLib.Settings settings;
 
         private bool authentication_displayed;
         private bool controls_hidden;
@@ -61,7 +62,6 @@ namespace Pakiki {
         private Application pakiki_application;
         private RequestsPane requests_pane;
         private SavingDialog saving_dialog;
-        private GLib.Settings settings;
         private bool timeout_started;
 
         private Notify.Notification notification;
@@ -541,6 +541,7 @@ namespace Pakiki {
 
             var pane = selected_pane ();
             button_new.visible  = pane.new_visible ();
+            button_new.label = pane.new_name ();
             button_new.tooltip_text = pane.new_tooltip_text ();
             button_back.visible = pane.back_visible ();
 
@@ -694,6 +695,7 @@ namespace Pakiki {
         private string writeBrowserConfig() {
             // generate a temporary path
             try {
+                CoreProcess.create_temp_dir ();
                 var basedir = GLib.DirUtils.make_tmp ("pakiki-XXXXXX");
 
                 var dir = basedir + "/chromedata/Default/";

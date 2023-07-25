@@ -22,6 +22,10 @@ namespace Pakiki {
             return "";
         }
 
+        public virtual string new_name () {
+            return "_New";
+        }
+
         public virtual bool new_visible () {
             return false;
         }

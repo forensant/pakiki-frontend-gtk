@@ -171,8 +171,11 @@ namespace Pakiki {
         }
 
         private void get_intercept_settings () {
+            if (application_window.core_address == "") {
+                return;
+            }
             var url = "http://" + application_window.core_address + "/proxy/intercept_settings";
-
+            
             var message = new Soup.Message ("GET", url);
 
             application_window.http_session.send_and_read_async.begin (message, GLib.Priority.DEFAULT, null, (obj, res) => {
@@ -197,6 +200,10 @@ namespace Pakiki {
         }
 
         private void get_requests () {
+            if (application_window.core_address == "") {
+                return;
+            }
+
             var url = "http://" + application_window.core_address + "/proxy/intercepted_requests";
 
             var session = application_window.http_session;

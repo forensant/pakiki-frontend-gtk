@@ -62,8 +62,11 @@ namespace Pakiki {
         }
 
         private void get_inject_operations () {
+            if (application_window.core_address == "") {
+                return;
+            }
             var url = "http://" + application_window.core_address + "/inject_operations";
-
+            
             var session = application_window.http_session;
             var message = new Soup.Message ("GET", url);
 

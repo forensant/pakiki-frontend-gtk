@@ -344,7 +344,11 @@ namespace Pakiki {
         }
 
         private void populate_payloads () {
+            if (application_window.core_address == "") {
+                return;
+            }
             var url = "http://" + application_window.core_address + "/inject_operations/payloads";
+            
             var message = new Soup.Message ("GET", url);
 
             application_window.http_session.send_and_read_async.begin (message, GLib.Priority.HIGH, null, (obj, res) => {

@@ -54,6 +54,7 @@ namespace Pakiki {
             TIME,
             URL,
             RESPONSE_CONTENT_LENGTH,
+            RESPONSE_CONTENT_TYPE,
             DURATION,
             VERB,
             STATUS,
@@ -91,9 +92,10 @@ namespace Pakiki {
             time_cell_renderer.ellipsize = Pango.EllipsizeMode.MIDDLE;
             time_cell_renderer.ellipsize_set = true;
 
-            var response_length_renderer = new Gtk.CellRendererText();
-            var duration_renderer      = new Gtk.CellRendererText();
-            var status_renderer        = new Gtk.CellRendererText();
+            var response_length_renderer = new Gtk.CellRendererText ();
+            var content_type_renderer    = new Gtk.CellRendererText ();
+            var duration_renderer        = new Gtk.CellRendererText ();
+            var status_renderer          = new Gtk.CellRendererText ();
 
             var payload_renderer = new Gtk.CellRendererText();
             payload_renderer.ellipsize = Pango.EllipsizeMode.END;
@@ -130,6 +132,10 @@ namespace Pakiki {
                                                     response_length_renderer,
                                                     "text", Column.RESPONSE_CONTENT_LENGTH);
 
+            request_list.insert_column_with_attributes (-1, "Content Type",
+                                                    content_type_renderer,
+                                                    "text", Column.RESPONSE_CONTENT_TYPE);
+
             request_list.insert_column_with_attributes (-1, "Duration",
                                                     duration_renderer,
                                                     "text", Column.DURATION);
@@ -154,7 +160,7 @@ namespace Pakiki {
                                                     notes_renderer,
                                                     "text", Column.NOTES);
 
-            
+                                                    
             var guid_column = request_list.get_column(Column.GUID);
             guid_column.visible = false;
 
@@ -179,6 +185,17 @@ namespace Pakiki {
                 Value val;
                 tree_model.get_value(iter, Column.RESPONSE_CONTENT_LENGTH, out val);
                 ((Gtk.CellRendererText)cell).text = response_size_to_string(val.get_int64 ());
+                val.unset();
+            });
+
+            var response_type_column = request_list.get_column(Column.RESPONSE_CONTENT_TYPE);
+            response_type_column.set_cell_data_func(content_type_renderer, (cell_layout, cell, tree_model, iter) => {
+                Value val;
+                tree_model.get_value(iter, Column.RESPONSE_CONTENT_TYPE, out val);
+                var components = val.get_string ().split (";", 2);
+                if (components.length >= 1) {
+                    ((Gtk.CellRendererText)cell).text = components[0];
+                }
                 val.unset();
             });
 
@@ -225,12 +242,27 @@ namespace Pakiki {
             request_list.get_column(Column.TIME).sort_column_id                    = Column.TIME;
             request_list.get_column(Column.URL).sort_column_id                     = Column.URL;
             request_list.get_column(Column.RESPONSE_CONTENT_LENGTH).sort_column_id = Column.RESPONSE_CONTENT_LENGTH;
+            request_list.get_column(Column.RESPONSE_CONTENT_TYPE).sort_column_id   = Column.RESPONSE_CONTENT_TYPE;
             request_list.get_column(Column.DURATION).sort_column_id                = Column.DURATION;
             request_list.get_column(Column.VERB).sort_column_id                    = Column.VERB;
             request_list.get_column(Column.STATUS).sort_column_id                  = Column.STATUS;
             request_list.get_column(Column.PAYLOADS).sort_column_id                = Column.PAYLOADS;
             request_list.get_column(Column.ERROR).sort_column_id                   = Column.ERROR;
             request_list.get_column(Column.NOTES).sort_column_id                   = Column.NOTES;
+
+            var visible_columns = this.visible_columns ();
+            foreach (var col in request_list.get_columns ()) {
+                if (col.title == "GUID") {
+                    continue;
+                }
+
+                if (col.title == "Payloads" && scan_ids.length == 0) {
+                    continue;
+                }
+
+                var visible = (!visible_columns.has_key (col.title)) || visible_columns[col.title];
+                col.visible = visible;
+            }
 
             box_request_details = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
 
@@ -271,6 +303,7 @@ namespace Pakiki {
                 Column.TIME,                    request.get_int_member ("Time"),
                 Column.URL,                     request.get_string_member ("URL"),
                 Column.RESPONSE_CONTENT_LENGTH, request.get_int_member ("ResponseContentLength"),
+                Column.RESPONSE_CONTENT_TYPE, request.get_string_member ("ResponseContentType"),
                 Column.DURATION,                request.get_int_member ("ResponseTime"),
                 Column.VERB,                    request.get_string_member ("Verb"),
                 Column.STATUS,                  request.get_int_member ("ResponseStatusCode"),
@@ -284,6 +317,33 @@ namespace Pakiki {
             if (label_no_requests.visible || placeholder_requests.visible) {
                 show_controls (1);
             }
+        }
+
+        private void display_header_right_click_menu (Gdk.EventButton event) {
+            var menu = new Gtk.Menu ();
+
+            request_list.get_columns ().foreach ((col) => {
+                if (col.title == "GUID") {
+                    return;
+                }
+
+                if (col.title == "Payloads" && scan_ids.length == 0) {
+                    return;
+                }
+                
+                var menu_item = new Gtk.CheckMenuItem.with_label (col.title);
+                menu_item.active = col.visible;
+                menu_item.show ();
+                menu_item.toggled.connect (() => {
+                    col.visible = menu_item.active;
+                    request_list.columns_autosize ();
+                    save_column_settings ();
+                });
+
+                menu.append (menu_item);
+            });
+            
+            menu.popup_at_pointer (event);
         }
 
         private void show_controls (uint request_count) {
@@ -564,6 +624,7 @@ namespace Pakiki {
                         liststore.set_value (iter, Column.TIME,          request.get_int_member("Time"));
                         liststore.set_value (iter, Column.URL,           request.get_string_member("URL"));
                         liststore.set_value (iter, Column.RESPONSE_CONTENT_LENGTH, request.get_int_member("ResponseContentLength"));
+                        liststore.set_value (iter, Column.RESPONSE_CONTENT_TYPE, request.get_string_member("ResponseContentType"));
                         liststore.set_value (iter, Column.DURATION,      request.get_int_member("ResponseTime"));
                         liststore.set_value (iter, Column.VERB,          request.get_string_member("Verb"));
                         liststore.set_value (iter, Column.STATUS,        request.get_int_member("ResponseStatusCode"));
@@ -637,11 +698,31 @@ namespace Pakiki {
             }
 
             return false; // allow other event handlers to be processed as well
-         }
+        }
          
         [GtkCallback]
         public bool on_request_list_button_release_event (Gdk.EventButton event) {
-            if (event.type == Gdk.EventType.BUTTON_RELEASE && event.button == 3 && process_actions) {
+            if (event.type != Gdk.EventType.BUTTON_RELEASE || event.button != 3) {
+                return false;
+            }
+
+            // if the event was on top of the header....
+            var first_column = request_list.get_column (1);
+            var is_header = false;
+            if (first_column != null) {
+                int x, y, w, h;
+                first_column.cell_get_size (null, out x, out y, out w, out h);
+                if (event.y < h) {
+                    is_header = true;
+                }
+            }
+
+            if (is_header) {
+                display_header_right_click_menu (event);
+                return false;
+            }
+            
+            if (process_actions) {
                 // right click
                 var menu = new Gtk.Menu ();
 
@@ -843,6 +924,26 @@ namespace Pakiki {
             request_details.hide ();
         }
 
+        private void save_column_settings () {
+            var settings = "";
+            request_list.get_columns ().foreach ((col) => {
+                if (col.title == "GUID") {
+                    return;
+                }
+
+                if (col.title == "Payloads" && scan_ids.length == 0) {
+                    return;
+                }
+
+                if (settings != "") {
+                    settings += ";";
+                }
+                settings += col.title + ":" + (col.visible ? "1" : "0");
+            });
+
+            application_window.settings.set_string (scan_ids.length == 0 ? "grid-columns" : "scan-grid-columns", settings);
+        }
+
         private void scroll_to_bottom () {
             request_list.vadjustment.value = request_list.vadjustment.upper;
         }
@@ -870,6 +971,23 @@ namespace Pakiki {
                 placeholder_requests.update_proxy_address ();
                 overlay.hide ();
             }
+        }
+
+        private Gee.HashMap<string, bool> visible_columns () {
+            var settings = application_window.settings.get_string (scan_ids.length == 0 ? "grid-columns" : "scan-grid-columns");
+            var visible_columns = new Gee.HashMap<string, bool> ();
+
+            if (settings == "") {
+                return visible_columns;
+            }
+
+            var columns = settings.split (";");
+            foreach (var column in columns) {
+                var parts = column.split (":");
+                visible_columns[parts[0]] = parts[1] == "1";
+            }
+
+            return visible_columns;
         }
     }
 }

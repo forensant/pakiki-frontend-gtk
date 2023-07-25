@@ -62,6 +62,10 @@ namespace Pakiki {
             return "New Request";
         }
 
+        public string new_name () {
+            return "_New Request";
+        }
+
         public bool new_visible () {
             return true;
         }

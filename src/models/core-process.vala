@@ -38,16 +38,24 @@ namespace Pakiki {
             open (to);
         }
 
+        public static void create_temp_dir () {
+            var tmp_dir = GLib.Environment.get_tmp_dir ();
+            if (!FileUtils.test (tmp_dir, FileTest.IS_DIR)) {
+                DirUtils.create_with_parents (tmp_dir, 0755);
+            }
+        }
+
         private string? get_temporary_file_path () {
             FileIOStream iostream;
             File file;
             try {
+                create_temp_dir ();
                 file = File.new_tmp ("pakiki-XXXXXX.pkk", out iostream);
             } catch (Error err) {
                 stdout.printf ("Error getting temporary path, using /tmp/pakiki_temp instead (%s)\n", err.message);
                 return "/tmp/pakiki_temp";
             }
-            return file.get_path ();            
+            return file.get_path ();
         }
 
         public bool open (string? project_path) {

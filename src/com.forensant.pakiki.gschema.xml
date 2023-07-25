@@ -21,5 +21,15 @@
             <summary>Manual Instructions</summary>
             <description>Whether the manual instructions for proxy install are collapsed.</description>
         </key>
+        <key name="grid-columns" type="s">
+            <default>'Protocol:0;Time:1;URL:1;Size:1;Content Type: 0;Duration:1;Verb:1;Status:1;Error:1;Notes:1'</default>
+            <summary>Grid column configuration</summary>
+            <description>The settings for the request grids.</description>
+        </key>
+        <key name="scan-grid-columns" type="s">
+            <default>'Protocol:0;Time:1;URL:1;Size:1;Content Type: 0;Duration:1;Verb:1;Status:1;Payloads:1;Error:1;Notes:1'</default>
+            <summary>Grid column configuration for scans</summary>
+            <description>The settings for the request grids for scans.</description>
+        </key>
     </schema>
 </schemalist>
