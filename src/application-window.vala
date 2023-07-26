@@ -593,14 +593,16 @@ namespace Pakiki {
             }
         }
 
-        public void request_double_clicked (string guid) {
+        public void request_double_clicked (string guid, bool is_http) {
             var behaviour = settings.get_string ("request-double-click");
 
-            switch (behaviour) {
-            case "new-window":
+            if (!is_http || behaviour == "new-window") {
                 var win = new RequestWindow (this, guid);
                 win.show ();
-                break;
+                return;
+            }
+
+            switch (behaviour) {
             case "new-request":
                 send_to_new_request (guid);
                 break;

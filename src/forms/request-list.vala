@@ -690,14 +690,13 @@ namespace Pakiki {
                 if (protocols.length != 1) {
                     return false;
                 }
-                if (!protocols[0].contains("HTTP")) {
-                    return false;
-                }
 
+                var is_http = protocols[0].contains("HTTP");
+                
                 this.request_double_clicked (guid);
                 
                 if (process_actions) {
-                    application_window.request_double_clicked (guid);
+                    application_window.request_double_clicked (guid, is_http);
                 }
             }
 
@@ -734,17 +733,25 @@ namespace Pakiki {
                 if (protocols.length != 1) {
                     return false;
                 }
-                if (!protocols[0].contains("HTTP")) {
-                    return false;
-                }
 
+                var is_http = protocols[0].contains("HTTP");
+                
                 var guids = get_selected_guids ();
                 if (guids.length != 1 || guids[0] == "") {
                     return false;
                 }
                 var guid = guids[0];
             
+                var new_window = new Gtk.MenuItem.with_label ("New Window");
+                new_window.activate.connect ( () => {
+                    var win = new RequestWindow (application_window, guid);
+                    win.show ();
+                });
+                new_window.show ();
+                menu.append (new_window);
+                
                 var item_new_request = new Gtk.MenuItem.with_label ("New Request");
+                item_new_request.sensitive = is_http;
                 item_new_request.activate.connect ( () => {
                     application_window.send_to_new_request (guid);
                 });
@@ -752,6 +759,7 @@ namespace Pakiki {
                 menu.append (item_new_request);
     
                 var item_inject = new Gtk.MenuItem.with_label ("Inject");
+                item_inject.sensitive = is_http;
                 item_inject.activate.connect ( () => {
                     application_window.send_to_inject (guid);
                 });
@@ -774,6 +782,7 @@ namespace Pakiki {
                 menu.append (copy_url);
 
                 var open_browser_inject = new Gtk.MenuItem.with_label ("Open in Browser");
+                open_browser_inject.sensitive = is_http;
                 open_browser_inject.activate.connect ( () => {
                     var urls = get_selected_fields (Column.URL);
                     if (urls.length != 1 || urls[0] == "") {
