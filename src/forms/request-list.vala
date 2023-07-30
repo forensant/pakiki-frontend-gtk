@@ -251,6 +251,7 @@ namespace Pakiki {
             }
 
             request_list.get_column (get_col_pos ("Time")).sort_column_id         = Column.TIME;
+            request_list.get_column (get_col_pos ("Protocol")).sort_column_id     = Column.PROTOCOL;
             request_list.get_column (get_col_pos ("URL")).sort_column_id          = Column.URL;
             request_list.get_column (get_col_pos ("Size")).sort_column_id         = Column.RESPONSE_CONTENT_LENGTH;
             request_list.get_column (get_col_pos ("Content Type")).sort_column_id = Column.RESPONSE_CONTENT_TYPE;
@@ -369,7 +370,6 @@ namespace Pakiki {
             
             for (int i = 0; i < columns.length; i++) {
                 if (columns[i].index_of (title, 0) == 0) {
-                    stdout.printf("Column %s at position %d\n", title, i);
                     return i;
                 }
             }

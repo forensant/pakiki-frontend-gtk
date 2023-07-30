@@ -7,11 +7,15 @@ namespace Pakiki {
     class Intercept : Gtk.Paned, MainApplicationPane {
 
         [GtkChild]
+        private unowned Gtk.Box box_original_request;
+        [GtkChild]
         private unowned Gtk.Button button_drop;
         [GtkChild]
         private unowned Gtk.Button button_intercept_response;
         [GtkChild]
         private unowned Gtk.Button button_forward;
+        [GtkChild]
+        private unowned Gtk.Label label_edit_request;
         [GtkChild]
         private unowned Gtk.ToggleButton checkbox_intercept_to_server;
         [GtkChild]
@@ -22,11 +26,17 @@ namespace Pakiki {
         private unowned Gtk.ScrolledWindow scrolled_window_hex_request;
         [GtkChild]
         private unowned Gtk.ScrolledWindow scrolled_window_text_request;
+        [GtkChild]
+        private unowned Gtk.ScrolledWindow scrolled_window_hex_requestresponse;
+        [GtkChild]
+        private unowned Gtk.ScrolledWindow scrolled_window_text_requestresponse;
 
         private ApplicationWindow application_window;
-        private HexEditor hex_editor;
+        private HexEditor hex_editor_requestresponse;
+        private HexEditor hex_editor_request;
         private Gtk.ListStore liststore_requests;
         private bool updating;
+        private RequestTextEditor text_view_requestresponse;
         private RequestTextEditor text_view_request;
         private WebsocketConnection websocket;
 
@@ -36,12 +46,13 @@ namespace Pakiki {
             PROTOCOL,
             DIRECTION,
             URL,
-            BODY
+            BODY,
+            ORIGINAL_REQUEST_BODY
         }
         
         public Intercept (ApplicationWindow application_window) {
             this.application_window = application_window;
-            liststore_requests = new Gtk.ListStore (6, typeof(string), typeof(string), typeof (string), typeof (string), typeof (string), typeof (string));
+            liststore_requests = new Gtk.ListStore (7, typeof(string), typeof(string), typeof (string), typeof (string), typeof (string), typeof (string), typeof (string));
             list_requests.set_model (liststore_requests);
 
             var url_renderer = new Gtk.CellRendererText();
@@ -54,27 +65,40 @@ namespace Pakiki {
             list_requests.insert_column_with_attributes (-1, "Direction", new CellRendererText (), "text", Column.DIRECTION);
             list_requests.insert_column_with_attributes (-1, "URL", url_renderer, "text", Column.URL);
             list_requests.insert_column_with_attributes (-1, "Body", new CellRendererText (), "text", Column.BODY);
+            list_requests.insert_column_with_attributes (-1, "Original Request Body", new CellRendererText (), "text", Column.ORIGINAL_REQUEST_BODY);
 
             var url_column = list_requests.get_column(Column.URL);
             url_column.expand = true;
             url_column.min_width = 200;
 
-            var guidColumn = list_requests.get_column(Column.REQUEST_GUID);
-            guidColumn.visible = false;
+            var guid_column = list_requests.get_column(Column.REQUEST_GUID);
+            guid_column.visible = false;
 
-            var idColumn = list_requests.get_column(Column.DATA_PACKET_GUID);
-            idColumn.visible = false;
+            var id_column = list_requests.get_column(Column.DATA_PACKET_GUID);
+            id_column.visible = false;
 
-            var bodyColumn = list_requests.get_column(Column.BODY);
-            bodyColumn.visible = false;
+            var body_column = list_requests.get_column(Column.BODY);
+            body_column.visible = false;
+
+            var original_body_column = list_requests.get_column(Column.ORIGINAL_REQUEST_BODY);
+            original_body_column.visible = false;
 
             text_view_request = new RequestTextEditor (application_window);
+            text_view_request.editable = false;
             text_view_request.show ();
             scrolled_window_text_request.add (text_view_request);
 
-            hex_editor = new HexEditor (application_window);
-            hex_editor.show ();
-            scrolled_window_hex_request.add (hex_editor);
+            text_view_requestresponse = new RequestTextEditor (application_window);
+            text_view_requestresponse.show ();
+            scrolled_window_text_requestresponse.add (text_view_requestresponse);
+
+            hex_editor_request = new HexEditor (application_window);
+            hex_editor_request.show ();
+            scrolled_window_hex_request.add (hex_editor_request);
+
+            hex_editor_requestresponse = new HexEditor (application_window);
+            hex_editor_requestresponse.show ();
+            scrolled_window_hex_requestresponse.add (hex_editor_requestresponse);
 
             get_intercept_settings ();
             get_requests ();
@@ -128,6 +152,7 @@ namespace Pakiki {
                 var direction = request_data.get_string_member ("Direction");
                 var url = request.get_string_member ("URL");
                 var body = request_data.get_string_member ("Body");
+                var original_request_body = request_data.get_string_member ("RequestBody");
 
                 if (direction == "browser_to_server") {
                     direction = "Request";
@@ -142,7 +167,8 @@ namespace Pakiki {
                     Column.PROTOCOL, protocol,
                     Column.DIRECTION, direction,
                     Column.URL, url,
-                    Column.BODY, body
+                    Column.BODY, body,
+                    Column.ORIGINAL_REQUEST_BODY, original_request_body
                 );
 
                 if (list_selection.get_selected_rows (null).length () == 0) {
@@ -167,7 +193,10 @@ namespace Pakiki {
             button_forward.sensitive = false;
             button_intercept_response.sensitive = false;
             scrolled_window_hex_request.hide ();
-            scrolled_window_text_request.show ();
+            scrolled_window_text_request.hide ();
+            scrolled_window_hex_requestresponse.hide ();
+            scrolled_window_text_requestresponse.show ();
+            box_original_request.hide ();
         }
 
         private void get_intercept_settings () {
@@ -295,37 +324,66 @@ namespace Pakiki {
             var selection = list_requests.get_selection ();            
             var selection_count = selection.get_selected_rows (null).length ();
 
+            label_edit_request.label = "";
+
             selection.selected_foreach ((model, path, iter) => {
                 if (selection_count == 1) {
                     string body;
                     string direction;
                     string protocol;
+                    string original_request_body;
                     model.get (iter, Column.BODY, out body);
                     model.get (iter, Column.DIRECTION, out direction);
                     model.get (iter, Column.PROTOCOL, out protocol);
+                    model.get (iter, Column.ORIGINAL_REQUEST_BODY, out original_request_body);
 
                     var body_bytes = Base64.decode (body);
+                    var original_request_body_bytes = Base64.decode (original_request_body);
 
                     if (is_binary (body_bytes)) {
-                        scrolled_window_hex_request.show ();
-                        scrolled_window_text_request.hide ();
-                        text_view_request.buffer.text = "";
+                        scrolled_window_hex_requestresponse.show ();
+                        scrolled_window_text_requestresponse.hide ();
+                        text_view_requestresponse.buffer.text = "";
                         var buffer = new HexStaticBuffer.from_bytes (body_bytes);
                         buffer.set_read_only (false);
-                        hex_editor.buffer = buffer;
+                        hex_editor_requestresponse.buffer = buffer;
                     } else {
-                        scrolled_window_hex_request.hide ();
-                        scrolled_window_text_request.show ();
-                        text_view_request.buffer.text = ((string) body_bytes).replace("\r\n", "\n");
-                        text_view_request.direction = direction.down ();
+                        scrolled_window_hex_requestresponse.hide ();
+                        scrolled_window_text_requestresponse.show ();
+                        text_view_requestresponse.buffer.text = ((string) body_bytes).replace("\r\n", "\n");
+                        text_view_requestresponse.direction = direction.down ();
+                        text_view_requestresponse.editable = true;
                     }
 
                     var is_request = (direction == "Request");
                     button_forward.sensitive = true;
                     button_drop.sensitive = is_request;
                     button_intercept_response.sensitive = is_request && (protocol != "Websocket");
+
+                    box_original_request.visible = !is_request && (original_request_body != "");
+                    label_edit_request.label = box_original_request.visible ? "Request and Response" : "Request";
+
+                    if (!is_request && (original_request_body != "")) {
+                        if (is_binary (original_request_body_bytes)) {
+                            scrolled_window_hex_request.show ();
+                            scrolled_window_text_request.hide ();
+                            text_view_request.buffer.text = "";
+                            var buffer = new HexStaticBuffer.from_bytes (original_request_body_bytes);
+                            buffer.set_read_only (true);
+                            hex_editor_request.buffer = buffer;
+                        } else {
+                            scrolled_window_hex_request.hide ();
+                            scrolled_window_text_request.show ();
+                            text_view_request.buffer.text = ((string) original_request_body_bytes).replace("\r\n", "\n");
+                            text_view_request.direction = direction.down ();
+                        }
+                    }
                 } else {
+                    box_original_request.visible = false;
+                    scrolled_window_hex_requestresponse.hide ();
+                    scrolled_window_text_requestresponse.show ();
                     text_view_request.buffer.text = "(Multiple requests/responses selected)";
+                    text_view_requestresponse.editable = false;
                     button_forward.sensitive = true;
                     button_drop.sensitive = false;
                     button_intercept_response.sensitive = false;
@@ -333,9 +391,11 @@ namespace Pakiki {
             });
 
             if (selection_count == 0) {
-                scrolled_window_hex_request.hide ();
-                scrolled_window_text_request.show ();
-                text_view_request.buffer.text = "";
+                scrolled_window_hex_requestresponse.hide ();
+                scrolled_window_text_requestresponse.show ();
+                text_view_requestresponse.buffer.text = "";
+                text_view_requestresponse.editable = false;
+                box_original_request.hide ();
             }
         }
 
@@ -403,11 +463,11 @@ namespace Pakiki {
 
                 if (selection_count == 1) {
                     if (scrolled_window_hex_request.visible) {
-                        var bytes = ((HexStaticBuffer)hex_editor.buffer).get_buffer ();
+                        var bytes = ((HexStaticBuffer)hex_editor_requestresponse.buffer).get_buffer ();
                         body = Base64.encode (bytes);
                     }
                     else {
-                        body = Base64.encode (text_view_request.buffer.text.data);
+                        body = Base64.encode (text_view_requestresponse.buffer.text.data);
                     }
                 }
 
