@@ -508,6 +508,7 @@ namespace Pakiki {
                             }
 
                             text_view_request.buffer.text += text.replace ("\r\n", "\n");
+                            text_view_request.on_text_changed (true);
                         }
 
                         correct_separators_and_tag ();

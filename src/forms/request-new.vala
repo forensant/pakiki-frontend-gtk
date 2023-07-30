@@ -61,6 +61,7 @@ namespace Pakiki {
                 return true;
             });
             application_window.add_accel_group (accel_group);
+            reset_state ();
         }
 
         public bool back_visible () {
@@ -77,6 +78,11 @@ namespace Pakiki {
 
         public bool find_activated () {
             return request_details.find_activated ();
+        }
+
+        [GtkCallback]
+        public void on_button_reset_clicked () {
+            reset_state ();
         }
 
         [GtkCallback]
@@ -189,10 +195,11 @@ namespace Pakiki {
         }
 
         public void reset_state () {
-            combobox_protocol.set_active (0);
-            entry_hostname.set_text ("");
+            combobox_protocol.set_active (1);
+            entry_hostname.set_text ("livefirerange.pakikiproxy.com");
             spinner.stop ();
-            request_text_editor.buffer.set_text ("");
+            request_text_editor.buffer.set_text ("GET / HTTP/1.1\nHost: livefirerange.pakikiproxy.com\n\n");
+            request_text_editor.on_text_changed (true);
             label_error.visible = false;
             request_details.reset_state ();
             hex_editor.buffer = new HexStaticBuffer.from_bytes (new uint8[0]);

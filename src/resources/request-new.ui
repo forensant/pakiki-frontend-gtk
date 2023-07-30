@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.2 -->
+<!-- Generated with glade 3.40.0 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkListStore" id="liststore_protocols">
@@ -18,33 +18,36 @@
   </object>
   <template class="PakikiRequestNew" parent="GtkPaned">
     <property name="visible">True</property>
-    <property name="can_focus">True</property>
-    <property name="margin_left">18</property>
-    <property name="margin_right">18</property>
-    <property name="margin_top">18</property>
-    <property name="margin_bottom">18</property>
+    <property name="can-focus">True</property>
+    <property name="margin-left">18</property>
+    <property name="margin-right">18</property>
+    <property name="margin-top">18</property>
+    <property name="margin-bottom">18</property>
     <property name="orientation">vertical</property>
     <child>
+      <!-- n-columns=3 n-rows=3 -->
       <object class="GtkGrid">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="hexpand">True</property>
         <property name="vexpand">True</property>
         <child>
           <object class="GtkBox">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="hexpand">True</property>
             <child>
               <object class="GtkLabel" id="label_error">
-                <property name="can_focus">False</property>
-                <property name="margin_right">12</property>
+                <property name="can-focus">False</property>
+                <property name="margin-right">12</property>
+                <property name="margin-bottom">12</property>
                 <property name="label" translatable="yes">Error: </property>
                 <property name="wrap">True</property>
-                <property name="wrap_mode">word-char</property>
+                <property name="wrap-mode">word-char</property>
+                <property name="xalign">0</property>
               </object>
               <packing>
-                <property name="expand">False</property>
+                <property name="expand">True</property>
                 <property name="fill">True</property>
                 <property name="position">0</property>
               </packing>
@@ -53,50 +56,65 @@
               <object class="GtkButton" id="button_send">
                 <property name="label" translatable="yes">_Send</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="margin_bottom">12</property>
-                <property name="use_underline">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="margin-bottom">12</property>
+                <property name="use-underline">True</property>
                 <signal name="clicked" handler="on_send_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="pack_type">end</property>
+                <property name="pack-type">end</property>
                 <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="button_reset">
+                <property name="label" translatable="yes">_Reset</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="margin-end">6</property>
+                <property name="margin-bottom">12</property>
+                <property name="use-underline">True</property>
+                <signal name="clicked" handler="on_button_reset_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="pack-type">end</property>
+                <property name="position">2</property>
               </packing>
             </child>
             <child>
               <object class="GtkSpinner" id="spinner">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="margin_right">12</property>
-                <property name="margin_bottom">12</property>
+                <property name="can-focus">False</property>
+                <property name="margin-right">12</property>
+                <property name="margin-bottom">12</property>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="pack_type">end</property>
-                <property name="position">2</property>
+                <property name="pack-type">end</property>
+                <property name="position">23</property>
               </packing>
-            </child>
-            <child>
-              <placeholder/>
             </child>
           </object>
           <packing>
-            <property name="left_attach">1</property>
-            <property name="top_attach">2</property>
+            <property name="left-attach">1</property>
+            <property name="top-attach">2</property>
           </packing>
         </child>
         <child>
           <object class="GtkBox">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <child>
               <object class="GtkComboBox" id="combobox_protocol">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="model">liststore_protocols</property>
               </object>
               <packing>
@@ -108,9 +126,9 @@
             <child>
               <object class="GtkEntry" id="entry_hostname">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="margin_left">6</property>
-                <property name="placeholder_text" translatable="yes">Hostname</property>
+                <property name="can-focus">True</property>
+                <property name="margin-left">6</property>
+                <property name="placeholder-text" translatable="yes">Hostname</property>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -123,54 +141,54 @@
             </child>
           </object>
           <packing>
-            <property name="left_attach">1</property>
-            <property name="top_attach">0</property>
+            <property name="left-attach">1</property>
+            <property name="top-attach">0</property>
           </packing>
         </child>
         <child>
           <object class="GtkLabel" id="label_host">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="margin_right">12</property>
+            <property name="can-focus">False</property>
+            <property name="margin-right">12</property>
             <property name="label" translatable="yes">_Host</property>
-            <property name="use_underline">True</property>
-            <property name="mnemonic_widget">combobox_protocol</property>
+            <property name="use-underline">True</property>
+            <property name="mnemonic-widget">combobox_protocol</property>
             <property name="xalign">1</property>
           </object>
           <packing>
-            <property name="left_attach">0</property>
-            <property name="top_attach">0</property>
+            <property name="left-attach">0</property>
+            <property name="top-attach">0</property>
           </packing>
         </child>
         <child>
           <object class="GtkLabel" id="label_request">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="margin_right">12</property>
-            <property name="margin_top">12</property>
+            <property name="can-focus">False</property>
+            <property name="margin-right">12</property>
+            <property name="margin-top">12</property>
             <property name="label" translatable="yes">Request</property>
             <property name="xalign">1</property>
             <property name="yalign">0</property>
           </object>
           <packing>
-            <property name="left_attach">0</property>
-            <property name="top_attach">1</property>
+            <property name="left-attach">0</property>
+            <property name="top-attach">1</property>
           </packing>
         </child>
         <child>
           <object class="GtkBox">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
             <child>
               <object class="GtkScrolledWindow" id="scrolled_window_text_view_request">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="margin_top">12</property>
-                <property name="margin_bottom">12</property>
+                <property name="can-focus">True</property>
+                <property name="margin-top">12</property>
+                <property name="margin-bottom">12</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
-                <property name="shadow_type">in</property>
+                <property name="shadow-type">in</property>
                 <child>
                   <placeholder/>
                 </child>
@@ -183,12 +201,12 @@
             </child>
             <child>
               <object class="GtkScrolledWindow" id="scrolled_window_hex_editor">
-                <property name="can_focus">True</property>
-                <property name="margin_top">12</property>
-                <property name="margin_bottom">12</property>
+                <property name="can-focus">True</property>
+                <property name="margin-top">12</property>
+                <property name="margin-bottom">12</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
-                <property name="shadow_type">in</property>
+                <property name="shadow-type">in</property>
                 <child>
                   <placeholder/>
                 </child>
@@ -201,9 +219,18 @@
             </child>
           </object>
           <packing>
-            <property name="left_attach">1</property>
-            <property name="top_attach">1</property>
+            <property name="left-attach">1</property>
+            <property name="top-attach">1</property>
           </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
         </child>
         <child>
           <placeholder/>
