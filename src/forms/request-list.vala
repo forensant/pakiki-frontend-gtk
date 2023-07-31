@@ -715,7 +715,13 @@ namespace Pakiki {
             if (first_column != null) {
                 int x, y, w, h;
                 first_column.cell_get_size (null, out x, out y, out w, out h);
-                if (event.y < h) {
+
+                int widget_x, widget_y, window_x, window_y;
+
+                request_list.translate_coordinates (this.parent, 0, 0, out widget_x, out widget_y);
+                this.get_window ().get_origin (out window_x, out window_y);
+
+                if (event.y_root < (widget_y + h + window_y)) {
                     is_header = true;
                 }
             }
