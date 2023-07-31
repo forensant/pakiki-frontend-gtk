@@ -19,6 +19,11 @@ namespace Pakiki {
         private SyntaxHighlighter syntax_highlighter = new SyntaxHighlighter ();
         private bool setting_selection;
 
+        // request details
+        private string guid;
+        private string protocol;
+        private string url;
+
         private bool _editable;
         public bool editable {
             get { return _editable; }
@@ -158,6 +163,12 @@ namespace Pakiki {
             });
             menu_item.show ();
             menu.append (menu_item);
+
+            separator = new Gtk.SeparatorMenuItem ();
+            separator.show ();
+            menu.append (separator);
+
+            RequestDetails.populate_send_to_menu (application_window, menu, guid, protocol, url);
         }
 
         public void reset_state () {
@@ -346,7 +357,7 @@ namespace Pakiki {
 
             searchable_hex_editor.hex_editor.buffer = new HexRemoteBuffer (application_window, guid, content_length);
         }
-
+        
         private void set_hex_text (uchar[] request, uchar[] response) {
             show_hex (true);
 
@@ -378,6 +389,14 @@ namespace Pakiki {
             } else {
                 set_hex_text (request, response);
             }
+        }
+
+        public void set_request_details (string guid, string protocol, string url) {
+            this.guid = guid;
+            this.protocol = protocol;
+            this.url = url;
+
+            this.searchable_hex_editor.hex_editor.set_request_details (guid, protocol, url);
         }
 
         private Cancellable cancellable = new Cancellable();

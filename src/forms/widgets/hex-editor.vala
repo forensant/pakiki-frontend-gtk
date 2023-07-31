@@ -32,6 +32,10 @@ namespace Pakiki {
         private int64 selection_start_charidx = 0;
         private int64 selection_end_charidx = 0;
 
+        private string guid;
+        private string protocol;
+        private string url;
+
         private Gtk.Adjustment _hadjustment;
         public Gtk.Adjustment hadjustment {
             get { return _hadjustment; }
@@ -1026,6 +1030,12 @@ namespace Pakiki {
             queue_draw ();
         }
 
+        public void set_request_details (string guid, string protocol, string url) {
+            this.guid = guid;
+            this.protocol = protocol;
+            this.url = url;
+        }
+
         private bool set_selection (double end_x, double end_y) {
             if (selection_start_x == -1 || selection_start_y == -1) {
                 return false;
@@ -1071,7 +1081,6 @@ namespace Pakiki {
             }
 
             var selected_data = get_selected_data (area);
-            var selected_text = get_selected_text (area);
 
             if (buffer.read_only () == false) {
                 var cut_item = new Gtk.MenuItem.with_label ("Cut");
@@ -1124,6 +1133,12 @@ namespace Pakiki {
             });
             menu_item.show ();
             menu.append (menu_item);
+
+            separator = new Gtk.SeparatorMenuItem ();
+            separator.show ();
+            menu.append (separator);
+
+            RequestDetails.populate_send_to_menu (application_window, menu, guid, protocol, url);
 
             menu.popup_at_pointer (evt);
         }

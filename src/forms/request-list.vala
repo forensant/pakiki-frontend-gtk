@@ -735,75 +735,29 @@ namespace Pakiki {
                 // right click
                 var menu = new Gtk.Menu ();
 
+                var guid = "";
+                var guids = get_selected_fields (Column.GUID);
+                if (guids.length == 1 && guids[0] != "") {
+                    guid = guids[0];
+                }
+
+                if (guid == "") {
+                    return false;
+                }
+
+                var protocol = "";
                 var protocols = get_selected_fields (Column.PROTOCOL);
-                if (protocols.length != 1) {
-                    return false;
+                if (protocols.length == 1) {
+                    protocol = protocols[0];
                 }
 
-                var is_http = protocols[0].contains("HTTP");
-                
-                var guids = get_selected_guids ();
-                if (guids.length != 1 || guids[0] == "") {
-                    return false;
+                var url = "";
+                var urls = get_selected_fields (Column.URL);
+                if (urls.length == 1 && urls[0] != "") {
+                    url = urls[0];
                 }
-                var guid = guids[0];
-            
-                var new_window = new Gtk.MenuItem.with_label ("New Window");
-                new_window.activate.connect ( () => {
-                    var win = new RequestWindow (application_window, guid);
-                    win.show ();
-                });
-                new_window.show ();
-                menu.append (new_window);
-                
-                var item_new_request = new Gtk.MenuItem.with_label ("New Request");
-                item_new_request.sensitive = is_http;
-                item_new_request.activate.connect ( () => {
-                    application_window.send_to_new_request (guid);
-                });
-                item_new_request.show ();
-                menu.append (item_new_request);
-    
-                var item_inject = new Gtk.MenuItem.with_label ("Inject");
-                item_inject.sensitive = is_http;
-                item_inject.activate.connect ( () => {
-                    application_window.send_to_inject (guid);
-                });
-                item_inject.show ();
-                menu.append (item_inject);
 
-                var copy_url = new Gtk.MenuItem.with_label ("Copy URL");
-                copy_url.activate.connect ( () => {
-                    var urls = get_selected_fields (Column.URL);
-                    if (urls.length != 1 || urls[0] == "") {
-                        return;
-                    }
-
-                    var url = urls[0];
-                    Gdk.Display display = Gdk.Display.get_default ();
-                    Gtk.Clipboard clipboard = Gtk.Clipboard.get_for_display (display, Gdk.SELECTION_CLIPBOARD);
-                    clipboard.set_text (url, url.length);
-                });
-                copy_url.show ();
-                menu.append (copy_url);
-
-                var open_browser_inject = new Gtk.MenuItem.with_label ("Open in Browser");
-                open_browser_inject.sensitive = is_http;
-                open_browser_inject.activate.connect ( () => {
-                    var urls = get_selected_fields (Column.URL);
-                    if (urls.length != 1 || urls[0] == "") {
-                        return;
-                    }
-
-                    var url = urls[0];
-                    try {
-                        AppInfo.launch_default_for_uri (url, null);
-                    } catch (Error err) {
-                        stdout.printf ("Could not launch browser: %s\n", err.message);
-                    }
-                });
-                open_browser_inject.show ();
-                menu.append (open_browser_inject);
+                RequestDetails.populate_send_to_menu (application_window, menu, guid, protocol, url);
 
                 menu.popup_at_pointer (event);
             }

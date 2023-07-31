@@ -7,7 +7,7 @@ namespace Pakiki {
     class RequestDetails : Gtk.Notebook {
 
         [GtkChild]
-        private unowned Gtk.MenuButton button_send_to;
+        private unowned Gtk.Button button_send_to;
         [GtkChild]
         private unowned Gtk.ListStore liststore_websocket_packets;
         [GtkChild]
@@ -29,6 +29,7 @@ namespace Pakiki {
         public string guid;
         private Gee.HashMap<string, string> modified_websocket_data;
         private OutOfBandDisplay out_of_band_display;
+        private string protocol;
         private RequestPreview request_preview;
         private SearchableWebView searchable_web_view;
         private string url;
@@ -79,7 +80,6 @@ namespace Pakiki {
             text_view_orig_request.show ();
             text_view_websocket_request.show ();
 
-            set_send_to_popup ();
             scroll_window_original_text.hide ();
 
             request_preview = new RequestPreview (application_window);
@@ -224,12 +224,14 @@ namespace Pakiki {
 
                 if (large_response) {
                     text_view_request.set_large_request (guid, combined_content_length);
+                    text_view_request.set_request_details (guid, protocol, url);
                     text_view_orig_request.set_request_response ("Request or response too large to display".data, "".data);
                     searchable_web_view.hide ();
                 }
                 else {
                     text_view_request.set_request_response (modified_request, modified_response);
                     text_view_orig_request.set_request_response (original_request, original_response);
+                    text_view_request.set_request_details (guid, protocol, url);
                 }
                 
             } else {
@@ -238,9 +240,11 @@ namespace Pakiki {
                 if (large_response) {
                     text_view_request.set_large_request (guid, combined_content_length);
                     searchable_web_view.hide ();
+                    text_view_request.set_request_details (guid, protocol, url);
                 }
                 else {
                     text_view_request.set_request_response (original_request, original_response);
+                    text_view_request.set_request_details (guid, protocol, url);
                 }
             }
 
@@ -351,7 +355,7 @@ namespace Pakiki {
                             parser.load_from_stream_async.end (res2);
 
                             var root_obj = parser.get_root().get_object();
-                            var protocol = root_obj.get_string_member ("Protocol");
+                            protocol = root_obj.get_string_member ("Protocol");
     
                             set_controls_visible (protocol.contains("HTTP"), protocol == "Websocket", protocol == "Out of Band");
     
@@ -395,41 +399,62 @@ namespace Pakiki {
             }
         }
 
-        private void set_send_to_popup () {
-            var menu = new Gtk.Menu ();
-                        
+        public static void populate_send_to_menu (ApplicationWindow application_window, Gtk.Menu menu, string guid, string protocol, string url) {
+            var is_http = protocol.contains("HTTP");
+            
+            var new_window = new Gtk.MenuItem.with_label ("New Window");
+            new_window.activate.connect ( () => {
+                var win = new RequestWindow (application_window, guid);
+                win.show ();
+            });
+            new_window.show ();
+            menu.append (new_window);
+                
             var item_new_request = new Gtk.MenuItem.with_label ("New Request");
+            item_new_request.sensitive = is_http;
             item_new_request.activate.connect ( () => {
-                if (guid != "") {
-                    application_window.send_to_new_request (guid);
-                }
+                application_window.send_to_new_request (guid);
             });
             item_new_request.show ();
             menu.append (item_new_request);
-
+    
             var item_inject = new Gtk.MenuItem.with_label ("Inject");
+            item_inject.sensitive = is_http;
             item_inject.activate.connect ( () => {
-                if (guid != "") {
-                    application_window.send_to_inject (guid);
-                }
+                application_window.send_to_inject (guid);
             });
             item_inject.show ();
             menu.append (item_inject);
 
+            var copy_url = new Gtk.MenuItem.with_label ("Copy URL");
+            copy_url.activate.connect ( () => {
+                Gdk.Display display = Gdk.Display.get_default ();
+                Gtk.Clipboard clipboard = Gtk.Clipboard.get_for_display (display, Gdk.SELECTION_CLIPBOARD);
+                clipboard.set_text (url, url.length);
+            });
+            copy_url.sensitive = (url != "");
+            copy_url.show ();
+            menu.append (copy_url);
+
             var open_browser_inject = new Gtk.MenuItem.with_label ("Open in Browser");
+            open_browser_inject.sensitive = is_http;
             open_browser_inject.activate.connect ( () => {
-                if (guid != "" && url != "") {
-                    try {
-                        AppInfo.launch_default_for_uri (url, null);
-                    } catch (Error err) {
-                        stdout.printf ("Could not launch browser: %s\n", err.message);
-                    }
+                try {
+                    AppInfo.launch_default_for_uri (url, null);
+                } catch (Error err) {
+                    stdout.printf ("Could not launch browser: %s\n", err.message);
                 }
             });
             open_browser_inject.show ();
             menu.append (open_browser_inject);
+        }
 
-            button_send_to.set_popup (menu);
+        [GtkCallback]
+        private void on_button_send_to_clicked () {
+            var menu = new Gtk.Menu ();
+            RequestDetails.populate_send_to_menu (application_window, menu, guid, protocol, url);
+            menu.show_all ();
+            menu.popup_at_widget (button_send_to, Gdk.Gravity.SOUTH_WEST, Gdk.Gravity.NORTH_WEST, null);
         }
 
         public void request_updated (int64 combined_content_length) {

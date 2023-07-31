@@ -353,6 +353,7 @@ namespace Pakiki {
                         text_view_requestresponse.buffer.text = ((string) body_bytes).replace("\r\n", "\n");
                         text_view_requestresponse.direction = direction.down ();
                         text_view_requestresponse.editable = true;
+                        text_view_requestresponse.on_text_changed (true);
                     }
 
                     var is_request = (direction == "Request");
