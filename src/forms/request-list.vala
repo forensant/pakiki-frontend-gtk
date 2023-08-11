@@ -76,6 +76,7 @@ namespace Pakiki {
             this.url_filter = "";
             this._process_actions = true;
             guid_set = new Gee.TreeSet<string> ();
+            request_list.has_tooltip = true;
 
             this.placeholder_requests = new PlaceholderRequests (application_window);
             placeholder_requests.hide ();
@@ -763,6 +764,53 @@ namespace Pakiki {
             }
 
             return false; // allow other event handlers to also be run
+        }
+
+        [GtkCallback]
+        public bool on_request_list_query_tooltip (int x, int y, bool keyboard_tooltip, Gtk.Tooltip tooltip) {
+            Gtk.TreePath? path;
+            Gtk.TreeIter iter;
+            Gtk.TreeViewColumn? col;
+            int cell_x, cell_y;
+
+            int bin_x, bin_y;
+            request_list.convert_widget_to_bin_window_coords (x, y, out bin_x, out bin_y);
+
+            var row_present = request_list.get_path_at_pos (bin_x, bin_y, out path, out col, out cell_x, out cell_y);
+            if (!row_present || col == null || path == null) {
+                return false;
+            }
+
+            if (!request_list.model.get_iter (out iter, path)) {
+                return false;
+            }
+
+            if (col.sort_column_id == Column.PROTOCOL || col.sort_column_id == Column.VERB) {
+                return false;
+            }
+
+            if (col.sort_column_id == Column.TIME) {
+                Value time;
+                request_list.model.get_value (iter, Column.TIME, out time);
+                var datetime = new DateTime.from_unix_local (time.get_int ());
+   
+                tooltip.set_text (datetime.format ("%A %e %B %Y %T"));
+                return true;
+            }
+
+            GLib.Value val;
+            request_list.model.get_value (iter, col.sort_column_id , out val);
+
+
+            if (val.type () == GLib.Type.STRING) {
+                var str = val.get_string ();
+                if (str != "") {
+                    tooltip.set_text (val.get_string ());
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public void on_search (string query, bool negative_filter, bool exclude_resources, string protocol = "") {
