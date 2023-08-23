@@ -13,4 +13,4 @@ Depends: libc6 (>= 2.2.1), libgtk-3-0, libpython3.11, libsoup-3.0-0, libjson-gli
 Description: Native next generation intercepting proxy, designed for security testing of web applications.
 EOL
 
-dpkg-deb -Zxz --build .debpkg "Pakiki-Community-v`cat src/resources/version`-Linux-`uname -m`.deb"
+dpkg-deb -Zxz --build .debpkg "Pakiki-Proxy-Community-v`cat src/resources/version`-Linux-`uname -m`.deb"

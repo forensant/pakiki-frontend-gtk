@@ -122,10 +122,14 @@ jobs:
           name: pakiki-core
           path: pakiki-core
 
+      - name: Read VERSION file
+        id: getversion
+        run: echo "::set-output name=version::$(cat src/resources/version)"
+
       - name: Build and package
         uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v4
         with:
-          bundle: Pakiki.flatpak
+          bundle: Pakiki-Proxy-Community-v${{ steps.getversion.outputs.version }}-Linux-x64.flatpak
           manifest-path: com.forensant.pakiki-github.yml
           cache-key: flatpak-builder-${{ github.sha }}  
 

@@ -801,7 +801,6 @@ namespace Pakiki {
             GLib.Value val;
             request_list.model.get_value (iter, col.sort_column_id , out val);
 
-
             if (val.type () == GLib.Type.STRING) {
                 var str = val.get_string ();
                 if (str != "") {
