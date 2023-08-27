@@ -8,7 +8,7 @@ mkdir crashpad
 cd crashpad
 ../depot_tools/fetch crashpad
 cd crashpad
-../depot_tools/gn gen out/Default
+../../depot_tools/gn gen out/Default
 
 if ! grep -q "include <stdint.h>" "third_party/mini_chromium/mini_chromium/base/logging.h"; then
     sed -i '10 a #include <stdint.h>' third_party/mini_chromium/mini_chromium/base/logging.h
@@ -23,6 +23,6 @@ if ! grep -q "include <stdint.h>" "third_party/mini_chromium/mini_chromium/base/
     sed -i '10 a typedef unsigned char uint8_t;' third_party/mini_chromium/mini_chromium/base/third_party/icu/icu_utf.h
 fi
 
-../depot_tools/ninja -C out/Default
+../../depot_tools/ninja -C out/Default
 cd ../../..
 cp subprojects/crashpad/crashpad/out/Default/crashpad_handler ./builddir/pakiki_crashpad_handler
