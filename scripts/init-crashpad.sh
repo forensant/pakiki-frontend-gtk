@@ -2,6 +2,8 @@
 
 # This script is used to build the crashpad handler for the current platform.
 
+mkdir -p builddir
+
 git submodule update --init --recursive
 cd subprojects
 mkdir crashpad
