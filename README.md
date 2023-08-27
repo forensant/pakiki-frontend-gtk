@@ -71,10 +71,9 @@ You'll require the following dependencies to develop Pākiki:
  * libwebkit2-gtk
  * libgtksourceview-3
  * libnotify
- * ninja
 
 On Debian based distributions, these can be downloaded with:
- ```sudo apt install build-essential valac meson libgtk-3-dev libsoup-3.0-dev libjson-glib-dev libwebkit2gtk-4.1-dev libgtksourceview-3.0-dev libgee-0.8-dev libnotify-dev ninja```
+ ```sudo apt install build-essential valac meson libgtk-3-dev libsoup-3.0-dev libjson-glib-dev libwebkit2gtk-4.1-dev libgtksourceview-3.0-dev libgee-0.8-dev libnotify-dev```
 
 If you're going to be building/packaging Pākiki, you'll also require the Flatpak dependencies:
 ```

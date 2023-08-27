@@ -23,6 +23,6 @@ if ! grep -q "include <stdint.h>" "third_party/mini_chromium/mini_chromium/base/
     sed -i '10 a typedef unsigned char uint8_t;' third_party/mini_chromium/mini_chromium/base/third_party/icu/icu_utf.h
 fi
 
-ninja -C out/Default
+../depot_tools/ninja -C out/Default
 cd ../../..
 cp subprojects/crashpad/crashpad/out/Default/crashpad_handler ./builddir/pakiki_crashpad_handler
