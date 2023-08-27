@@ -100,6 +100,7 @@ namespace Pakiki {
             overlay.add_overlay (label_overlay);
             
             settings = new GLib.Settings ("com.forensant.pakiki");
+            init_crash_reporting ();
 
             var accel_group = new Gtk.AccelGroup ();
             accel_group.connect ('f', Gdk.ModifierType.CONTROL_MASK, 0, (group, accel, keyval, modifier) => {
@@ -325,6 +326,18 @@ namespace Pakiki {
 
             contents = contents.replace ("#000000", text_color.to_string ());
             return new GLib.MemoryInputStream.from_data (contents.data);
+        }
+
+        public void init_crash_reporting () {
+            Crashpad.setup (
+                "/tmp",
+                "Pākiki Proxy - Community",
+                pakiki_application.get_version (),
+                "https://sentryio.pakikiproxy.com/api/2/minidump/?sentry_key=ca7c9b5b824bb4114cec38cd113e72a1",
+                "");
+
+            bool report = settings.get_boolean ("crash-reports");
+            Crashpad.set_automatic_reporting ("/tmp", report);
         }
 
         public bool is_sandboxed () {

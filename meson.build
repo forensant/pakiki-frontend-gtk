@@ -2,11 +2,16 @@ project('com.forensant.pakiki', 'vala', 'c',
   version: run_command('cat', 'src/resources/version', check : true).stdout().strip(),
   license: 'MIT')
 
+vapi_dir = meson.current_source_dir() / 'vapi'
+add_project_arguments(['--vapidir', vapi_dir], language: 'vala')
+
 dependencies = [
     dependency('glib-2.0'),
     dependency('gobject-2.0'),
     dependency('gtk+-3.0'),
     dependency('gee-0.8'),
+    dependency('crashpad_wrapper', default_options: ['default_library=static']),
+    meson.get_compiler('vala').find_library('crashpad', dirs: vapi_dir),
     dependency('gxml-0.18', fallback : [ 'gxml', 'libgxml_dep' ], default_options: ['default_library=static']),
     dependency('json-glib-1.0'),
     dependency('libsoup-3.0'),
