@@ -193,11 +193,9 @@ jobs:
             ./*.deb
             
       - name: Create Sentry release
-        uses: getsentry/action-release@v1
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-          SENTRY_URL: ${{ secrets.SENTRY_URL }}
-        with:
-          environment: production
+        run:
+          curl -sL https://sentry.io/get-cli/ | sh
+          sentry-cli releases new ${{ steps.getversion.outputs.version }}
+          sentry-cli releases set-commits --auto ${{ steps.getversion.outputs.version }}
+          sentry-cli debug-files upload --include-sources --org ${{ secrets.SENTRY_ORG }} --project ${{ secrets.SENTRY_PROJECT }} --url ${{secrets.SENTRY_URL}} --api-token ${{secrets.SENTRY_AUTH_TOKEN}} --include-sources .
+        
