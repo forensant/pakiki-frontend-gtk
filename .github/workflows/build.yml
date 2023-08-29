@@ -187,7 +187,7 @@ jobs:
             ./*.deb
             
       - name: Create Sentry release
-        run:
+        run: |
           curl -sL https://sentry.io/get-cli/ > /tmp/sentry-install.sh
           chmod +x /tmp/sentry-install.sh
           /tmp/sentry-install.sh
