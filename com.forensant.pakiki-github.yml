@@ -33,6 +33,8 @@ modules:
     buildsystem: simple
     build-commands:
       - ls -lah /usr/lib/sdk/llvm16/bin
+      - pwd
+      - find .
       - ./scripts/init-crashpad.sh
       - cp ./builddir/pakiki_crashpad_handler /app/bin/
     sources:
