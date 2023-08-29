@@ -122,12 +122,6 @@ jobs:
           name: pakiki-core
           path: pakiki-core
 
-      - name: Update system repositories
-        run: sudo apt update
-  
-      - name: Install system dependencies
-        run: sudo apt install build-essential meson libcurl4-gnutls-dev
-
       - name: Compile crashpad
         run: scripts/init-crashpad.sh
 
@@ -194,7 +188,9 @@ jobs:
             
       - name: Create Sentry release
         run:
-          curl -sL https://sentry.io/get-cli/ | sh
+          curl -sL https://sentry.io/get-cli/ > /tmp/sentry-install.sh
+          chmod +x /tmp/sentry-install.sh
+          /tmp/sentry-install.sh
           sentry-cli releases new ${{ steps.getversion.outputs.version }}
           sentry-cli releases set-commits --auto ${{ steps.getversion.outputs.version }}
           sentry-cli debug-files upload --include-sources --org ${{ secrets.SENTRY_ORG }} --project ${{ secrets.SENTRY_PROJECT }} --url ${{secrets.SENTRY_URL}} --api-token ${{secrets.SENTRY_AUTH_TOKEN}} --include-sources .
