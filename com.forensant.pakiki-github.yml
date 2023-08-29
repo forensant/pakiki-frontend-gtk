@@ -29,18 +29,6 @@ modules:
         url: https://download.gnome.org/sources/gtksourceview/3.24/gtksourceview-3.24.11.tar.xz
         sha256: 691b074a37b2a307f7f48edc5b8c7afa7301709be56378ccf9cc9735909077fd
 
-  - name: crashpad
-    buildsystem: simple
-    build-commands:
-      - ls -lah /usr/lib/sdk/llvm16/bin
-      - pwd
-      - find .
-      - ./scripts/init-crashpad.sh
-      - cp ./builddir/pakiki_crashpad_handler /app/bin/
-    sources:
-      - type: dir
-        path: .
-
   - name: pakiki
     buildsystem: meson
     sources:

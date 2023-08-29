@@ -126,6 +126,13 @@ jobs:
         id: getversion
         run: echo "::set-output name=version::$(cat src/resources/version)"
 
+      # This docker image is based on Fedora
+      - name: Install system dependencies
+        run: sudo dnf install clang
+
+      - name: Compile crashpad
+        run: scripts/init-crashpad.sh
+
       - name: Build and package
         uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v4
         with:
@@ -177,18 +184,18 @@ jobs:
           depends: 'libc6 (>= 2.2.1), libgtk-3-0, libpython3.11, libsoup-3.0-0, libjson-glib-1.0-0, libwebkit2gtk-4.1-0, libgtksourceview-3.0-1, libgee-0.8-2, libnotify4'
           desc: 'Native next generation intercepting proxy, designed for security testing of web applications.'
 
+      - name: Create Sentry release
+        run: |
+          curl -sL https://sentry.io/get-cli/ > /tmp/sentry-install.sh
+          chmod +x /tmp/sentry-install.sh
+          /bin/bash /tmp/sentry-install.sh
+          sentry-cli releases new --org ${{ secrets.SENTRY_ORG }} --url ${{secrets.SENTRY_URL}} --auth-token ${{secrets.SENTRY_AUTH_TOKEN}} ${{ steps.getversion.outputs.version }}
+          sentry-cli releases set-commits --org ${{ secrets.SENTRY_ORG }} --project ${{ secrets.SENTRY_PROJECT }} --url ${{secrets.SENTRY_URL}} --auth-token ${{secrets.SENTRY_AUTH_TOKEN}} --auto ${{ steps.getversion.outputs.version }}
+          sentry-cli debug-files upload --include-sources --org ${{ secrets.SENTRY_ORG }} --project ${{ secrets.SENTRY_PROJECT }} --url ${{secrets.SENTRY_URL}} --auth-token ${{secrets.SENTRY_AUTH_TOKEN}} .
+      
       - uses: actions/upload-artifact@v3
         with:
           name: artifact-deb
           path: |
             ./*.deb
             
-      - name: Create Sentry release
-        run: |
-          curl -sL https://sentry.io/get-cli/ > /tmp/sentry-install.sh
-          chmod +x /tmp/sentry-install.sh
-          /bin/bash /tmp/sentry-install.sh
-          sentry-cli releases new --org ${{ secrets.SENTRY_ORG }} --project ${{ secrets.SENTRY_PROJECT }} --url ${{secrets.SENTRY_URL}} --api-token ${{secrets.SENTRY_AUTH_TOKEN}} ${{ steps.getversion.outputs.version }}
-          sentry-cli releases set-commits --org ${{ secrets.SENTRY_ORG }} --project ${{ secrets.SENTRY_PROJECT }} --url ${{secrets.SENTRY_URL}} --api-token ${{secrets.SENTRY_AUTH_TOKEN}} --auto ${{ steps.getversion.outputs.version }}
-          sentry-cli debug-files upload --include-sources --org ${{ secrets.SENTRY_ORG }} --project ${{ secrets.SENTRY_PROJECT }} --url ${{secrets.SENTRY_URL}} --api-token ${{secrets.SENTRY_AUTH_TOKEN}} .
-        
