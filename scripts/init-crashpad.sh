@@ -37,6 +37,10 @@ fi
 if ! grep -q "include <stdint.h>" "third_party/mini_chromium/mini_chromium/base/third_party/icu/icu_utf.h"; then
     echo "Updating icu_utf.h"
     sed -i '10 a #include <stdint.h>' third_party/mini_chromium/mini_chromium/base/third_party/icu/icu_utf.h
+fi
+
+if ! grep -q "typedef unsigned char uint8_t" "third_party/mini_chromium/mini_chromium/base/third_party/icu/icu_utf.h"; then
+    echo "Updating icu_utf.h 2"
     sed -i '10 a typedef unsigned char uint8_t;' third_party/mini_chromium/mini_chromium/base/third_party/icu/icu_utf.h
 fi
 
