@@ -128,7 +128,7 @@ jobs:
 
       # This docker image is based on Fedora
       - name: Install system dependencies
-        run: sudo dnf -y install clang
+        run: sudo dnf -y install clang zlib-devel
 
       - name: Compile crashpad
         run: scripts/init-crashpad.sh
@@ -189,9 +189,9 @@ jobs:
           curl -sL https://sentry.io/get-cli/ > /tmp/sentry-install.sh
           chmod +x /tmp/sentry-install.sh
           /bin/bash /tmp/sentry-install.sh
-          sentry-cli releases new --org ${{ secrets.SENTRY_ORG }} --project ${{ secrets.SENTRY_PROJECT }}  --url ${{secrets.SENTRY_URL}} --auth-token ${{secrets.SENTRY_AUTH_TOKEN}} ${{ steps.getversion.outputs.version }}
-          sentry-cli releases set-commits --org ${{ secrets.SENTRY_ORG }} --project ${{ secrets.SENTRY_PROJECT }} --url ${{secrets.SENTRY_URL}} --auth-token ${{secrets.SENTRY_AUTH_TOKEN}} --auto ${{ steps.getversion.outputs.version }}
-          sentry-cli debug-files upload --include-sources --org ${{ secrets.SENTRY_ORG }} --project ${{ secrets.SENTRY_PROJECT }} --url ${{secrets.SENTRY_URL}} --auth-token ${{secrets.SENTRY_AUTH_TOKEN}} .
+          sentry-cli releases new --log-level debug--org ${{ secrets.SENTRY_ORG }} --project ${{ secrets.SENTRY_PROJECT }}  --url ${{secrets.SENTRY_URL}} --auth-token ${{secrets.SENTRY_AUTH_TOKEN}} ${{ steps.getversion.outputs.version }}
+          sentry-cli releases set-commits --log-level debug --org ${{ secrets.SENTRY_ORG }} --project ${{ secrets.SENTRY_PROJECT }} --url ${{secrets.SENTRY_URL}} --auth-token ${{secrets.SENTRY_AUTH_TOKEN}} --auto ${{ steps.getversion.outputs.version }}
+          sentry-cli debug-files upload --log-level debug --include-sources --org ${{ secrets.SENTRY_ORG }} --project ${{ secrets.SENTRY_PROJECT }} --url ${{secrets.SENTRY_URL}} --auth-token ${{secrets.SENTRY_AUTH_TOKEN}} .
       
       - uses: actions/upload-artifact@v3
         with:
