@@ -20,16 +20,22 @@ cd crashpad
 echo "Generating build files"
 ../../depot_tools/gn gen out/Default
 
+echo "File listing:"
+find .
+
 echo "Modifying the build files"
 if ! grep -q "include <stdint.h>" "third_party/mini_chromium/mini_chromium/base/logging.h"; then
+    echo "Updating logging.h"
     sed -i '10 a #include <stdint.h>' third_party/mini_chromium/mini_chromium/base/logging.h
 fi
 
 if ! grep -q "include <stdint.h>" "third_party/mini_chromium/mini_chromium/base/strings/utf_string_conversion_utils.h"; then
+    echo "Updating utf_string_conversion_utils.h"
     sed -i '10 a #include <stdint.h>' third_party/mini_chromium/mini_chromium/base/strings/utf_string_conversion_utils.h
 fi
 
 if ! grep -q "include <stdint.h>" "third_party/mini_chromium/mini_chromium/base/third_party/icu/icu_utf.h"; then
+    echo "Updating icu_utf.h"
     sed -i '10 a #include <stdint.h>' third_party/mini_chromium/mini_chromium/base/third_party/icu/icu_utf.h
     sed -i '10 a typedef unsigned char uint8_t;' third_party/mini_chromium/mini_chromium/base/third_party/icu/icu_utf.h
 fi
