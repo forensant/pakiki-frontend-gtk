@@ -246,12 +246,38 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="button_crash">
-                <property name="label" translatable="yes">Force crash</property>
+              <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
-                <signal name="clicked" handler="on_button_crash_clicked" swapped="no"/>
+                <property name="can-focus">False</property>
+                <child>
+                  <object class="GtkButton" id="button_crash">
+                    <property name="label" translatable="yes">Force crash UI</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <signal name="clicked" handler="on_button_crash_clicked" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="button_force_crash_core">
+                    <property name="label" translatable="yes">Force crash core</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="margin-start">6</property>
+                    <signal name="clicked" handler="on_button_force_crash_core_clicked" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="left-attach">1</property>

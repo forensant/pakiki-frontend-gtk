@@ -107,6 +107,9 @@ namespace Pakiki {
                 }
             }
 
+            var settings = new GLib.Settings ("com.forensant.pakiki");
+            var crash_reporting= settings.get_boolean ("crash-reports");
+
             string[] paths = {
                 exe_path,
                 "", // system path
@@ -119,7 +122,8 @@ namespace Pakiki {
                         core_exe_path + "pakikicore",
                         "-project", path, 
                         "-parentpid", pid.to_string (),
-                        "-api-key", api_key
+                        "-api-key", api_key,
+                        "-error-reporting", (crash_reporting ? "true" : "false")
                     };
 
                     string[] spawn_env = Environ.get ();

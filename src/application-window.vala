@@ -338,6 +338,7 @@ namespace Pakiki {
 
             bool report = settings.get_boolean ("crash-reports");
             Crashpad.set_automatic_reporting ("/tmp", report);
+            set_core_crash_reporting ();
         }
 
         public bool is_sandboxed () {
@@ -383,6 +384,7 @@ namespace Pakiki {
 
         private void on_core_started (string address) {
             this._core_address = address;
+            set_core_crash_reporting ();
             this.proxy_settings = new ProxySettings (this);
 
             if (!timeout_started) {
@@ -670,6 +672,17 @@ namespace Pakiki {
         public void send_to_new_request (string guid) {
             stack.visible_child = new_request;
             new_request.populate_request (guid);
+        }
+
+        private void set_core_crash_reporting () {
+            var enabled = settings.get_boolean ("crash-reports") ? "true" : "false";
+            var url = "http://" + this.core_address + "/crash_reporting?enabled=" + enabled;
+            try {
+                var message = new Soup.Message ("GET", url);
+                this.http_session.send (message);
+            } catch (Error e) {
+                stderr.printf ("Could not enable or disable crash reporting within the core: %s\n", e.message);
+            }
         }
 
         private void set_filter_icon () {

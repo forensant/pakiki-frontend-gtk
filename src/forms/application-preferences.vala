@@ -88,6 +88,17 @@ namespace Pakiki {
         }
 
         [GtkCallback]
+        public void on_button_force_crash_core_clicked () {
+            var url = "http://" + application_window.core_address + "/crash_reporting/test";
+            try {
+                var message = new Soup.Message ("GET", url);
+                this.application_window.http_session.send (message);
+            } catch (Error e) {
+                stderr.printf ("Could not enable or disable crash reporting within the core: %s\n", e.message);
+            }
+        }
+
+        [GtkCallback]
         public void on_checkbutton_crash_reports_toggled () {
             settings.set_boolean ("crash-reports", checkbutton_crash_reports.active);
             application_window.init_crash_reporting ();
