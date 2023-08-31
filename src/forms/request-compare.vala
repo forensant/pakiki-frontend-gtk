@@ -103,7 +103,7 @@ namespace Pakiki {
                         } catch (Error err) {
                             scrolled_window_request_differences.hide ();
                             scrolled_window_request_preview.hide ();
-                            label_error.label = "Error loading differences 1: " + err.message;
+                            label_error.label = "Error loading differences: " + err.message;
                             label_error.show ();
                             return;
                         }
@@ -111,7 +111,7 @@ namespace Pakiki {
                 } catch (Error err) {
                     scrolled_window_request_differences.hide ();
                     scrolled_window_request_preview.hide ();
-                    label_error.label = "Error loading differences 2: " + err.message;
+                    label_error.label = err.message;
                     label_error.show ();
                     return;
                 }                

@@ -39,6 +39,16 @@ namespace Pakiki {
             get { return searchable_hex_editor.visible; }
         }
 
+        private bool _response_visible = true;
+        public bool response_visible {
+            get { return _response_visible; }
+            set { 
+                _response_visible = value;
+                scroll_view_response.visible = value;
+                text_view_response.visible = value;
+            }
+        }
+
         public RequestTextView (ApplicationWindow application_window) {
             box_search_container = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
             search_bar = new TextSearchBar ();
@@ -413,9 +423,9 @@ namespace Pakiki {
             searchable_hex_editor.visible = show;
             box_search_container.visible = !show;
             scroll_view_request.visible = !show;
-            scroll_view_response.visible = !show;
+            scroll_view_response.visible = !show && response_visible;
             text_view_request.visible = !show;
-            text_view_response.visible = !show;
+            text_view_response.visible = !show && response_visible;
             text_view_placeholder.visible = false;
         }
     }

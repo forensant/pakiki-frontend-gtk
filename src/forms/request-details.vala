@@ -71,6 +71,7 @@ namespace Pakiki {
             text_view_request.editable = false;
             text_view_orig_request.editable = false;
             text_view_websocket_request.editable = false;
+            text_view_websocket_request.response_visible = false;
 
             scroll_window_text.add (text_view_request);
             scroll_window_original_text.add (text_view_orig_request);
