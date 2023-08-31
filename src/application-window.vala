@@ -678,16 +678,11 @@ namespace Pakiki {
             if (core_address == "") {
                 return;
             }
-            
+
             var enabled = settings.get_boolean ("crash-reports") ? "true" : "false";
-            var url = "http://" + this.core_address + "/crash_reporting?enabled=" + enabled;
-            stdout.printf("URL: %s\n", url);
-            try {
-                var message = new Soup.Message ("GET", url);
-                this.http_session.send (message);
-            } catch (Error e) {
-                stderr.printf ("Could not enable or disable crash reporting within the core: %s\n", e.message);
-            }
+            var url = "http://" + core_address + "/crash_reporting?enabled=" + enabled;
+            var message = new Soup.Message ("GET", url);
+            this.http_session.send_async.begin (message, GLib.Priority.DEFAULT, null);
         }
 
         private void set_filter_icon () {
