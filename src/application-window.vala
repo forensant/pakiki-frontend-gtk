@@ -675,8 +675,13 @@ namespace Pakiki {
         }
 
         private void set_core_crash_reporting () {
+            if (core_address == "") {
+                return;
+            }
+            
             var enabled = settings.get_boolean ("crash-reports") ? "true" : "false";
             var url = "http://" + this.core_address + "/crash_reporting?enabled=" + enabled;
+            stdout.printf("URL: %s\n", url);
             try {
                 var message = new Soup.Message ("GET", url);
                 this.http_session.send (message);
