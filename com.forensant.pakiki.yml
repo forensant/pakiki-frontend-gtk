@@ -32,7 +32,6 @@ modules:
   - name: crashpad
     buildsystem: simple
     build-commands:
-      - ls -lah /usr/lib/sdk/llvm16/bin
       - ./scripts/init-crashpad.sh
       - cp ./builddir/pakiki_crashpad_handler /app/bin/
     sources:

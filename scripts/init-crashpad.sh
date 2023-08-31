@@ -20,9 +20,6 @@ cd crashpad
 echo "Generating build files"
 ../../depot_tools/gn gen out/Default
 
-echo "File listing:"
-find .
-
 echo "Modifying the build files"
 if ! grep -q "include <stdint.h>" "third_party/mini_chromium/mini_chromium/base/logging.h"; then
     echo "Updating logging.h"
