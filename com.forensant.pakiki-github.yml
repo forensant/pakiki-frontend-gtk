@@ -20,6 +20,8 @@ finish-args:
   - --talk-name=org.freedesktop.secrets
   # to allow notifications to be sent to the desktop
   - --talk-name=org.freedesktop.Notifications
+  # allow access for crash-handler to debug the application
+  - --allow=devel
   
 modules:
   - name: GtkSourceView
