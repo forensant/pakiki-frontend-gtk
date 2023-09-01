@@ -67,7 +67,7 @@ modules:
       - wget -O sentry-install.sh https://sentry.io/get-cli/
       - chmod +x sentry-install.sh
       - INSTALL_DIR=./ /bin/bash ./sentry-install.sh
-      - ./sentry-cli debug-files upload --log-level debug --include-sources /app/bin/pakiki*
+      - ./sentry-cli debug-files upload --log-level debug --include-sources /app/bin/*
     sources:
       - type: dir
         path: .
