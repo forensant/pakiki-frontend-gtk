@@ -34,7 +34,15 @@ modules:
     sources:
       - type: dir
         path: .
-        
+
+  - name: crash_handler
+    buildsystem: simple
+    build-commands:
+      - install -D pakiki_crashpad_handler /app/bin/
+    sources:
+      - type: dir
+        path: builddir
+
   - name: pakikicore
     buildsystem: simple
     build-commands:
