@@ -2,11 +2,14 @@ app-id: com.forensant.pakiki
 runtime: org.gnome.Platform
 runtime-version: '44'
 sdk: org.gnome.Sdk
-sdk-extensions:
-  - org.freedesktop.Sdk.Extension.llvm16
 build-options:
-  - append-path: /usr/lib/sdk/llvm16/bin
-    prepend-ld-library-path: /usr/lib/sdk/llvm16/lib
+  build-args:
+    - --share=network
+  secret-env:
+    - SENTRY_AUTH_TOKEN
+    - SENTRY_ORG
+    - SENTRY_PROJECT
+    - SENTRY_URL
 command: com.forensant.pakiki
 
 finish-args:
@@ -57,3 +60,14 @@ modules:
     sources:
       - type: dir
         path: pakiki-core
+
+  - name: upload_sentry
+    buildsystem: simple
+    build-commands:
+      - wget -O sentry-install.sh https://sentry.io/get-cli/
+      - chmod +x sentry-install.sh
+      - INSTALL_DIR=./ /bin/bash ./sentry-install.sh
+      - ./sentry-cli debug-files upload --log-level debug --include-sources /app/bin/pakiki*
+    sources:
+      - type: dir
+        path: .

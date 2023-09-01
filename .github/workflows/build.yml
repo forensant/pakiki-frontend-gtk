@@ -139,6 +139,12 @@ jobs:
           bundle: Pakiki-Proxy-Community-v${{ steps.getversion.outputs.version }}-Linux-x64.flatpak
           manifest-path: com.forensant.pakiki-github.yml
           cache-key: flatpak-builder-${{ github.sha }}  
+        env:
+          SENTRY_URL: https://sentryio.pakikiproxy.com/
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_PROJECT: gtk-frontend
+          SENTRY_ORG: forensant
+
 
   GTK-Frontend-Deb:
     name: 'GTK Frontend - .deb'
