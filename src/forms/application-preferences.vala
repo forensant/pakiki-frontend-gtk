@@ -8,6 +8,9 @@ namespace Pakiki {
         private ProxySettings proxy_settings;
 
         [GtkChild]
+        private unowned Gtk.CheckButton checkbutton_crash_reports;
+
+        [GtkChild]
         private unowned Gtk.ComboBoxText combobox_colour_scheme;
 
         [GtkChild]
@@ -47,6 +50,7 @@ namespace Pakiki {
 
             settings = new GLib.Settings("com.forensant.pakiki");
             settings.bind("request-double-click", combobox_request_doubleclick, "active-id", GLib.SettingsBindFlags.DEFAULT);
+            checkbutton_crash_reports.active = settings.get_boolean ("crash-reports");
             combobox_colour_scheme.active_id = (string) settings.get_value ("colour-scheme");
 
             combobox_colour_scheme.changed.connect (() => {
@@ -74,6 +78,30 @@ namespace Pakiki {
         [GtkCallback]
         public void on_button_certificate_save_clicked (Gtk.Button button) {
             proxy_settings.save_certificate (this);
+        }
+
+        [GtkCallback]
+        public void on_button_crash_clicked () {
+            var i = new int[0];
+            var x = i[1];
+            stdout.printf ("%d", x);
+        }
+
+        [GtkCallback]
+        public void on_button_force_crash_core_clicked () {
+            var url = "http://" + application_window.core_address + "/crash_reporting/test";
+            try {
+                var message = new Soup.Message ("GET", url);
+                this.application_window.http_session.send (message);
+            } catch (Error e) {
+                stderr.printf ("Could not enable or disable crash reporting within the core: %s\n", e.message);
+            }
+        }
+
+        [GtkCallback]
+        public void on_checkbutton_crash_reports_toggled () {
+            settings.set_boolean ("crash-reports", checkbutton_crash_reports.active);
+            application_window.init_crash_reporting ();
         }
 
         [GtkCallback]

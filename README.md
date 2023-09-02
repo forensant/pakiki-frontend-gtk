@@ -73,7 +73,7 @@ You'll require the following dependencies to develop Pākiki:
  * libnotify
 
 On Debian based distributions, these can be downloaded with:
- ```sudo apt install build-essential valac meson libgtk-3-dev libsoup-3.0-dev libjson-glib-dev libwebkit2gtk-4.1-dev libgtksourceview-3.0-dev libgee-0.8-dev libnotify-dev ```
+ ```sudo apt install build-essential valac meson libgtk-3-dev libsoup-3.0-dev libjson-glib-dev libwebkit2gtk-4.1-dev libgtksourceview-3.0-dev libgee-0.8-dev libnotify-dev```
 
 If you're going to be building/packaging Pākiki, you'll also require the Flatpak dependencies:
 ```
@@ -84,7 +84,11 @@ flatpak install org.gnome.Platform
 Select version 44
 
 ### Building
-Setup the build directory with ```meson setup builddir``` then run ```ninja -C builddir``` to start the build.
+
+ * Retrieve the submodules ```git submodule update --init --recursive```
+ * Setup the build directory with ```meson setup builddir```
+ * Build crashpad (the error reporting subsystem) with ```scripts/init-crashpad.sh```
+ * Run ```ninja -C builddir``` to start the build.
 
 To run, you'll require Pākiki Core in the same directory [https://github.com/forensant/pakiki-core/](https://github.com/forensant/pakiki-core/)
 

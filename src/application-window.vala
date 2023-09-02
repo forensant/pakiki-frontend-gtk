@@ -100,6 +100,7 @@ namespace Pakiki {
             overlay.add_overlay (label_overlay);
             
             settings = new GLib.Settings ("com.forensant.pakiki");
+            init_crash_reporting ();
 
             var accel_group = new Gtk.AccelGroup ();
             accel_group.connect ('f', Gdk.ModifierType.CONTROL_MASK, 0, (group, accel, keyval, modifier) => {
@@ -327,6 +328,19 @@ namespace Pakiki {
             return new GLib.MemoryInputStream.from_data (contents.data);
         }
 
+        public void init_crash_reporting () {
+            Crashpad.setup (
+                "/tmp",
+                "Pākiki Proxy - Community",
+                pakiki_application.get_version (),
+                "https://sentryio.pakikiproxy.com/api/2/minidump/?sentry_key=ca7c9b5b824bb4114cec38cd113e72a1",
+                "");
+
+            bool report = settings.get_boolean ("crash-reports");
+            Crashpad.set_automatic_reporting ("/tmp", report);
+            set_core_crash_reporting ();
+        }
+
         public bool is_sandboxed () {
             File file = File.new_for_path ("/.flatpak-info");
             return file.query_exists ();
@@ -370,6 +384,7 @@ namespace Pakiki {
 
         private void on_core_started (string address) {
             this._core_address = address;
+            set_core_crash_reporting ();
             this.proxy_settings = new ProxySettings (this);
 
             if (!timeout_started) {
@@ -657,6 +672,17 @@ namespace Pakiki {
         public void send_to_new_request (string guid) {
             stack.visible_child = new_request;
             new_request.populate_request (guid);
+        }
+
+        private void set_core_crash_reporting () {
+            if (core_address == "") {
+                return;
+            }
+
+            var enabled = settings.get_boolean ("crash-reports") ? "true" : "false";
+            var url = "http://" + core_address + "/crash_reporting?enabled=" + enabled;
+            var message = new Soup.Message ("GET", url);
+            this.http_session.send_async.begin (message, GLib.Priority.DEFAULT, null);
         }
 
         private void set_filter_icon () {

@@ -16,6 +16,11 @@
             <summary>Text preview colour scheme</summary>
             <description>The colour scheme to use when rendering requests.</description>
         </key>
+        <key name="crash-reports" type="b">
+            <default>false</default>
+            <summary>Send crash reports</summary>
+            <description>Whether to send crash reports for analysis.</description>
+        </key>
         <key name="manual-instructions-expanded" type="b">
             <default>false</default>
             <summary>Manual Instructions</summary>

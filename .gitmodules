@@ -1,3 +1,6 @@
 [submodule "subprojects/gxml"]
 	path = subprojects/gxml
 	url = https://gitlab.gnome.org/GNOME/gxml.git
+[submodule "subprojects/depot_tools"]
+	path = subprojects/depot_tools
+	url = https://chromium.googlesource.com/chromium/tools/depot_tools.git

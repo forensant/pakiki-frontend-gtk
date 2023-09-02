@@ -8,3 +8,4 @@ repo
 .debpkg
 *.deb
 pakiki-core/*
+subprojects/crashpad/*

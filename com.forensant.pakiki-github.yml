@@ -2,7 +2,16 @@ app-id: com.forensant.pakiki
 runtime: org.gnome.Platform
 runtime-version: '44'
 sdk: org.gnome.Sdk
+build-options:
+  build-args:
+    - --share=network
+  secret-env:
+    - SENTRY_AUTH_TOKEN
+    - SENTRY_ORG
+    - SENTRY_PROJECT
+    - SENTRY_URL
 command: com.forensant.pakiki
+
 finish-args:
   # X11 access
   - --socket=fallback-x11
@@ -14,6 +23,8 @@ finish-args:
   - --talk-name=org.freedesktop.secrets
   # to allow notifications to be sent to the desktop
   - --talk-name=org.freedesktop.Notifications
+  # allow access for crash-handler to debug the application
+  - --allow=devel
   
 modules:
   - name: GtkSourceView
@@ -28,7 +39,15 @@ modules:
     sources:
       - type: dir
         path: .
-        
+
+  - name: crash_handler
+    buildsystem: simple
+    build-commands:
+      - install -D pakiki_crashpad_handler /app/bin/
+    sources:
+      - type: dir
+        path: builddir
+
   - name: pakikicore
     buildsystem: simple
     build-commands:
@@ -41,3 +60,14 @@ modules:
     sources:
       - type: dir
         path: pakiki-core
+
+  - name: upload_sentry
+    buildsystem: simple
+    build-commands:
+      - wget -O sentry-install.sh https://sentry.io/get-cli/
+      - chmod +x sentry-install.sh
+      - INSTALL_DIR=./ /bin/bash ./sentry-install.sh
+      - ./sentry-cli debug-files upload --log-level debug --include-sources /app/bin/*
+    sources:
+      - type: dir
+        path: .
