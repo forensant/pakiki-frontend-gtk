@@ -11,6 +11,7 @@ mkdir -p .debpkg/usr/share/pixmaps
 cp builddir/com.forensant.pakiki .debpkg/usr/bin/pakiki
 cp pakiki-core/pakikipythoninterpreter .debpkg/usr/bin/
 cp pakiki-core/pakikicore .debpkg/usr/bin/
+cp builddir/pakiki_crashpad_handler .debpkg/usr/bin/
 cp data/pakiki.desktop .debpkg/usr/share/applications
 cp src/com.forensant.pakiki.gschema.xml .debpkg/usr/share/glib-2.0/schemas/
 cp src/resources/Logo.svg .debpkg/usr/share/pixmaps/pakiki.svg
