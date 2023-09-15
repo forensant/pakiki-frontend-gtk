@@ -286,6 +286,12 @@ namespace Pakiki {
                 }
 
                 if (line.contains ("A previous project was not closed properly")) {
+
+                    // extract the path from between the brackets
+                    var path_start = line.index_of ("(");
+                    var path_end = line.index_of (")");
+                    var path = line.substring (path_start + 1, path_end - path_start - 1);
+
                     var dlg = new Gtk.MessageDialog (null,
                         Gtk.DialogFlags.MODAL,
                         Gtk.MessageType.WARNING,
@@ -298,6 +304,8 @@ namespace Pakiki {
                     {
                     case Gtk.ResponseType.YES:
                         chr = "y";
+                        this.path = path;
+                        temporary_file = false;
                         break;
                     default:
                         // do_nothing_since_dialog_was_cancelled ();
