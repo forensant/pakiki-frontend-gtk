@@ -177,7 +177,9 @@ namespace Pakiki {
 
                                                     
             var guid_column = request_list.get_column ( get_col_pos ("GUID"));
-            guid_column.visible = false;
+            if (guid_column != null) {
+                guid_column.visible = false;
+            }
 
             var url_column = request_list.get_column (get_col_pos ("URL"));
             url_column.expand = true;

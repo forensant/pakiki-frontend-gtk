@@ -233,6 +233,7 @@ namespace Pakiki {
 
         private void create_http_session () {
             http_session = new Soup.Session ();
+            http_session.proxy_resolver = null;
             
             http_session.request_queued.connect ((msg) => {
                 msg.got_headers.connect (() => {
@@ -348,6 +349,7 @@ namespace Pakiki {
 
         private bool monitor_core_connection () {
             Soup.Session session = new Soup.Session ();
+            session.proxy_resolver = null;
             var message = new Soup.Message ("GET", "http://" + core_address + "/ping");
             
             session.send_async.begin (message, GLib.Priority.DEFAULT, null, (obj, res) => {
@@ -759,13 +761,11 @@ namespace Pakiki {
 
         private void do_update_check () {
             var url = UPDATE_HOST + "/api/application/updates?edition=Community&version=" + pakiki_application.get_version ();
-
-            var session = new Soup.Session ();
             var message = new Soup.Message ("GET", url);
             
-            session.send_and_read_async.begin (message, GLib.Priority.DEFAULT, null, (obj, res) => {
+            http_session.send_and_read_async.begin (message, GLib.Priority.DEFAULT, null, (obj, res) => {
                 try {
-                    var bytes = session.send_and_read_async.end (res);
+                    var bytes = http_session.send_and_read_async.end (res);
 
                     var parser = new Json.Parser ();
                     parser.load_from_data ((string)bytes.get_data ());
