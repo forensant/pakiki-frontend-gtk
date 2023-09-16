@@ -206,10 +206,17 @@ namespace Pakiki {
             response_type_column.set_cell_data_func(content_type_renderer, (cell_layout, cell, tree_model, iter) => {
                 Value val;
                 tree_model.get_value(iter, Column.RESPONSE_CONTENT_TYPE, out val);
-                var components = val.get_string ().split (";", 2);
-                if (components.length >= 1) {
-                    ((Gtk.CellRendererText)cell).text = components[0];
+                var col_text = val.get_string ();
+
+                if (col_text == "" || col_text == null) {
+                    ((Gtk.CellRendererText)cell).text = "";
+                } else {
+                    var components = col_text.split (";", 2);
+                    if (components.length >= 1) {
+                        ((Gtk.CellRendererText)cell).text = components[0];
+                    }
                 }
+
                 val.unset();
             });
 
