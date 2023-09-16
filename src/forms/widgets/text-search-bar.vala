@@ -38,6 +38,10 @@ namespace Pakiki {
             set { search_entry_text.text = value; }
         }
 
+        public void TextSearchBar () {
+            this.show_close_button = true;
+        }
+
         public void clear_search_count () {
             label_count.label = "";
         }

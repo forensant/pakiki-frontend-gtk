@@ -124,6 +124,7 @@ namespace Pakiki {
             if (text_view_request.is_focus || text_view_response.is_focus) {
                 
                 search_bar.search_mode_enabled = !search_bar.search_mode_enabled;
+                search_bar.show_close_button = true;
 
                 if (search_bar.search_mode_enabled) {
                     search_bar.find_activated ();

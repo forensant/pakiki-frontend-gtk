@@ -406,6 +406,7 @@ namespace Pakiki {
             box_search.hexpand = true;
             searchbar.visible = true;
             searchbar.search_mode_enabled = true;
+            searchbar.show_close_button = true;
             searchbar.add (box_search);
             searchbar.connect_entry (search_entry);
             dialog.get_content_area ().pack_start (searchbar, false, false, 0);

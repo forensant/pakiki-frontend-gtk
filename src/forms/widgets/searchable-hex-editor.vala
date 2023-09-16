@@ -67,6 +67,7 @@ namespace Pakiki {
             }
 
             search_bar.search_mode_enabled = !search_bar.search_mode_enabled;
+            search_bar.show_close_button = true;
 
             if (search_bar.search_mode_enabled) {
                 search_bar.find_activated ();
