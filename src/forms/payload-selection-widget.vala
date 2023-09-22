@@ -489,16 +489,19 @@ namespace Pakiki {
                             if (i == path_components.length - 1) {
                                 treestore_fuzzdb.set_value(prev_iter, Column.CHECKED, "Checked");
                             }
+                            update_payload_count ();
                             return;
                         }
                         break;
                     }
 
                     if (!treestore_fuzzdb.iter_next (ref iter)) {
+                        update_payload_count ();
                         return;
                     }
                 }
             }
+            update_payload_count ();
         }
 
         private bool should_fuzzdb_row_be_visible (Gtk.TreeModel model, Gtk.TreeIter iter) {

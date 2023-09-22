@@ -541,6 +541,9 @@ namespace Pakiki {
             doc_window.set_title ("Pākiki Proxy Help");
             
             var web_view = new WebKit.WebView ();
+            var data_manager = web_view.get_website_data_manager ();
+            data_manager.set_network_proxy_settings (WebKit.NetworkProxyMode.NO_PROXY, null);
+
             web_view.load_uri (url);
             doc_window.add (web_view);
 
