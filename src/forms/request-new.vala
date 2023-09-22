@@ -195,7 +195,7 @@ namespace Pakiki {
         }
 
         public void reset_state () {
-            combobox_protocol.set_active (1);
+            combobox_protocol.set_active (0);
             entry_hostname.set_text ("livefirerange.pakikiproxy.com");
             spinner.stop ();
             request_text_editor.buffer.set_text ("GET / HTTP/1.1\nHost: livefirerange.pakikiproxy.com\n\n");
