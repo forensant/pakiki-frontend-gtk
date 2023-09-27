@@ -242,7 +242,9 @@ namespace Pakiki {
                             var rootArray = parser.get_root ().get_array ();
 
                             foreach (var element in rootArray.get_elements ()) {
-                                var path = element.get_string ();
+                                var sitemap_item = element.get_object ();
+
+                                var path = sitemap_item.get_string_member ("Path");
                                 var scheme_idx = path.index_of ("://");
                                 if (scheme_idx != -1) {
                                     path = path.substring (scheme_idx + 3);
