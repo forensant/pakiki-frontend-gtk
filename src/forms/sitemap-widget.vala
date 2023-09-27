@@ -11,6 +11,7 @@ namespace Pakiki {
         }
 
         private ApplicationWindow application_window;
+        private bool do_not_report_change = false;
         public bool has_loaded;
         private Gtk.TreeStore tree_store_site_map;
         private WebsocketConnection websocket;
@@ -189,7 +190,9 @@ namespace Pakiki {
         }
 
         private void on_sitemap_row_changed () {
-            url_filter_set (url_path);
+            if (!do_not_report_change) {
+                url_filter_set (url_path);
+            }
         }
 
         private void on_websocket_message (int type, Bytes message) {
@@ -217,6 +220,7 @@ namespace Pakiki {
                 return;
             }
             
+            do_not_report_change = true;
             tree_store_site_map.clear ();
             var url = "http://" + application_window.core_address + "/requests/sitemap";
 
@@ -257,6 +261,9 @@ namespace Pakiki {
                         }
                         catch (Error err) {
                             stdout.printf ("Could not retrieve site map: %s\n", err.message);
+                        }
+                        finally {
+                            do_not_report_change = false;
                         }
                     });
                 }
