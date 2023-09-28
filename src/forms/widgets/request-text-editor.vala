@@ -6,6 +6,9 @@ namespace Pakiki {
         private Gtk.SourceBuffer source_buffer = new Gtk.SourceBuffer (null);
         private SyntaxHighlighter syntax_highlighter = new SyntaxHighlighter ();
         public string direction = "request";
+        private string guid = "";
+        private string protocol = "";
+        private string url = "";
 
         public RequestTextEditor (ApplicationWindow application_window) {
             this.application_window = application_window;
@@ -137,6 +140,20 @@ namespace Pakiki {
             });
             menu_item_decode.show ();
             menu.append (menu_item_decode);
+
+            if (guid != "" && protocol != "" && url != "") {
+                separator = new Gtk.SeparatorMenuItem ();
+                separator.show ();
+                menu.append (separator);
+    
+                RequestDetails.populate_send_to_menu (application_window, menu, guid, protocol, url);
+            }
+        }
+
+        public void set_request_details (string guid, string protocol, string url) {
+            this.guid = guid;
+            this.protocol = protocol;
+            this.url = url;
         }
 
         private void replace_selected_text (string new_text) {            

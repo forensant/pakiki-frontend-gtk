@@ -328,10 +328,15 @@ namespace Pakiki {
 
             selection.selected_foreach ((model, path, iter) => {
                 if (selection_count == 1) {
+                    string request_guid;
+                    string url;
                     string body;
                     string direction;
                     string protocol;
                     string original_request_body;
+
+                    model.get (iter, Column.REQUEST_GUID, out request_guid);
+                    model.get (iter, Column.URL, out url);
                     model.get (iter, Column.BODY, out body);
                     model.get (iter, Column.DIRECTION, out direction);
                     model.get (iter, Column.PROTOCOL, out protocol);
@@ -354,6 +359,7 @@ namespace Pakiki {
                         text_view_requestresponse.direction = direction.down ();
                         text_view_requestresponse.editable = true;
                         text_view_requestresponse.on_text_changed (true);
+                        text_view_requestresponse.set_request_details (request_guid, protocol, url);
                     }
 
                     var is_request = (direction == "Request");
@@ -377,6 +383,7 @@ namespace Pakiki {
                             scrolled_window_text_request.show ();
                             text_view_request.buffer.text = ((string) original_request_body_bytes).replace("\r\n", "\n");
                             text_view_request.direction = direction.down ();
+                            text_view_request.set_request_details (request_guid, protocol, url);
                         }
                     }
                 } else {
@@ -384,7 +391,9 @@ namespace Pakiki {
                     scrolled_window_hex_requestresponse.hide ();
                     scrolled_window_text_requestresponse.show ();
                     text_view_request.buffer.text = "(Multiple requests/responses selected)";
+                    text_view_request.set_request_details ("", "", "");
                     text_view_requestresponse.editable = false;
+                    text_view_requestresponse.set_request_details ("", "", "");
                     button_forward.sensitive = true;
                     button_drop.sensitive = false;
                     button_intercept_response.sensitive = false;
@@ -396,6 +405,7 @@ namespace Pakiki {
                 scrolled_window_text_requestresponse.show ();
                 text_view_requestresponse.buffer.text = "";
                 text_view_requestresponse.editable = false;
+                text_view_requestresponse.set_request_details ("", "", "");
                 box_original_request.hide ();
             }
         }
