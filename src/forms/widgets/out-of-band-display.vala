@@ -1,6 +1,7 @@
 namespace Pakiki {   
     class OutOfBandDisplay : Gtk.Grid {
         private ApplicationWindow application_window;
+        private SyntaxHighlighter syntax_highlighter = new SyntaxHighlighter ();
 
         public OutOfBandDisplay(ApplicationWindow application_window) {
             this.application_window = application_window;
@@ -10,8 +11,11 @@ namespace Pakiki {
             column_spacing = 12;
         }
 
-        public void render_interaction (Json.Array data_packets) {
+        public void render_interaction (Json.Object request_contents, Json.Array data_packets) {
             reset_state ();
+
+            var request_data = request_contents.get_string_member ("Request");
+            var response_data = request_contents.get_string_member ("Response");
 
             Json.Object? request_packet = null;
             Json.Object? response_packet = null;
@@ -82,10 +86,17 @@ namespace Pakiki {
             request_label.valign = Gtk.Align.START;
             request_label.halign = Gtk.Align.END;
             this.attach (request_label, 0, row, 1, 1);
-            var request_data = Base64.decode(request_packet.get_string_member ("Data"));
+            var request_packet_data = Base64.decode(request_packet.get_string_member ("Data"));
             var request_text_view = new Gtk.TextView ();
             request_text_view.monospace = true;
-            request_text_view.buffer.text = (string)request_data;
+            if (request_data == null) {
+                request_text_view.buffer.text = (string)request_packet_data;
+            } else {
+                request_data = (string)Base64.decode(request_data);
+                syntax_highlighter.set_tags (request_text_view.buffer);
+                syntax_highlighter.set_highlightjs_tags (request_text_view.buffer, request_data, null); 
+            }
+            
             request_text_view.editable = false;
             request_text_view.margin = 8;
             var request_scroll_view = new Gtk.ScrolledWindow (null, null);
@@ -107,12 +118,19 @@ namespace Pakiki {
             response_label.valign = Gtk.Align.START;
             response_label.halign = Gtk.Align.END;
             this.attach (response_label, 0, row, 1, 1);
-            var response_data = Base64.decode(response_packet.get_string_member ("Data"));
+            var response_packet_data = Base64.decode(response_packet.get_string_member ("Data"));
             var response_text_view = new Gtk.TextView ();
             response_text_view.monospace = true;
             response_text_view.buffer.text = (string)response_data;
             response_text_view.editable = false;
             response_text_view.margin = 8;
+            if (response_data == null) {
+                response_text_view.buffer.text = (string)response_packet_data;
+            } else {
+                syntax_highlighter.set_tags (response_text_view.buffer);
+                response_data = (string)Base64.decode(response_data);
+                syntax_highlighter.set_highlightjs_tags (response_text_view.buffer, response_data, null); 
+            }
             var response_scroll_view = new Gtk.ScrolledWindow (null, null);
             response_scroll_view.add (response_text_view);
             response_scroll_view.hscrollbar_policy = Gtk.PolicyType.AUTOMATIC;

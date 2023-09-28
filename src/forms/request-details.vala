@@ -365,7 +365,7 @@ namespace Pakiki {
                             }
                             else if (protocol == "Out of Band") {
                                 var packets = root_obj.get_array_member ("DataPackets");
-                                out_of_band_display.render_interaction (packets);
+                                out_of_band_display.render_interaction (root_obj, packets);
                             } else {
                                 populate_http_data (root_obj);
                             }
