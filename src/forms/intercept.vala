@@ -473,7 +473,7 @@ namespace Pakiki {
                 model.get (iter, Column.BODY, out body);
 
                 if (selection_count == 1) {
-                    if (scrolled_window_hex_request.visible) {
+                    if (scrolled_window_hex_requestresponse.visible) {
                         var bytes = ((HexStaticBuffer)hex_editor_requestresponse.buffer).get_buffer ();
                         body = Base64.encode (bytes);
                     }
