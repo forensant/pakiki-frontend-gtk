@@ -355,7 +355,11 @@ namespace Pakiki {
                     } else {
                         scrolled_window_hex_requestresponse.hide ();
                         scrolled_window_text_requestresponse.show ();
-                        text_view_requestresponse.buffer.text = ((string) body_bytes).replace("\r\n", "\n");
+                        if (body_bytes.length == 0) {
+                            text_view_requestresponse.buffer.text = "";
+                        } else {
+                            text_view_requestresponse.buffer.text = ((string) body_bytes).replace("\r\n", "\n");
+                        }
                         text_view_requestresponse.direction = direction.down ();
                         text_view_requestresponse.editable = true;
                         text_view_requestresponse.on_text_changed (true);
@@ -381,7 +385,11 @@ namespace Pakiki {
                         } else {
                             scrolled_window_hex_request.hide ();
                             scrolled_window_text_request.show ();
-                            text_view_request.buffer.text = ((string) original_request_body_bytes).replace("\r\n", "\n");
+                            if (body_bytes.length == 0) {
+                                text_view_request.buffer.text = "";
+                            } else {
+                                text_view_request.buffer.text = ((string) original_request_body_bytes).replace("\r\n", "\n");
+                            }
                             text_view_request.direction = direction.down ();
                             text_view_request.set_request_details (request_guid, protocol, url);
                         }
