@@ -4,6 +4,7 @@ project('com.forensant.pakiki', 'vala', 'c',
 
 vapi_dir = meson.current_source_dir() / 'vapi'
 add_project_arguments(['--vapidir', vapi_dir], language: 'vala')
+add_global_arguments('-DGDK_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED', language: 'c')
 
 dependencies = [
     dependency('glib-2.0'),

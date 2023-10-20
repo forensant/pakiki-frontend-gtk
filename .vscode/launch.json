@@ -17,6 +17,7 @@
             "cwd": "${workspaceFolder}",
             "env": {
                 "GSETTINGS_SCHEMA_DIR": "builddir/src/",
+                "G_ENABLE_DIAGNOSTIC": "1",
                 /*"G_DEBUG": "fatal_warnings"*/
             },
             "preLaunchTask": "build ninja"
