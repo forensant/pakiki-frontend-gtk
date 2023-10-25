@@ -262,7 +262,6 @@ namespace Pakiki {
             try {
                 string line;
                 channel.read_line (out line, null, null);
-                print ("[Pākiki Core] %s: %s", stream_name, line);
                 
                 if (line.contains ("Web frontend is available at:")) {
                     var scheme_idx = line.index_of ("://");
