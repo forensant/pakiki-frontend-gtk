@@ -1,6 +1,7 @@
 project('com.forensant.pakiki', 'vala', 'c',
   version: run_command('cat', 'src/resources/version', check : true).stdout().strip(),
-  license: 'MIT')
+  license: 'MIT',
+  default_options : ['c_std=c2x', 'cpp_std=c++17'])
 
 vapi_dir = meson.current_source_dir() / 'vapi'
 add_project_arguments(['--vapidir', vapi_dir], language: 'vala')

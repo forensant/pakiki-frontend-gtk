@@ -81,7 +81,7 @@ flatpak install org.gnome.Sdk
 flatpak install org.gnome.Platform
 ```
 
-Select version 44
+Select version 45
 
 ### Building
 

@@ -107,7 +107,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     container:
-      image: bilelmoussaoui/flatpak-github-actions:gnome-44
+      image: bilelmoussaoui/flatpak-github-actions:gnome-45
       options: --privileged
     
     steps:
@@ -191,6 +191,7 @@ jobs:
           desc: 'Native next generation intercepting proxy, designed for security testing of web applications.'
 
       - name: Create Sentry release
+        continue-on-error: true
         run: |
           curl -sL https://sentry.io/get-cli/ > /tmp/sentry-install.sh
           chmod +x /tmp/sentry-install.sh
