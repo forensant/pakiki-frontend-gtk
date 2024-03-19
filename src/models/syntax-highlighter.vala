@@ -1,3 +1,7 @@
+// The two server-side syntax highlighters are/have been Chroma and hljs. This file contains
+// logic which strips the HTML outputted by them, and converts that into tags which can be
+// applied to a Gtk.TextBuffer.
+
 using GXml;
 
 namespace Pakiki {
@@ -65,6 +69,21 @@ namespace Pakiki {
 
                 buffer.create_tag("hljs-emphasis", "style", Pango.Style.ITALIC);
                 buffer.create_tag("hljs-strong", "weight", 700);
+
+                // Chroma colours
+                buffer.create_tag("chroma-k", "foreground", "#c678dd");
+                buffer.create_tag("chroma-n-blank", "foreground", "#eeeeee");
+                buffer.create_tag("chroma-n", "foreground", "#e06c75");
+                buffer.create_tag("chroma-l", "foreground", "#98c379");
+                buffer.create_tag("chroma-s", "foreground", "#98c379");
+                buffer.create_tag("chroma-d", "foreground", "#98c379");
+                buffer.create_tag("chroma-m", "foreground", "#d19a66");
+                buffer.create_tag("chroma-i", "foreground", "#d19a66");
+                buffer.create_tag("chroma-o", "foreground", "#61aeee");
+                buffer.create_tag("chroma-c", "foreground", "#eeeeee");
+                buffer.create_tag("chroma-g", "foreground", "#f92672");
+                buffer.create_tag("chroma-p", "foreground", "#eeeeee");
+
             } else {
                 buffer.create_tag("hljs-comment", "foreground", "#a0a1a7", "style", Pango.Style.ITALIC);
                 buffer.create_tag("hljs-quote", "foreground", "#a0a1a7", "style", Pango.Style.ITALIC);
@@ -106,6 +125,20 @@ namespace Pakiki {
 
                 buffer.create_tag("hljs-emphasis", "style", Pango.Style.ITALIC);
                 buffer.create_tag("hljs-strong", "weight", 700);
+
+                // Chroma colours
+                buffer.create_tag("chroma-k", "foreground", "#a626a4");
+                buffer.create_tag("chroma-n-blank", "foreground", "#111111");
+                buffer.create_tag("chroma-n", "foreground", "#e45649");
+                buffer.create_tag("chroma-l", "foreground", "#50a14f");
+                buffer.create_tag("chroma-s", "foreground", "#50a14f");
+                buffer.create_tag("chroma-d", "foreground", "#50a14f");
+                buffer.create_tag("chroma-m", "foreground", "#986801");
+                buffer.create_tag("chroma-i", "foreground", "#986801");
+                buffer.create_tag("chroma-o", "foreground", "#4078f2");
+                buffer.create_tag("chroma-c", "foreground", "#111111");
+                buffer.create_tag("chroma-g", "foreground", "#f92672");
+                buffer.create_tag("chroma-p", "foreground", "#111111");
             }
         }
 
@@ -135,15 +168,30 @@ namespace Pakiki {
                     var tag_offset = new TagOffset();
                     tag_offset.start = current_highlight_length;
                     var child_tags = new Gee.ArrayList<TagOffset> ();
+                    var only_text_children = true;
                     foreach (var child in node.child_nodes) {
+                        if (child.node_type != GXml.DomNode.NodeType.TEXT_NODE) {
+                            only_text_children = false;
+                        }
                         child_tags.add_all (get_tags (child, ref current_highlight_string, ref current_highlight_length));
                     }
-                    
+
                     tag_offset.end = current_highlight_length;
-                    tag_offset.tag = element.get_attribute ("class");
+                    var cls = element.get_attribute ("class");
+                    if (!only_text_children) {
+                        tags.add_all (child_tags);
+                        return tags;
+                    }
+                    if (cls == "chroma-n" || cls == "chroma-nn") {
+                        cls = "chroma-n-blank";
+                    }
+                    else if (cls.index_of ("chroma-", 0) == 0 && cls.length > 8) {
+                        cls = cls.substring (0, 8);
+                    }
+                    tag_offset.tag = cls;
                     tags.add (tag_offset);
                     tags.add_all (child_tags);
-                } else if (element.tag_name == "html") {
+                } else if (element.tag_name == "html" || element.tag_name == "pre") {
                     foreach (var child in node.child_nodes) {
                         tags.add_all (get_tags (child, ref current_highlight_string, ref current_highlight_length));
                     }
