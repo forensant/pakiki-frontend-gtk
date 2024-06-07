@@ -334,7 +334,7 @@ namespace Pakiki {
                 "/tmp",
                 "Pākiki Proxy - Community",
                 pakiki_application.get_version (),
-                "https://sentryio.pakikiproxy.com/api/2/minidump/?sentry_key=ca7c9b5b824bb4114cec38cd113e72a1",
+                "https://sentry.pakikiproxy.com/api/7/minidump/?sentry_key=b46351d9d014caa8c9f6de4a9dfcf634",
                 "");
 
             bool report = settings.get_boolean ("crash-reports");

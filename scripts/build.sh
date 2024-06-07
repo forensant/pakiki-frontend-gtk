@@ -12,5 +12,5 @@ scripts/deb-package.sh
 # upload debug files
 if command -v sentry-cli
 then
-    sentry-cli --url https://sentryio.pakikiproxy.com debug-files upload -o forensant -p gtk-frontend builddir/com.forensant.pakiki
+    sentry-cli --url https://sentry.pakikiproxy.com debug-files upload -o forensant -p gtk-frontend builddir/com.forensant.pakiki
 fi
