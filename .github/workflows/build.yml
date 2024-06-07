@@ -196,9 +196,9 @@ jobs:
           curl -sL https://sentry.io/get-cli/ > /tmp/sentry-install.sh
           chmod +x /tmp/sentry-install.sh
           /bin/bash /tmp/sentry-install.sh
-          sentry-cli releases new --log-level debug --org forensant --project gtk-frontend --auth-token ${{secrets.SENTRY_AUTH_TOKEN}} ${{ steps.getversion.outputs.version }}
-          sentry-cli releases set-commits --log-level debug --org forensant --project gtk-frontend --auth-token ${{secrets.SENTRY_AUTH_TOKEN}} --auto ${{ steps.getversion.outputs.version }}
-          sentry-cli debug-files upload --log-level debug --include-sources --org forensant --project gtk-frontend --auth-token ${{secrets.SENTRY_AUTH_TOKEN}} builddir
+          sentry-cli releases new --log-level debug --org pakiki --project gtk-frontend --auth-token ${{secrets.SENTRY_AUTH_TOKEN}} ${{ steps.getversion.outputs.version }}
+          sentry-cli releases set-commits --log-level debug --org pakiki --project gtk-frontend --auth-token ${{secrets.SENTRY_AUTH_TOKEN}} --auto ${{ steps.getversion.outputs.version }}
+          sentry-cli debug-files upload --log-level debug --include-sources --org pakiki --project gtk-frontend --auth-token ${{secrets.SENTRY_AUTH_TOKEN}} builddir
         env:
           SENTRY_URL: ${{ secrets.SENTRY_URL }}
       
