@@ -456,12 +456,14 @@ namespace Pakiki {
                 if (response_id == Gtk.ResponseType.OK) {
                     this.populate_request (selected_guid);
                 }
-                dialog.destroy ();
+                
 
-                checkbutton_negative_filter.destroy ();
-                checkbutton_exclude_resources.destroy ();
-                search_entry.destroy ();
-                requests_pane.destroy ();
+                dialog.remove (checkbutton_negative_filter);
+                dialog.remove (checkbutton_exclude_resources);
+                dialog.remove (search_entry);
+                dialog.remove (requests_pane);
+
+                dialog.destroy ();
                 requests_pane = null;
                 checkbutton_negative_filter = null;
                 checkbutton_exclude_resources = null;
