@@ -26,7 +26,7 @@ namespace Pakiki {
 
         private void insert_oob_domain () {
             long_running_task (true);
-
+            
             var url = "http://" + application_window.core_address + "/out_of_band/url";
 
             var message = new Soup.Message ("GET", url);
@@ -60,6 +60,10 @@ namespace Pakiki {
             }
 
             prev_text = buffer.text;
+
+            if(application_window.core_address == "") {
+                return;
+            }
 
             var url = "http://" + application_window.core_address + "/requests/highlight";
             var message = new Soup.Message ("POST", url);

@@ -19,8 +19,8 @@
   <template class="PakikiRequestNew" parent="GtkPaned">
     <property name="visible">True</property>
     <property name="can-focus">True</property>
-    <property name="margin-left">18</property>
-    <property name="margin-right">18</property>
+    <property name="margin-start">18</property>
+    <property name="margin-end">18</property>
     <property name="margin-top">18</property>
     <property name="margin-bottom">18</property>
     <property name="orientation">vertical</property>
@@ -39,7 +39,7 @@
             <child>
               <object class="GtkLabel" id="label_error">
                 <property name="can-focus">False</property>
-                <property name="margin-right">12</property>
+                <property name="margin-end">12</property>
                 <property name="margin-bottom">12</property>
                 <property name="label" translatable="yes">Error: </property>
                 <property name="wrap">True</property>
@@ -91,7 +91,7 @@
               <object class="GtkSpinner" id="spinner">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="margin-right">12</property>
+                <property name="margin-end">12</property>
                 <property name="margin-bottom">12</property>
               </object>
               <packing>
@@ -127,7 +127,7 @@
               <object class="GtkEntry" id="entry_hostname">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
-                <property name="margin-left">6</property>
+                <property name="margin-start">6</property>
                 <property name="placeholder-text" translatable="yes">Hostname</property>
               </object>
               <packing>
@@ -149,7 +149,7 @@
           <object class="GtkLabel" id="label_host">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="margin-right">12</property>
+            <property name="margin-end">12</property>
             <property name="label" translatable="yes">_Host</property>
             <property name="use-underline">True</property>
             <property name="mnemonic-widget">combobox_protocol</property>
@@ -164,7 +164,7 @@
           <object class="GtkLabel" id="label_request">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="margin-right">12</property>
+            <property name="margin-end">12</property>
             <property name="margin-top">12</property>
             <property name="label" translatable="yes">Request</property>
             <property name="xalign">1</property>

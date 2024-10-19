@@ -5,8 +5,8 @@
   <template class="PakikiIntercept" parent="GtkPaned">
     <property name="visible">True</property>
     <property name="can-focus">True</property>
-    <property name="margin-left">18</property>
-    <property name="margin-right">18</property>
+    <property name="margin-start">18</property>
+    <property name="margin-end">18</property>
     <property name="margin-top">18</property>
     <property name="margin-bottom">18</property>
     <property name="orientation">vertical</property>
@@ -20,7 +20,7 @@
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="margin-right">12</property>
+            <property name="margin-end">12</property>
             <property name="label" translatable="yes">Intercept</property>
             <property name="xalign">1</property>
           </object>
@@ -66,7 +66,7 @@
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="margin-right">12</property>
+            <property name="margin-end">12</property>
             <property name="margin-top">12</property>
             <property name="label" translatable="yes">Queued Requests</property>
             <property name="xalign">1</property>
@@ -158,7 +158,7 @@
                 <property name="sensitive">False</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
-                <property name="margin-left">12</property>
+                <property name="margin-start">12</property>
                 <property name="use-underline">True</property>
                 <signal name="activate" handler="on_button_drop_activate" swapped="no"/>
                 <signal name="clicked" handler="on_button_drop_activate" swapped="no"/>
@@ -176,7 +176,7 @@
                 <property name="sensitive">False</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
-                <property name="margin-left">12</property>
+                <property name="margin-start">12</property>
                 <property name="use-underline">True</property>
                 <signal name="activate" handler="on_button_intercept_response_activate" swapped="no"/>
                 <signal name="clicked" handler="on_button_intercept_response_activate" swapped="no"/>
@@ -194,7 +194,7 @@
                 <property name="sensitive">False</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
-                <property name="margin-left">12</property>
+                <property name="margin-start">12</property>
                 <property name="use-underline">True</property>
                 <signal name="activate" handler="on_button_forward_activate" swapped="no"/>
                 <signal name="clicked" handler="on_button_forward_activate" swapped="no"/>

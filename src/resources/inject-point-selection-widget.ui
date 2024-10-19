@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 -->
+<!-- Generated with glade 3.40.0 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkListStore" id="liststore_protocols">
@@ -31,7 +31,7 @@
           <object class="GtkLabel" id="label_title">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="margin-right">12</property>
+            <property name="margin-end">12</property>
             <property name="margin-bottom">12</property>
             <property name="label" translatable="yes">_Title</property>
             <property name="use-underline">True</property>
@@ -63,7 +63,7 @@
           <object class="GtkLabel" id="label_host">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="margin-right">12</property>
+            <property name="margin-end">12</property>
             <property name="label" translatable="yes">_Host</property>
             <property name="use-underline">True</property>
             <property name="mnemonic-widget">combobox_protocol</property>
@@ -79,7 +79,7 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="valign">start</property>
-            <property name="margin-right">6</property>
+            <property name="margin-end">6</property>
             <property name="model">liststore_protocols</property>
           </object>
           <packing>
@@ -107,7 +107,7 @@
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
             <property name="valign">start</property>
-            <property name="margin-left">6</property>
+            <property name="margin-start">6</property>
             <property name="margin-bottom">6</property>
             <property name="use-underline">True</property>
             <signal name="clicked" handler="on_button_find_clicked" swapped="no"/>
@@ -203,7 +203,7 @@
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
-            <property name="margin-left">18</property>
+            <property name="margin-start">18</property>
             <property name="margin-top">6</property>
             <property name="use-underline">True</property>
             <signal name="clicked" handler="on_button_clear_separator_clicked" swapped="no"/>
@@ -220,7 +220,7 @@
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
-            <property name="margin-left">6</property>
+            <property name="margin-start">6</property>
             <property name="margin-top">6</property>
             <property name="use-underline">True</property>
             <signal name="clicked" handler="on_button_add_separator_clicked" swapped="no"/>

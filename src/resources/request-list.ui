@@ -33,8 +33,8 @@
   <template class="PakikiRequestList" parent="GtkPaned">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="margin-left">18</property>
-    <property name="margin-right">18</property>
+    <property name="margin-start">18</property>
+    <property name="margin-end">18</property>
     <property name="margin-top">2</property>
     <property name="margin-bottom">18</property>
     <property name="hexpand">True</property>
@@ -82,7 +82,6 @@
                     <property name="hscroll-policy">natural</property>
                     <property name="model">liststore</property>
                     <property name="reorderable">True</property>
-                    <property name="rules-hint">True</property>
                     <property name="enable-search">False</property>
                     <property name="fixed-height-mode">True</property>
                     <property name="show-expanders">False</property>

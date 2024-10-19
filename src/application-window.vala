@@ -98,7 +98,7 @@ namespace Pakiki {
             label_overlay = new Gtk.Label ("");
             label_overlay.name = "lbl_overlay";
             overlay.add_overlay (label_overlay);
-            
+
             settings = new GLib.Settings ("com.forensant.pakiki");
             init_crash_reporting ();
 

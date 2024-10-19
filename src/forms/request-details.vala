@@ -338,6 +338,10 @@ namespace Pakiki {
                 return;
             }
 
+            if (application_window.core_address == "") {
+                return;
+            }
+
             var message = new Soup.Message ("GET", "http://" + application_window.core_address + "/requests/" + guid + "/contents?highlight=true&max_highlight_length=102400");
             application_window.http_session.send_async.begin (message, GLib.Priority.HIGH, null, (obj, res) => {
                 if (ended) {

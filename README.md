@@ -99,7 +99,7 @@ If you're also updating the code within that, a symlink is recommended.
  ```GSETTINGS_SCHEMA_DIR=src/ ./com.forensant.pakiki```
 
 To build and run:
- ```ninja -C builddir && GSETTINGS_SCHEMA_DIR=builddir/src/ builddir/com.forensant.pakiki```
+ ```ninja -C builddir && G_ENABLE_DIAGNOSTIC=1 GSETTINGS_SCHEMA_DIR=builddir/src/ builddir/com.forensant.pakiki```
 
 To build/run with Flatpak:
 ```
