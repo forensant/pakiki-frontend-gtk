@@ -81,7 +81,9 @@ namespace Pakiki {
 
             text_view_request = new RequestTextEditor (application_window);
             scrolled_window_text_view_request.add (text_view_request);
-            text_view_request.key_release_event.connect (on_text_view_request_key_release_event);
+
+            var event_controller_key = new Gtk.EventControllerKey (text_view_request);
+            event_controller_key.key_released.connect (on_text_view_request_key_release_event);
 
             text_view_request.buffer.create_tag ("selection", "background", "yellow", "foreground", "black");
         }
@@ -469,11 +471,10 @@ namespace Pakiki {
             dialog.run ();
         }
 
-        private bool on_text_view_request_key_release_event (Gdk.EventKey event) {
-            if (event.keyval == Gdk.Key.KP_Enter || event.keyval == Gdk.Key.Return || event.is_modifier != 0) {
+        private void on_text_view_request_key_release_event (uint keyval, uint keycode, Gdk.ModifierType state) {
+            if (keyval == Gdk.Key.KP_Enter || keyval == Gdk.Key.Return || state != 0) {
                 correct_separators_and_tag ();
             }
-            return false;
         }
 
         public void populate_request (string guid) {

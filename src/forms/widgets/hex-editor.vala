@@ -159,7 +159,8 @@ namespace Pakiki {
                 return set_selection (evt.x, evt.y);
             });
 
-            this.key_press_event.connect (on_key_press);
+            var event_controller_key = new Gtk.EventControllerKey (this);
+            event_controller_key.key_pressed.connect (on_key_press);
         }
 
         public override bool draw (Cairo.Context cr) {
@@ -641,29 +642,29 @@ namespace Pakiki {
             return lines;
         }
 
-        private bool on_key_press (Gdk.EventKey evt) {
+        private bool on_key_press (uint keyval, uint keycode, Gdk.ModifierType state) {
             var found = true;
 
-            if ((evt.state & Gdk.ModifierType.CONTROL_MASK) != 0) {
-                if (evt.keyval == 'c' || evt.keyval == 'C') {
+            if ((state & Gdk.ModifierType.CONTROL_MASK) != 0) {
+                if (keyval == 'c' || keyval == 'C') {
                     handle_copy (insertion_area);
                     return true;
                 }
                 
-                if (evt.keyval == 'v' || evt.keyval == 'V') {
+                if (keyval == 'v' || keyval == 'V') {
                     handle_paste ();
                     return true;
                 }
 
-                if (evt.keyval == 'x' || evt.keyval == 'X') {
+                if (keyval == 'x' || keyval == 'X') {
                     handle_cut ();
                     return true;
                 }
             }
 
             // handle the two arrow key cases
-            if ((evt.state & Gdk.ModifierType.SHIFT_MASK) != 0) {
-                if (evt.keyval == Gdk.Key.Left) {
+            if ((state & Gdk.ModifierType.SHIFT_MASK) != 0) {
+                if (keyval == Gdk.Key.Left) {
                     if (!selecting) {
                         selecting = true;
                         
@@ -677,7 +678,7 @@ namespace Pakiki {
                         selection_start_charidx--;
                     }
                     selection_end_charidx--;
-                } else if (evt.keyval == Gdk.Key.Right) {
+                } else if (keyval == Gdk.Key.Right) {
                     if (!selecting) {
                         selecting = true;
                         half_selection = false;
@@ -685,19 +686,19 @@ namespace Pakiki {
                     else {
                         selection_end_charidx++;
                     }
-                } else if (evt.keyval == Gdk.Key.Up) {
+                } else if (keyval == Gdk.Key.Up) {
                     if (!selecting) {
                         selecting = true;
                         half_selection = false;
                     }
                     selection_end_charidx -= 16;
-                } else if (evt.keyval == Gdk.Key.Down) {
+                } else if (keyval == Gdk.Key.Down) {
                     if (!selecting) {
                         selecting = true;
                         half_selection = false;
                     }
                     selection_end_charidx += 16;
-                } else if (evt.keyval == Gdk.Key.Home) {
+                } else if (keyval == Gdk.Key.Home) {
                     if (!selecting) {
                         selecting = true;
                         half_selection = false;
@@ -705,14 +706,14 @@ namespace Pakiki {
                     selection_end_charidx = 0;
                     selection_start_charidx--;
                     vadjustment.value = vadjustment.lower;
-                } else if (evt.keyval == Gdk.Key.End) {
+                } else if (keyval == Gdk.Key.End) {
                     if (!selecting) {
                         selecting = true;
                         half_selection = false;
                     }
                     selection_end_charidx = (int64)buffer.length () - 1;
                     vadjustment.value = vadjustment.upper;
-                } else if (evt.keyval == Gdk.Key.Page_Up) {
+                } else if (keyval == Gdk.Key.Page_Up) {
                     if (!selecting) {
                         selecting = true;
                         half_selection = false;
@@ -723,7 +724,7 @@ namespace Pakiki {
                     }
                     vadjustment.value = val;
                     selection_end_charidx -= (lines_per_page () * 16);
-                } else if (evt.keyval == Gdk.Key.Page_Down) {
+                } else if (keyval == Gdk.Key.Page_Down) {
                     if (!selecting) {
                         selecting = true;
                         half_selection = false;
@@ -739,7 +740,7 @@ namespace Pakiki {
                 }
             }
             else {
-                if (evt.keyval == Gdk.Key.Left) {
+                if (keyval == Gdk.Key.Left) {
                     if (insertion_area == Area.HEX) {
                         if (selection_start_charidx == 0 && !half_selection) {
                             return true;
@@ -762,7 +763,7 @@ namespace Pakiki {
                         var min = int64.min (selection_start_charidx, selection_end_charidx);
                         selection_end_charidx = selection_start_charidx = min;
                     }
-                } else if (evt.keyval == Gdk.Key.Right) {
+                } else if (keyval == Gdk.Key.Right) {
                     if (insertion_area == Area.HEX) {
                         if (selection_start_charidx == buffer.length ()) {
                             return true;
@@ -785,7 +786,7 @@ namespace Pakiki {
                         var max = int64.max (selection_start_charidx, selection_end_charidx);
                         selection_end_charidx = selection_start_charidx = max;
                     }
-                } else if (evt.keyval == Gdk.Key.Up) {
+                } else if (keyval == Gdk.Key.Up) {
                     selection_start_charidx -= 16;
                     selection_end_charidx -= 16;
                     if (selecting) {
@@ -793,7 +794,7 @@ namespace Pakiki {
                         var min = int64.min (selection_start_charidx, selection_end_charidx);
                         selection_end_charidx = selection_start_charidx = min;
                     }
-                } else if (evt.keyval == Gdk.Key.Down) {
+                } else if (keyval == Gdk.Key.Down) {
                     selection_start_charidx += 16;
                     selection_end_charidx += 16;
                     if (selecting) {
@@ -801,25 +802,25 @@ namespace Pakiki {
                         var max = int64.max (selection_start_charidx, selection_end_charidx);
                         selection_end_charidx = selection_start_charidx = max;
                     }
-                } else if (evt.keyval == Gdk.Key.Page_Up) {
+                } else if (keyval == Gdk.Key.Page_Up) {
                     var val = vadjustment.value - vadjustment.page_size;
                     if (val < 0) {
                         val = 0;
                     }
                     vadjustment.value = val;
-                } else if (evt.keyval == Gdk.Key.Page_Down) {
+                } else if (keyval == Gdk.Key.Page_Down) {
                     var val = vadjustment.value + vadjustment.page_size;
                     if (val > vadjustment.upper) {
                         val = vadjustment.upper;
                     }
                     vadjustment.value = val;
-                } else if (evt.keyval == Gdk.Key.Home) {
+                } else if (keyval == Gdk.Key.Home) {
                     selection_start_charidx = selection_end_charidx = 0;
                     if (selecting) {
                         selecting = false;
                     }
                     vadjustment.value = vadjustment.lower;
-                } else if (evt.keyval == Gdk.Key.End) {
+                } else if (keyval == Gdk.Key.End) {
                     var len = (int64)buffer.length ();
                     len--;
                     selection_start_charidx = selection_end_charidx = len;
@@ -863,7 +864,7 @@ namespace Pakiki {
             }
 
             if (insertion_area != Area.NONE) {
-                if (evt.keyval == Gdk.Key.BackSpace) {
+                if (keyval == Gdk.Key.BackSpace) {
                     if (!selecting) {
                         selection_from--;
                         if (selection_from < 0) {
@@ -881,7 +882,7 @@ namespace Pakiki {
                     selecting = false;
                 }
 
-                if (evt.keyval == Gdk.Key.Delete) {
+                if (keyval == Gdk.Key.Delete) {
                     if (selecting) {
                         remove_selected_text ();
                     }
@@ -894,9 +895,9 @@ namespace Pakiki {
             }
 
             if (insertion_area == Area.HEX) {
-                if ((evt.keyval >= '0' && evt.keyval <= '9') || 
-                    (evt.keyval >= 'A' && evt.keyval <= 'F') ||
-                    (evt.keyval >= 'a' && evt.keyval <= 'f')) {
+                if ((keyval >= '0' && keyval <= '9') || 
+                    (keyval >= 'A' && keyval <= 'F') ||
+                    (keyval >= 'a' && keyval <= 'f')) {
 
                         if (selecting) {
                             remove_selected_text ();
@@ -906,10 +907,10 @@ namespace Pakiki {
 
                         if (half_selection) {
                             to_insert = "%02x".printf (buffer.byte_at (selection_from));
-                            to_insert = to_insert[0].to_string () + evt.keyval.to_string ("%c");
+                            to_insert = to_insert[0].to_string () + keyval.to_string ("%c");
                         }
                         else {
-                            to_insert = evt.keyval.to_string ("%c") + "0";
+                            to_insert = keyval.to_string ("%c") + "0";
                         }
 
                         int b;
@@ -938,10 +939,10 @@ namespace Pakiki {
 
             if (insertion_area == Area.ASCII) {
                 // regular ASCII characters
-                if ((evt.keyval >= 32 && evt.keyval <= 126) || evt.keyval == Gdk.Key.KP_Enter || evt.keyval == Gdk.Key.Return) {
-                    uint8[] bytes = {(uint8)evt.keyval};
+                if ((keyval >= 32 && keyval <= 126) || keyval == Gdk.Key.KP_Enter || keyval == Gdk.Key.Return) {
+                    uint8[] bytes = {(uint8)keyval};
 
-                    if (evt.keyval == Gdk.Key.KP_Enter || evt.keyval == Gdk.Key.Return) {
+                    if (keyval == Gdk.Key.KP_Enter || keyval == Gdk.Key.Return) {
                         if (buffer.pos_in_headers (selection_from)) {
                             bytes = new uint8[] {0x0d, 0x0a};
                         }
