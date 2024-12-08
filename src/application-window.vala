@@ -117,21 +117,17 @@ namespace Pakiki {
             add_accel_group (accel_group);
 
             var builder = new Gtk.Builder.from_resource ("/com/forensant/pakiki/app-menu.ui");
-            var menu_model = (GLib.MenuModel) builder.get_object ("menu");
-            var menu = new Gtk.Menu.from_model (menu_model);
+            var menu_model = (GLib.Menu) builder.get_object ("menu");
+            GlobalActions.get_instance(this);
             
             if (!is_sandboxed ()) {
-                var open_item = new Gtk.MenuItem.with_mnemonic ("Open _Browser");
-                open_item.activate.connect (on_open_browser);
-                open_item.show ();
-                menu.insert (open_item, 4);
+                var section = new GLib.Menu() ;
+                section.append ( "Open _Browser", "app.open-browser");
                 
-                var sep_item = new Gtk.SeparatorMenuItem ();
-                sep_item.show ();
-                menu.insert (sep_item, 5);
+                menu_model.append_section(null, section);
             }
             
-            gears.popup = menu;
+            gears.menu_model = menu_model;
 
             Notify.init ("com.forensant.pakiki");
 
