@@ -386,6 +386,10 @@ namespace Pakiki {
             set_core_crash_reporting ();
             this.proxy_settings = new ProxySettings (this);
 
+            var action = new SimpleAction ("preferences", null);
+            action.activate.connect (on_show_preferences);
+            application.add_action (action);
+
             if (!timeout_started) {
                 timeout_started = true;
                 Timeout.add_full (Priority.DEFAULT, 5000, monitor_core_connection);
@@ -582,6 +586,14 @@ namespace Pakiki {
 
         public void on_save_project () {
             core_process.save_project ();
+        }
+
+        private void on_show_preferences () {
+            var prefs = new ApplicationPreferences (this);
+            prefs.settings_changed.connect (() => {
+                settings_changed (); 
+            });
+            prefs.present ();
         }
 
         private void render_controls (bool process_launched) {

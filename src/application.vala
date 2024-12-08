@@ -146,7 +146,7 @@ namespace Pakiki {
                     contents += line;
                 }
             } catch (Error e) {
-                stdout.printf ("Error getting logo: %s\n", e.message);
+                stdout.printf ("Error getting version: %s\n", e.message);
             }
 
             return contents;
@@ -154,14 +154,6 @@ namespace Pakiki {
 
         private void help () {
             window.launch_documentation ();
-        }
-
-        private void preferences () {
-            var prefs = new ApplicationPreferences (window);
-            prefs.settings_changed.connect (() => {
-                window.settings_changed (); 
-            });
-            prefs.present ();
         }
 
         private void set_temp_environment_var () {
@@ -178,11 +170,7 @@ namespace Pakiki {
         public override void startup () {
             base.startup ();
 
-            var action = new SimpleAction ("preferences", null);
-            action.activate.connect (preferences);
-            add_action (action);
-
-            action = new SimpleAction("about", null);
+            var action = new SimpleAction("about", null);
             action.activate.connect (about);
             add_action (action);
 
