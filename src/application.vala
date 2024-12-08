@@ -19,7 +19,7 @@ namespace Pakiki {
             dialog.set_destroy_with_parent (true);
             dialog.set_transient_for (window);
             dialog.set_modal (true);
-            dialog.set_title ("About Pākiki");
+            dialog.set_title ("About Pākiki Proxy");
 
             dialog.program_name = "Pākiki Community Edition";
             dialog.comments = "Intercepting proxy";
@@ -32,17 +32,11 @@ namespace Pakiki {
             dialog.website_label = "pakikiproxy.com";
 
             try {
-                var logo = new Gdk.Pixbuf.from_stream_at_scale (window.banner_logo_svg (), 350, 64, true, null);
-                dialog.logo = logo;
+                var logo = new Gdk.Pixbuf.from_resource ("/com/forensant/pakiki/Logo256.png");
+                dialog.logo = Gdk.Texture.for_pixbuf (logo);
             } catch (Error err) {
                 stdout.printf ("Could not create logo for the about page");
             }
-
-            dialog.response.connect ((response_id) => {
-                if (response_id == Gtk.ResponseType.CANCEL || response_id == Gtk.ResponseType.DELETE_EVENT) {
-                    dialog.hide_on_delete ();
-                }
-            });
 
             // Show the dialog:
             dialog.present ();
