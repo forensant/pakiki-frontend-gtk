@@ -188,15 +188,16 @@ namespace Pakiki {
                 render_controls (false);
             }
 
-            this.delete_event.connect ((e) => {
+            this.close_request.connect (() => {
                 if (core_process != null) {
                     saving_dialog = new SavingDialog();
+                    saving_dialog.set_transient_for(this);
                     this.hide ();
-                    saving_dialog.show_all ();
+                    saving_dialog.show ();
 
-                    core_process.quit (this.on_quit_successful);
+                    var quitting = core_process.quit (this.on_quit_successful);
 
-                    return true;
+                    return quitting;
                 }
                 
                 return false;

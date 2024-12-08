@@ -328,7 +328,7 @@ namespace Pakiki {
             return true;
         }
 
-        public void quit (QuitSuccessful? quit_successful) {
+        public bool quit (QuitSuccessful? quit_successful) {
             if (child_pid != 0) {
                 Posix.kill (child_pid, Posix.Signal.TERM);
 
@@ -338,7 +338,7 @@ namespace Pakiki {
                         try {
                             f.@delete (null);
                         } catch (Error e) {
-                            stdout.printf("Colud not delete file: %s\n", e.message);
+                            stdout.printf("Could not delete file: %s\n", e.message);
                         }
                     }
 
@@ -352,7 +352,10 @@ namespace Pakiki {
                 if (quit_successful != null) {
                     quit_successful ();
                 }
+                return false;
             }
+
+            return true;
         }
 
         public void save_project () {
