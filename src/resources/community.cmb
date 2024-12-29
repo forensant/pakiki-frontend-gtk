@@ -2,7 +2,9 @@
 <!DOCTYPE cambalache-project SYSTEM "cambalache-project.dtd">
 <cambalache-project version="0.94.0" target_tk="gtk-4.0">
   <ui>
-	(1,23,"request-new.ui","request-new.ui",None,None,None,None,None,None,None)
+	(1,23,"request-new.ui","request-new.ui",None,None,None,None,None,None,None),
+	(2,2,None,"request-details.ui",None,None,None,None,None,None,None),
+	(3,2,None,"text-search-bar.ui",None,None,None,None,None,None,None)
   </ui>
   <object>
 	(1,1,"GtkPaned","pane",23,None,None,None,0,None,None),
@@ -21,10 +23,37 @@
 	(1,20,"GtkButton","button_send",16,None,None,None,3,None,None),
 	(1,21,"GtkDropDown","dropdown_protocol",6,None,None,None,0,None,None),
 	(1,23,"GtkBox","PakikiRequestNew",None,None,None,None,0,None,None),
-	(1,24,"GtkStringList",None,21,None,None,None,0,None,None)
+	(1,24,"GtkStringList",None,21,None,None,None,0,None,None),
+	(2,2,"GtkBox","PakikiRequestDetails",None,None,None,None,0,None,None),
+	(2,3,"GtkNotebook","notebook",2,None,None,None,0,None,None),
+	(2,4,"GtkLabel",None,3,None,"tab",None,3,None,None),
+	(2,5,"GtkLabel",None,3,None,"tab",None,5,None,None),
+	(2,6,"GtkLabel",None,3,None,"tab",None,1,None,None),
+	(2,7,"GtkScrolledWindow","scroll_window_text",3,None,None,None,0,None,None),
+	(2,8,"GtkScrolledWindow","scroll_window_original_text",3,None,None,None,2,None,None),
+	(2,9,"GtkPaned","pane_websocket",3,None,None,None,4,None,None),
+	(2,10,"GtkTreeView","treeview_websocket_packets",9,None,None,None,0,None,None),
+	(2,11,"GtkScrolledWindow","scroll_window_websocket_request",9,None,None,None,1,None,None),
+	(2,12,"GtkViewport","viewport_out_of_band_interaction",3,None,None,None,6,None,None),
+	(2,13,"GtkScrolledWindow","scroll_window_out_of_band_interaction",12,None,None,None,0,None,None),
+	(2,14,"GtkLabel",None,3,None,"tab",None,7,None,None),
+	(2,15,"GtkMenuButton","button_send_to",3,None,"action-end",None,8,None,None),
+	(3,1,"GtkSearchBar","search_bar",2,None,None,None,0,None,None),
+	(3,2,"GtkBox","PakikiTextSearchBar",None,None,None,None,0,None,None),
+	(3,3,"GtkBox",None,1,None,None,None,0,None,None),
+	(3,4,"GtkLabel",None,3,None,None,None,0,None,None),
+	(3,5,"GtkSearchEntry","search_entry_text",3,None,None,None,2,None,None),
+	(3,6,"GtkDropDown","dropdown_format",3,None,None,None,3,None,None),
+	(3,7,"GtkStringList",None,6,None,None,None,0,None,None),
+	(3,8,"GtkButton","button_search_up",3,None,None,None,4,None,None),
+	(3,9,"GtkButton","button_search_down",3,None,None,None,5,None,None),
+	(3,10,"GtkSpinner","spinner",3,None,None,None,6,None,None),
+	(3,11,"GtkLabel","label_count",3,None,None,None,7,None,None)
   </object>
   <object_property>
 	(1,1,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
+	(1,1,"GtkPaned","position","300",None,None,None,None,None,None,None,None,None),
+	(1,1,"GtkPaned","position-set","True",None,None,None,None,None,None,None,None,None),
 	(1,1,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
 	(1,1,"GtkWidget","margin-bottom","18",None,None,None,None,None,None,None,None,None),
 	(1,1,"GtkWidget","margin-end","18",None,None,None,None,None,None,None,None,None),
@@ -77,7 +106,45 @@
 	(1,21,"GtkDropDown","model",None,None,None,None,None,24,None,None,None,None),
 	(1,23,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
 	(1,23,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
-	(1,24,"GtkStringList","strings","https://\nhttp://",None,None,None,None,None,None,None,None,None)
+	(1,24,"GtkStringList","strings","https://\nhttp://",None,None,None,None,None,None,None,None,None),
+	(2,2,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
+	(2,2,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
+	(2,3,"GtkNotebook","page","0",None,None,None,None,None,None,None,None,None),
+	(2,3,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
+	(2,3,"GtkWidget","margin-top","6",None,None,None,None,None,None,None,None,None),
+	(2,3,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
+	(2,4,"GtkLabel","label","Text (Original)",None,None,None,None,None,None,None,None,None),
+	(2,5,"GtkLabel","label","Websocket",None,None,None,None,None,None,None,None,None),
+	(2,6,"GtkLabel","label","Text",None,None,None,None,None,None,None,None,None),
+	(2,7,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
+	(2,7,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
+	(2,8,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
+	(2,8,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
+	(2,9,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
+	(2,9,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
+	(2,9,"GtkWidget","visible","False",None,None,None,None,None,None,None,None,None),
+	(2,12,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
+	(2,12,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
+	(2,12,"GtkWidget","visible","False",None,None,None,None,None,None,None,None,None),
+	(2,14,"GtkLabel","label","Out of Band Interaction",None,None,None,None,None,None,None,None,None),
+	(2,15,"GtkMenuButton","label","_Send to...",None,None,None,None,None,None,None,None,None),
+	(2,15,"GtkMenuButton","use-underline","True",None,None,None,None,None,None,None,None,None),
+	(3,1,"GtkSearchBar","show-close-button","True",None,None,None,None,None,None,None,None,None),
+	(3,1,"GtkWidget","vexpand-set","True",None,None,None,None,None,None,None,None,None),
+	(3,2,"GtkWidget","vexpand-set","True",None,None,None,None,None,None,None,None,None),
+	(3,3,"GtkBox","spacing","6",None,None,None,None,None,None,None,None,None),
+	(3,3,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
+	(3,3,"GtkWidget","vexpand-set","True",None,None,None,None,None,None,None,None,None),
+	(3,4,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
+	(3,5,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
+	(3,5,"GtkWidget","hexpand-set","True",None,None,None,None,None,None,None,None,None),
+	(3,6,"GtkDropDown","model",None,None,None,None,None,7,None,None,None,None),
+	(3,7,"GtkStringList","strings","ASCII\nHex",None,None,None,None,None,None,None,None,None),
+	(3,8,"GtkButton","icon-name","go-up",None,None,None,None,None,None,None,None,None),
+	(3,9,"GtkButton","icon-name","go-down",None,None,None,None,None,None,None,None,None),
+	(3,11,"GtkLabel","xalign","0.0",None,None,None,None,None,None,None,None,None),
+	(3,11,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
+	(3,11,"GtkWidget","hexpand-set","True",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_layout_property>
 	(1,2,5,"GtkGridLayoutChild","column","0",None,None,None,None),
@@ -99,6 +166,11 @@
   </object_layout_property>
   <object_signal>
 	(1,1,19,"GtkButton","clicked","on_button_reset_clicked",None,0,0,0,None),
-	(2,1,20,"GtkButton","clicked","on_send_clicked",None,0,0,0,None)
+	(2,1,20,"GtkButton","clicked","on_send_clicked",None,0,0,0,None),
+	(3,3,5,"GtkSearchEntry","next-match","on_search_entry_text_next_match",None,0,0,0,None),
+	(4,3,5,"GtkSearchEntry","previous-match","on_search_entry_text_previous_match",None,0,0,0,None),
+	(5,3,5,"GtkSearchEntry","search-changed","on_search_entry_text_search_changed",None,0,0,0,None),
+	(6,3,5,"GtkSearchEntry","stop-search","on_search_entry_text_stop_search",None,0,0,0,None),
+	(7,3,5,"GtkSearchEntry","activate","on_search_entry_text_next_match",None,0,0,0,None)
   </object_signal>
 </cambalache-project>

@@ -14,6 +14,8 @@
         <property name="margin-start">18</property>
         <property name="margin-top">18</property>
         <property name="orientation">vertical</property>
+        <property name="position">300</property>
+        <property name="position-set">True</property>
         <property name="vexpand">True</property>
         <child>
           <object class="GtkGrid">

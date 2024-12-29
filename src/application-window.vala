@@ -102,8 +102,10 @@ namespace Pakiki {
             settings = new GLib.Settings ("com.forensant.pakiki");
             init_crash_reporting ();
 
-            var accel_group = new Gtk.AccelGroup ();
-            accel_group.connect ('f', Gdk.ModifierType.CONTROL_MASK, 0, (group, accel, keyval, modifier) => {
+            var app = get_application ();
+
+            var find_action = new SimpleAction("find-shortcut", null);
+            find_action.activate.connect (() => {
                 var pane = selected_pane ();
                 if (pane != null && pane.find_activated ()) {
                     // do nothing - as find has been activated
@@ -111,8 +113,10 @@ namespace Pakiki {
                 else if (pane == null || pane.can_search ()) {
                     button_filter.active = !button_filter.active;
                 }
-
-                return true;
+            });
+            app.add_action (find_action);
+            app.set_accels_for_action ("app.find-shortcut", new string[] {"<Ctrl>F"});
+            
             });
             add_accel_group (accel_group);
 

@@ -1,6 +1,6 @@
 namespace Pakiki {
     [GtkTemplate (ui = "/com/forensant/pakiki/text-search-bar.ui")]
-    public class TextSearchBar : Gtk.SearchBar {
+    public class TextSearchBar : Gtk.Box {
         
         public signal void search_next ();
         public signal void search_prev ();
@@ -8,24 +8,33 @@ namespace Pakiki {
         public signal void text_changed ();
 
         [GtkChild]
-        private unowned Gtk.ComboBox combobox_format;
-
+        private unowned Gtk.DropDown dropdown_format;
         [GtkChild]
         private unowned Gtk.Label label_count;
-
+        [GtkChild]
+        public unowned Gtk.SearchBar search_bar;
         [GtkChild]
         private unowned Gtk.SearchEntry search_entry_text;
-
         [GtkChild]
         private unowned Gtk.Spinner spinner;
 
+        public bool enabled {
+            get { return search_bar.search_mode_enabled; }
+            set { search_bar.search_mode_enabled = value; }
+        }
+
         public string format {
-            get { return combobox_format.active_id == "0" ? "ASCII" : "Hex"; }
+            get { return dropdown_format.selected == 0 ? "ASCII" : "Hex"; }
         }
 
         public bool format_visible {
-            get { return combobox_format.visible; }
-            set { combobox_format.visible = value; }
+            get { return dropdown_format.visible; }
+            set { dropdown_format.visible = value; }
+        }
+
+        public bool show_close_button {
+            get { return search_bar.show_close_button; }
+            set { search_bar.show_close_button = value; }
         }
 
         public bool spinner_visible {
@@ -39,7 +48,7 @@ namespace Pakiki {
         }
 
         public void TextSearchBar () {
-            this.show_close_button = true;
+            search_bar.show_close_button = true;
         }
 
         public void clear_search_count () {
