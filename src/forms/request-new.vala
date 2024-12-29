@@ -184,7 +184,6 @@ namespace Pakiki {
             dropdown_protocol.selected = 0;
             entry_hostname.set_text ("livefirerange.pakikiproxy.com");
             spinner.stop ();
-            stdout.printf("Reset state called\n");
             request_text_editor.buffer.set_text ("GET / HTTP/1.1\nHost: livefirerange.pakikiproxy.com\n\n");
             request_text_editor.on_text_changed (true);
             label_error.label = "";

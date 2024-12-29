@@ -12,7 +12,16 @@ namespace Pakiki {
         public RequestPreview(ApplicationWindow application_window) {
             this.application_window = application_window;
             
+            this.vexpand = true;
+            this.hexpand = true;
+
             this.decide_policy.connect (on_link_clicked);
+
+            this.load_failed.connect ((web_view, uri, error) => {
+                // print the error
+                stdout.printf("Failed to load %s: %s\n", uri, error.message);
+                return false; // propagate the signal
+            });
         }
 
         private bool on_link_clicked (PolicyDecision policy_decision, PolicyDecisionType type) {
@@ -40,13 +49,14 @@ namespace Pakiki {
             }
 
             var web_context = this.get_context ();
-            web_context.clear_cache ();
 
             var proxy_settings = new WebKit.NetworkProxySettings ("http://" + application_window.preview_proxy_address + "/", null);
-            
-            var data_manager = get_website_data_manager ();
-            data_manager.set_tls_errors_policy (WebKit.TLSErrorsPolicy.IGNORE);
-            data_manager.set_network_proxy_settings (WebKit.NetworkProxyMode.CUSTOM, proxy_settings);
+
+            var data_manager = network_session.get_website_data_manager ();
+            data_manager.clear (WebKit.WebsiteDataTypes.ALL, 0, null, null);
+
+            network_session.set_tls_errors_policy (WebKit.TLSErrorsPolicy.IGNORE);
+            network_session.set_proxy_settings (WebKit.NetworkProxyMode.CUSTOM, proxy_settings);
 
             if (bytes.length == 0) {
                 this.load_uri ("about:blank");
@@ -55,7 +65,7 @@ namespace Pakiki {
             }
 
             this.load_bytes (bytes, mimetype, null, url);
-
+            
             _has_content = true;
             return true;
         }

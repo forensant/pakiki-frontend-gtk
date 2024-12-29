@@ -9,7 +9,7 @@ add_project_arguments(['--vapidir', vapi_dir], language: 'vala')
 dependencies = [
     dependency('glib-2.0'),
     dependency('gobject-2.0'),
-    dependency('gtk+-3.0'),
+    dependency('gtk4'),
     dependency('gee-0.8'),
     dependency('crashpad_wrapper', default_options: ['default_library=static']),
     meson.get_compiler('vala').find_library('crashpad', dirs: vapi_dir),
@@ -17,8 +17,8 @@ dependencies = [
     dependency('json-glib-1.0'),
     dependency('libsoup-3.0'),
     meson.get_compiler('vala').find_library('posix'),
-    dependency('gtksourceview-3.0'),
-    dependency('webkit2gtk-4.1'),
+    dependency('gtksourceview-5'),
+    dependency('webkitgtk-6.0'),
     dependency('libnotify')
 ]
 

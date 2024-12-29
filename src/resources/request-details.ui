@@ -1,168 +1,78 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.40.0 -->
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.94.1 -->
 <interface>
-  <requires lib="gtk+" version="3.20"/>
-  <object class="GtkListStore" id="liststore_websocket_packets">
-    <columns>
-      <!-- column-name guid -->
-      <column type="gchararray"/>
-      <!-- column-name time -->
-      <column type="gint"/>
-      <!-- column-name direction -->
-      <column type="gchararray"/>
-      <!-- column-name opcode -->
-      <column type="gchararray"/>
-      <!-- column-name modified -->
-      <column type="gchararray"/>
-      <!-- column-name data -->
-      <column type="gchararray"/>
-    </columns>
-  </object>
-  <template class="PakikiRequestDetails" parent="GtkNotebook">
-    <property name="visible">True</property>
-    <property name="can-focus">True</property>
-    <property name="margin-top">6</property>
+  <requires lib="gtk" version="4.12"/>
+  <template class="PakikiRequestDetails" parent="GtkBox">
+    <property name="hexpand">True</property>
+    <property name="vexpand">True</property>
     <child>
-      <object class="GtkScrolledWindow" id="scroll_window_text">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
+      <object class="GtkNotebook" id="notebook">
+        <property name="hexpand">True</property>
+        <property name="margin-top">6</property>
+        <property name="page">0</property>
+        <property name="vexpand">True</property>
         <child>
-          <placeholder/>
-        </child>
-      </object>
-    </child>
-    <child type="tab">
-      <object class="GtkLabel">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="label" translatable="yes">Text</property>
-        <property name="use-underline">True</property>
-      </object>
-      <packing>
-        <property name="tab-fill">False</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkScrolledWindow" id="scroll_window_original_text">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <child>
-          <placeholder/>
-        </child>
-      </object>
-      <packing>
-        <property name="position">1</property>
-      </packing>
-    </child>
-    <child type="tab">
-      <object class="GtkLabel">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="label" translatable="yes">Text (_Original)</property>
-        <property name="use-underline">True</property>
-      </object>
-      <packing>
-        <property name="position">1</property>
-        <property name="tab-fill">False</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkPaned" id="pane_websocket">
-        <property name="can-focus">True</property>
-        <property name="position">350</property>
-        <child>
-          <object class="GtkScrolledWindow">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="min-content-height">10</property>
-            <property name="propagate-natural-width">True</property>
-            <property name="propagate-natural-height">True</property>
-            <child>
-              <object class="GtkTreeView" id="treeview_websocket_packets">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="model">liststore_websocket_packets</property>
-                <child internal-child="selection">
-                  <object class="GtkTreeSelection"/>
-                </child>
-              </object>
-            </child>
+          <object class="GtkScrolledWindow" id="scroll_window_text">
+            <property name="hexpand">True</property>
+            <property name="vexpand">True</property>
           </object>
-          <packing>
-            <property name="resize">True</property>
-            <property name="shrink">True</property>
-          </packing>
         </child>
-        <child>
-          <object class="GtkScrolledWindow" id="scroll_window_websocket_request">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <child>
-              <placeholder/>
-            </child>
+        <child type="tab">
+          <object class="GtkLabel">
+            <property name="label">Text</property>
           </object>
-          <packing>
-            <property name="resize">True</property>
-            <property name="shrink">True</property>
-          </packing>
         </child>
-      </object>
-      <packing>
-        <property name="position">2</property>
-      </packing>
-    </child>
-    <child type="tab">
-      <object class="GtkLabel">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="label" translatable="yes">_Websocket</property>
-        <property name="use-underline">True</property>
-      </object>
-      <packing>
-        <property name="position">2</property>
-        <property name="tab-fill">False</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkViewport" id="viewport_out_of_band_interaction">
-        <property name="can-focus">False</property>
-        <property name="shadow-type">none</property>
         <child>
-          <object class="GtkScrolledWindow" id="scroll_window_out_of_band_interaction">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
+          <object class="GtkScrolledWindow" id="scroll_window_original_text">
+            <property name="hexpand">True</property>
+            <property name="vexpand">True</property>
+          </object>
+        </child>
+        <child type="tab">
+          <object class="GtkLabel">
+            <property name="label">Text (Original)</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkPaned" id="pane_websocket">
+            <property name="hexpand">True</property>
+            <property name="vexpand">True</property>
+            <property name="visible">False</property>
             <child>
-              <placeholder/>
+              <object class="GtkTreeView" id="treeview_websocket_packets"/>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow" id="scroll_window_websocket_request"/>
             </child>
           </object>
         </child>
+        <child type="tab">
+          <object class="GtkLabel">
+            <property name="label">Websocket</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkViewport" id="viewport_out_of_band_interaction">
+            <property name="hexpand">True</property>
+            <property name="vexpand">True</property>
+            <property name="visible">False</property>
+            <child>
+              <object class="GtkScrolledWindow" id="scroll_window_out_of_band_interaction"/>
+            </child>
+          </object>
+        </child>
+        <child type="tab">
+          <object class="GtkLabel">
+            <property name="label">Out of Band Interaction</property>
+          </object>
+        </child>
+        <child type="action-end">
+          <object class="GtkMenuButton" id="button_send_to">
+            <property name="label">_Send to...</property>
+            <property name="use-underline">True</property>
+          </object>
+        </child>
       </object>
-      <packing>
-        <property name="position">3</property>
-      </packing>
-    </child>
-    <child type="tab">
-      <object class="GtkLabel">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="label" translatable="yes">Out of Band Interaction</property>
-      </object>
-      <packing>
-        <property name="position">3</property>
-        <property name="tab-fill">False</property>
-      </packing>
-    </child>
-    <child type="action-end">
-      <object class="GtkButton" id="button_send_to">
-        <property name="label" translatable="yes">_Send to...</property>
-        <property name="can-focus">True</property>
-        <property name="receives-default">True</property>
-        <property name="use-underline">True</property>
-        <signal name="clicked" handler="on_button_send_to_clicked" swapped="no"/>
-      </object>
-      <packing>
-        <property name="tab-fill">False</property>
-      </packing>
     </child>
   </template>
 </interface>

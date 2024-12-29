@@ -135,10 +135,6 @@ namespace Pakiki {
 
             Notify.init ("com.forensant.pakiki");
 
-            WebKit.WebContext.get_default ().set_sandbox_enabled (true);
-            // works around a webkit bug
-            new WebKit.WebView();
-
             set_filter_icon ();
 
             requests_pane = new RequestsPane (this, true);

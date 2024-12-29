@@ -4,12 +4,12 @@ using WebKit;
 namespace Pakiki {
     
     [GtkTemplate (ui = "/com/forensant/pakiki/request-details.ui")]
-    class RequestDetails : Gtk.Notebook {
+     class RequestDetails : Gtk.Box {
 
         [GtkChild]
-        private unowned Gtk.Button button_send_to;
+        private unowned Gtk.MenuButton button_send_to;
         [GtkChild]
-        private unowned Gtk.ListStore liststore_websocket_packets;
+        private unowned Gtk.Notebook notebook;
         [GtkChild]
         private unowned Gtk.Paned pane_websocket;
         [GtkChild]
@@ -25,8 +25,10 @@ namespace Pakiki {
         [GtkChild]
         private unowned Gtk.Viewport viewport_out_of_band_interaction;
 
+
         private ApplicationWindow application_window;
         public string guid;
+        private Gtk.ListStore liststore_websocket_packets;
         private Gee.HashMap<string, string> modified_websocket_data;
         private OutOfBandDisplay out_of_band_display;
         private string protocol;
@@ -64,6 +66,9 @@ namespace Pakiki {
             guid = "";
             show_send_to = true;
 
+            liststore_websocket_packets = new Gtk.ListStore (6, typeof (string), typeof (int), typeof (string), typeof (string), typeof (string), typeof (string));
+            treeview_websocket_packets.set_model (liststore_websocket_packets);
+
             text_view_request = new RequestTextView (application_window);
             text_view_orig_request = new RequestTextView (application_window);
             text_view_websocket_request = new RequestTextView (application_window);
@@ -73,9 +78,9 @@ namespace Pakiki {
             text_view_websocket_request.editable = false;
             text_view_websocket_request.response_visible = false;
 
-            scroll_window_text.add (text_view_request);
-            scroll_window_original_text.add (text_view_orig_request);
-            scroll_window_websocket_request.add (text_view_websocket_request);
+            scroll_window_text.set_child (text_view_request);
+            scroll_window_original_text.set_child (text_view_orig_request);
+            scroll_window_websocket_request.set_child (text_view_websocket_request);
 
             text_view_request.show ();
             text_view_orig_request.show ();
@@ -85,11 +90,11 @@ namespace Pakiki {
 
             request_preview = new RequestPreview (application_window);
             searchable_web_view = new SearchableWebView (application_window, request_preview);
-            this.append_page (searchable_web_view, new Gtk.Label.with_mnemonic ("_Preview"));
+            notebook.append_page (searchable_web_view, new Gtk.Label.with_mnemonic ("_Preview"));
             searchable_web_view.hide ();
 
             out_of_band_display = new OutOfBandDisplay (application_window);
-            scroll_window_out_of_band_interaction.add (out_of_band_display);
+            scroll_window_out_of_band_interaction.set_child (out_of_band_display);
 
             var time_cell_renderer = new Gtk.CellRendererText();
 
@@ -137,12 +142,12 @@ namespace Pakiki {
         }
 
         public bool find_activated () {
-            if (get_nth_page (page) == scroll_window_original_text) {
+            if (notebook.get_nth_page (notebook.page) == scroll_window_original_text) {
                 return text_view_orig_request.find_activated ();
             }
-            else if (get_nth_page (page) == scroll_window_text) {
+            else if (notebook.get_nth_page (notebook.page) == scroll_window_text) {
                 return text_view_request.find_activated ();
-            } else if (get_nth_page (page) == searchable_web_view) {
+            } else if (notebook.get_nth_page (notebook.page) == searchable_web_view) {
                 return searchable_web_view.find_activated ();
             }
             
@@ -253,7 +258,7 @@ namespace Pakiki {
             if (preview.length > 0) {
                 var preview_data = Base64.decode (preview);
                 var data_load_success = request_preview.set_content (new Bytes(preview_data), mimetype, url);
-                
+
                 searchable_web_view.visible = data_load_success;
             }
         }
@@ -373,6 +378,8 @@ namespace Pakiki {
                             } else {
                                 populate_http_data (root_obj);
                             }
+
+                            button_send_to.set_menu_model (RequestDetails.populate_send_to_menu (application_window, guid, protocol, url));
                         } catch (Error err) {
                             stdout.printf ("Could not parse JSON data, error: %s\n", err.message);
                         }
@@ -394,7 +401,7 @@ namespace Pakiki {
 
             // reset the displayed page to stop jumping around
             if(text_visibility_changed) {
-                this.page = 0;
+                notebook.page = 0;
             }
 
             if (!http) {
@@ -404,62 +411,23 @@ namespace Pakiki {
             }
         }
 
-        public static void populate_send_to_menu (ApplicationWindow application_window, Gtk.Menu menu, string guid, string protocol, string url) {
+        public static GLib.MenuModel populate_send_to_menu (ApplicationWindow application_window, string guid, string protocol, string url) {
             var is_http = protocol.contains("HTTP");
-            
-            var new_window = new Gtk.MenuItem.with_label ("New Window");
-            new_window.activate.connect ( () => {
-                var win = new RequestWindow (application_window, guid);
-                win.show ();
-            });
-            new_window.show ();
-            menu.append (new_window);
-                
-            var item_new_request = new Gtk.MenuItem.with_label ("New Request");
-            item_new_request.sensitive = is_http;
-            item_new_request.activate.connect ( () => {
-                application_window.send_to_new_request (guid);
-            });
-            item_new_request.show ();
-            menu.append (item_new_request);
-    
-            var item_inject = new Gtk.MenuItem.with_label ("Inject");
-            item_inject.sensitive = is_http;
-            item_inject.activate.connect ( () => {
-                application_window.send_to_inject (guid);
-            });
-            item_inject.show ();
-            menu.append (item_inject);
 
-            var copy_url = new Gtk.MenuItem.with_label ("Copy URL");
-            copy_url.activate.connect ( () => {
-                Gdk.Display display = Gdk.Display.get_default ();
-                Gtk.Clipboard clipboard = Gtk.Clipboard.get_for_display (display, Gdk.SELECTION_CLIPBOARD);
-                clipboard.set_text (url, url.length);
-            });
-            copy_url.sensitive = (url != "");
-            copy_url.show ();
-            menu.append (copy_url);
+            var menu = new GLib.Menu ();
+            menu.append ("New Window", "app.new-window('" + guid + "')");
+            menu.append ("New Request", "app.new-request('" + guid + "')");
+            menu.append ("Inject", "app.inject('" + guid + "')");
+            menu.append ("Copy URL", "app.copy-url('" + url + "')");
+            menu.append ("Open in Browser", "app.open-in-browser('" + url + "')");
 
-            var open_browser_inject = new Gtk.MenuItem.with_label ("Open in Browser");
-            open_browser_inject.sensitive = is_http;
-            open_browser_inject.activate.connect ( () => {
-                try {
-                    AppInfo.launch_default_for_uri (url, null);
-                } catch (Error err) {
-                    stdout.printf ("Could not launch browser: %s\n", err.message);
-                }
-            });
-            open_browser_inject.show ();
-            menu.append (open_browser_inject);
-        }
+            var actions = GlobalActions.get_instance (application_window);
+            actions.set_enabled ("new-request", is_http);
+            actions.set_enabled ("inject", is_http);
+            actions.set_enabled ("Copy URL", url != "");
+            actions.set_enabled ("open-in-browser", is_http);
 
-        [GtkCallback]
-        private void on_button_send_to_clicked () {
-            var menu = new Gtk.Menu ();
-            RequestDetails.populate_send_to_menu (application_window, menu, guid, protocol, url);
-            menu.show_all ();
-            menu.popup_at_widget (button_send_to, Gdk.Gravity.SOUTH_WEST, Gdk.Gravity.NORTH_WEST, null);
+            return menu;
         }
 
         public void request_updated (int64 combined_content_length) {
@@ -481,7 +449,7 @@ namespace Pakiki {
             searchable_web_view.hide ();
             pane_websocket.hide ();
             viewport_out_of_band_interaction.hide ();
-            this.page = 0;
+            notebook.page = 0;
         }
     }
 }
