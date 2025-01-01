@@ -3,6 +3,7 @@ sources += files(
     'application-window.vala',
     'main.vala',
 
+    'forms/actions.vala',
     'forms/application-preferences.vala',
     'forms/authentication-dialog.vala',
     'forms/inject-new.vala',
@@ -39,6 +40,7 @@ sources += files(
 
     'models/core-process.vala',
     'models/inject-operation.vala',
+    'models/intercepted-request.vala',
     'models/proxy-settings.vala',
     'models/syntax-highlighter.vala'
 )

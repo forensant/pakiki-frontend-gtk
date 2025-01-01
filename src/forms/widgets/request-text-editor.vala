@@ -55,6 +55,10 @@ namespace Pakiki {
         }
 
         private GLib.MenuModel get_request_popup_menu () {
+            this.action_set_enabled ("request-editor.insert-oob-domain", this.editable);
+            this.action_set_enabled ("request-editor.url_encode", this.editable);
+            this.action_set_enabled ("request-editor.url_decode", this.editable);
+
             var cs_menu = new GLib.Menu ();
             cs_menu.append ("Insert out-of-band domain", "request-editor.insert-oob-domain");
             cs_menu.append ("Send to CyberChef", "request-editor.send-to-cyberchef");

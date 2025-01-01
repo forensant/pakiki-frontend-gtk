@@ -49,6 +49,7 @@ namespace Pakiki {
             label_request.mnemonic_widget = request_text_editor;
 
             request_details = new RequestDetails (application_window);
+            request_details.margin_top = 12;
             pane.set_end_child (request_details);
 
             reset_state ();

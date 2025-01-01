@@ -414,12 +414,14 @@ namespace Pakiki {
         public static GLib.MenuModel populate_send_to_menu (ApplicationWindow application_window, string guid, string protocol, string url) {
             var is_http = protocol.contains("HTTP");
 
+            var escaped_url = url.replace("\\", "\\\\").replace("'", "\\'");
+
             var menu = new GLib.Menu ();
             menu.append ("New Window", "app.new-window('" + guid + "')");
             menu.append ("New Request", "app.new-request('" + guid + "')");
             menu.append ("Inject", "app.inject('" + guid + "')");
-            menu.append ("Copy URL", "app.copy-url('" + url + "')");
-            menu.append ("Open in Browser", "app.open-in-browser('" + url + "')");
+            menu.append ("Copy URL", "app.copy-url('" + escaped_url + "')");
+            menu.append ("Open in Browser", "app.open-in-browser('" + escaped_url + "')");
 
             var actions = GlobalActions.get_instance (application_window);
             actions.set_enabled ("new-request", is_http);

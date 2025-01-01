@@ -1,4 +1,3 @@
-
 namespace Pakiki {
     class SearchableWebView : Gtk.Box {
 
@@ -7,6 +6,10 @@ namespace Pakiki {
 
         public SearchableWebView (ApplicationWindow application_window, WebKit.WebView webview) {
             this.orientation = Gtk.Orientation.VERTICAL;
+
+            this.vexpand = true;
+            this.hexpand = true;
+            
 
             this.webview = webview;
             webview.show ();
@@ -24,7 +27,7 @@ namespace Pakiki {
 
             search_bar.stop.connect (() => {
                 webview.get_find_controller ().search_finish ();
-                search_bar.search_mode_enabled = false;
+                search_bar.enabled = false;
                 webview.grab_focus ();
             });
 
@@ -35,8 +38,8 @@ namespace Pakiki {
 
             search_bar.show ();
 
-            this.pack_start (search_bar, false, false, 0);
-            this.pack_start (webview, true, true, 0);
+            this.append (search_bar);
+            this.append (webview);
         }
 
         public bool find_activated () {
@@ -44,10 +47,10 @@ namespace Pakiki {
                 return false;
             }
 
-            search_bar.search_mode_enabled = !search_bar.search_mode_enabled;
+            search_bar.enabled = !search_bar.enabled;
             search_bar.show_close_button = true;
 
-            if (search_bar.search_mode_enabled) {
+            if (search_bar.enabled) {
                 search_bar.find_activated ();
             } else {
                 webview.grab_focus ();

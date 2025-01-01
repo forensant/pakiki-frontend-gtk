@@ -8,7 +8,6 @@
     <child>
       <object class="GtkNotebook" id="notebook">
         <property name="hexpand">True</property>
-        <property name="margin-top">6</property>
         <property name="page">0</property>
         <property name="vexpand">True</property>
         <child>
