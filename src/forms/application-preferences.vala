@@ -37,7 +37,7 @@ namespace Pakiki {
 
             liststore_colour_schemes = new Gtk.ListStore(2, typeof(string), typeof(string));
 
-            var style_manager = Gtk.SourceStyleSchemeManager.get_default();
+            var style_manager = GtkSource.StyleSchemeManager.get_default();
             foreach(string id in style_manager.get_scheme_ids ()) {
                 var scheme = style_manager.get_scheme (id);
                 Gtk.TreeIter iter;
