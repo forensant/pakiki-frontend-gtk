@@ -1,57 +1,19 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.2 -->
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.94.1 -->
 <interface>
-  <requires lib="gtk+" version="3.20"/>
-  <template class="PakikiInjectPane" parent="GtkPaned">
-    <property name="visible">True</property>
-    <property name="can_focus">True</property>
-    <property name="position">250</property>
+  <requires lib="gtk" version="4.0"/>
+  <template class="PakikiInjectPane" parent="GtkBox">
     <child>
-      <object class="GtkScrolledWindow" id="injectListScrollWindow">
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-      </object>
-      <packing>
-        <property name="resize">False</property>
-        <property name="shrink">True</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkGrid" id="grid">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
+      <object class="GtkPaned" id="pane">
+        <property name="position">250</property>
+        <property name="position-set">True</property>
         <child>
-          <placeholder/>
+          <object class="GtkScrolledWindow" id="inject_list_scroll_window"/>
         </child>
         <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
+          <object class="GtkGrid" id="grid"/>
         </child>
       </object>
-      <packing>
-        <property name="resize">True</property>
-        <property name="shrink">True</property>
-      </packing>
     </child>
   </template>
 </interface>

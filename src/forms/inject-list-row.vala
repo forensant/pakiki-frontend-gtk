@@ -30,11 +30,11 @@ namespace Pakiki {
 
             var hbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 5);
             hbox.set_spacing (5);
-            this.add (hbox);
+            this.set_child (hbox);
 
             var label_title = new Gtk.Label (null);
             label_title.set_markup ("<b>" + title + "</b>");
-            hbox.pack_start (label_title, false, false, 0);
+            hbox.append (label_title);
             label_title.margin_top  = 6;
             label_title.margin_start = 6;
             label_title.xalign = 0.0f;
@@ -54,11 +54,12 @@ namespace Pakiki {
 
             var hbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 5);
             hbox.set_spacing (5);
-            this.add (hbox);
+            this.set_child (hbox);
 
             label_title = new Gtk.Label (null);
+            label_title.hexpand = true;
             label_title.set_markup ("<i>Scans will be shown here once they have started.</i>");
-            hbox.pack_start (label_title, true, true, 0);
+            hbox.append (label_title);
             label_title.margin_top    = 20;
             label_title.margin_start  = 10;
             label_title.margin_end    = 10;
@@ -77,7 +78,7 @@ namespace Pakiki {
             this.inject_operation = inject_operation;
 
             var hbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 2);
-            this.add (hbox);
+            this.set_child (hbox);
 
             progress_bar = new RoundProgressBar ();
             if (inject_operation.get_status () == InjectOperation.Status.COMPLETED || inject_operation.get_status () == InjectOperation.Status.ARCHIVED) {
@@ -87,16 +88,16 @@ namespace Pakiki {
             }
             
             progress_bar.margin_start = 6;
-            hbox.pack_start (progress_bar, false, false, 0);
+            hbox.append (progress_bar);
 
             var vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 2);
-            hbox.pack_start (vbox, true, true, 0);
+            hbox.append (vbox);
 
             label_title = new Gtk.Label (inject_operation.title);
             label_title.margin_start = 6;
             label_title.xalign = 0.0f;
             
-            vbox.pack_start (label_title, false, false, 0);
+            vbox.append (label_title);
 
             var label_subtitle = new Gtk.Label (inject_operation.url + " - " + inject_operation.inject_description);
             label_subtitle.name = "lbl_inject_subtitle";
@@ -104,13 +105,12 @@ namespace Pakiki {
             label_subtitle.margin_bottom = 3;
             label_subtitle.xalign = 0.0f;
             
-            vbox.pack_start (label_subtitle, false, false, 0);
+            vbox.append (label_subtitle);
 
             this.margin_top = 3;
             this.margin_bottom = 3;
 
             this.set_selectable (true);
-            this.show_all();
         }
 
         public void update_inject_operation (InjectOperation operation) {

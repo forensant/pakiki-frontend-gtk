@@ -1,204 +1,162 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.92.1 -->
-<!-- Generated with glade 3.40.0 -->
+<!-- Created with Cambalache 0.94.1 -->
 <interface>
-  <!-- interface-name placeholder-inject.ui -->
-  <requires lib="gtk+" version="3.24"/>
+  <requires lib="gtk" version="4.6"/>
   <template class="PakikiPlaceholderInject" parent="GtkBox">
-    <property name="can-focus">False</property>
     <property name="orientation">vertical</property>
-    <property name="visible">True</property>
-    <child>
+    <child type="start">
       <object class="GtkLabel">
-        <property name="can-focus">False</property>
-        <property name="label" translatable="yes">
-</property>
+        <property name="hexpand">True</property>
+        <property name="hexpand-set">True</property>
         <property name="vexpand">True</property>
-        <property name="visible">True</property>
+        <property name="vexpand-set">True</property>
       </object>
-      <packing>
-        <property name="expand">True</property>
-        <property name="fill">True</property>
-      </packing>
     </child>
     <child>
       <object class="GtkBox">
-        <property name="can-focus">False</property>
         <property name="hexpand">True</property>
-        <property name="margin-bottom">18</property>
-        <property name="margin-end">18</property>
-        <property name="margin-start">18</property>
-        <property name="margin-top">18</property>
-        <property name="spacing">12</property>
-        <property name="vexpand">True</property>
-        <property name="visible">True</property>
+        <property name="hexpand-set">True</property>
+        <property name="valign">start</property>
         <child>
           <object class="GtkLabel">
-            <property name="can-focus">False</property>
             <property name="hexpand">True</property>
-            <property name="visible">True</property>
+            <property name="hexpand-set">True</property>
+            <property name="vexpand">True</property>
+            <property name="vexpand-set">True</property>
+            <property name="width-request">150</property>
           </object>
-          <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
-          </packing>
         </child>
-        <child>
-          <!-- n-columns=3 n-rows=8 -->
+        <child type="center">
           <object class="GtkGrid">
-            <property name="can-focus">False</property>
-            <property name="visible">True</property>
             <child>
               <object class="GtkLabel">
-                <property name="can-focus">False</property>
-                <property name="justify">right</property>
-                <property name="label" translatable="yes">Inject</property>
+                <property name="label">Inject</property>
                 <property name="margin-bottom">12</property>
                 <property name="margin-end">12</property>
-                <property name="single-line-mode">True</property>
-                <property name="visible">True</property>
-                <property name="xalign">0</property>
+                <property name="xalign">0.0</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
                   <attribute name="scale" value="2"/>
                 </attributes>
+                <layout>
+                  <property name="column">0</property>
+                  <property name="column-span">1</property>
+                  <property name="row">0</property>
+                  <property name="row-span">1</property>
+                </layout>
               </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">0</property>
-              </packing>
             </child>
             <child>
               <object class="GtkLabel">
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Send a number of requests to a server, to partially automate testing.</property>
+                <property name="label">Send a number of requests to a server, to partially automate testing.</property>
+                <property name="margin-bottom">18</property>
+                <property name="margin-end">6</property>
+                <property name="xalign">0.0</property>
+                <layout>
+                  <property name="column">0</property>
+                  <property name="column-span">1</property>
+                  <property name="row">1</property>
+                  <property name="row-span">1</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="label">What can it do?</property>
                 <property name="margin-bottom">6</property>
-                <property name="margin-end">12</property>
-                <property name="visible">True</property>
-                <property name="xalign">0</property>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">What it can do?</property>
-                <property name="margin-top">24</property>
-                <property name="visible">True</property>
-                <property name="xalign">0</property>
+                <property name="xalign">0.0</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
                 </attributes>
+                <layout>
+                  <property name="column">0</property>
+                  <property name="column-span">1</property>
+                  <property name="row">2</property>
+                  <property name="row-span">1</property>
+                </layout>
               </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">3</property>
-              </packing>
             </child>
             <child>
               <object class="GtkLabel">
-                <property name="can-focus">False</property>
-                <property name="justify">fill</property>
-                <property name="label" translatable="yes">This function changes specific parts of each request in order to attempt to exploit vulnerabilities. This can be used for a number of tasks, common uses may include:
+                <property name="label">This function changes specific parts of each request in order to attempt to exploit vulnerabilities. This can be used for a number of tasks, common uses may include:
 
   • Sending malicious payloads designed trigger SQL injection, cross site scripting, etc, and then closely monitoring the responses to check for indications the attacks were successful.
   • Finding records which the user should not have access to, via direct object reference vulnerabilities.
-  • Finding hidden files or directories.
-
-</property>
-                <property name="visible">True</property>
+  • Finding hidden files or directories.</property>
+                <property name="margin-bottom">18</property>
                 <property name="wrap">True</property>
-                <property name="xalign">0</property>
+                <property name="xalign">0.0</property>
+                <layout>
+                  <property name="column">0</property>
+                  <property name="column-span">1</property>
+                  <property name="row">3</property>
+                  <property name="row-span">1</property>
+                </layout>
               </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">4</property>
-              </packing>
             </child>
             <child>
               <object class="GtkLabel">
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Getting started</property>
-                <property name="margin-top">24</property>
-                <property name="visible">True</property>
-                <property name="xalign">0</property>
+                <property name="label">Getting started</property>
+                <property name="margin-bottom">6</property>
+                <property name="xalign">0.0</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
                 </attributes>
+                <layout>
+                  <property name="column">0</property>
+                  <property name="column-span">1</property>
+                  <property name="row">4</property>
+                  <property name="row-span">1</property>
+                </layout>
               </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">6</property>
-              </packing>
             </child>
             <child>
               <object class="GtkLabel">
-                <property name="can-focus">False</property>
-                <property name="justify">fill</property>
-                <property name="label" translatable="yes">The easiest way is to send a request from elsewhere in the proxy to here. Alternatively click the "New" button in the top right corner to create a request from scratch.</property>
-                <property name="track-visited-links">False</property>
-                <property name="use-markup">True</property>
-                <property name="visible">True</property>
+                <property name="label">The easiest way is to send a request from elsewhere in the proxy to here. Alternatively click the "New" button in the top right corner to create a request from scratch.</property>
                 <property name="wrap">True</property>
-                <property name="xalign">0</property>
+                <property name="xalign">0.0</property>
+                <layout>
+                  <property name="column">0</property>
+                  <property name="column-span">1</property>
+                  <property name="row">5</property>
+                  <property name="row-span">1</property>
+                </layout>
               </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">7</property>
-              </packing>
             </child>
             <child>
-              <object class="GtkImage" id="image_laptop">
-                <property name="can-focus">False</property>
-                <property name="halign">start</property>
-                <property name="margin-start">24</property>
+              <object class="GtkImage">
+                <property name="hexpand">True</property>
+                <property name="margin-start">18</property>
                 <property name="resource">/com/forensant/pakiki/Pinchy.svg</property>
-                <property name="valign">center</property>
-                <property name="visible">True</property>
+                <property name="vexpand">True</property>
+                <property name="vexpand-set">True</property>
+                <property name="width-request">100</property>
+                <layout>
+                  <property name="column">1</property>
+                  <property name="column-span">1</property>
+                  <property name="row">0</property>
+                  <property name="row-span">6</property>
+                </layout>
               </object>
-              <packing>
-                <property name="height">8</property>
-                <property name="left-attach">1</property>
-                <property name="top-attach">0</property>
-              </packing>
             </child>
           </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">False</property>
-          </packing>
         </child>
         <child>
           <object class="GtkLabel">
-            <property name="can-focus">False</property>
             <property name="hexpand">True</property>
-            <property name="visible">True</property>
+            <property name="hexpand-set">True</property>
+            <property name="vexpand">True</property>
+            <property name="vexpand-set">True</property>
+            <property name="width-request">150</property>
           </object>
-          <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
-            <property name="pack-type">end</property>
-          </packing>
         </child>
       </object>
-      <packing>
-        <property name="expand">True</property>
-        <property name="fill">True</property>
-      </packing>
     </child>
-    <child>
+    <child type="end">
       <object class="GtkLabel">
-        <property name="can-focus">False</property>
         <property name="vexpand">True</property>
-        <property name="visible">True</property>
+        <property name="vexpand-set">True</property>
       </object>
-      <packing>
-        <property name="expand">True</property>
-        <property name="fill">True</property>
-      </packing>
     </child>
   </template>
 </interface>

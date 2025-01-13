@@ -2,12 +2,12 @@ using Soup;
 
 namespace Pakiki {
     [GtkTemplate (ui = "/com/forensant/pakiki/inject-pane.ui")]
-    class InjectPane : Gtk.Paned, MainApplicationPane {
+    class InjectPane : Gtk.Box, MainApplicationPane {
 
         [GtkChild]
         private unowned Gtk.Grid grid;
         [GtkChild]
-        private unowned Gtk.ScrolledWindow injectListScrollWindow;
+        private unowned Gtk.ScrolledWindow inject_list_scroll_window;
 
         private ApplicationWindow application_window;
         private InjectNew inject_new_form;
@@ -21,8 +21,10 @@ namespace Pakiki {
         public InjectPane (ApplicationWindow application_window) {
             this.application_window = application_window;
             list_box_injection_scans = new Gtk.ListBox ();
+            list_box_injection_scans.vexpand = true;
+            list_box_injection_scans.hexpand = true;
             list_box_injection_scans.show ();
-            injectListScrollWindow.add (list_box_injection_scans);
+            inject_list_scroll_window.set_child (list_box_injection_scans);
 
             inject_list_placeholder_row = new InjectListRow.placeholder ();
             list_box_injection_scans.insert (inject_list_placeholder_row, 0);
