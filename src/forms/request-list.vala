@@ -3,7 +3,7 @@ using Soup;
 namespace Pakiki {
     
     [GtkTemplate (ui = "/com/forensant/pakiki/request-list.ui")]
-    class RequestList : Gtk.Paned {
+    class RequestList : Gtk.Box {
 
         public signal void requests_loaded (bool present);
         public signal void request_double_clicked (string guid);
@@ -14,11 +14,11 @@ namespace Pakiki {
         [GtkChild]
         private unowned Gtk.Label label_no_requests;
         [GtkChild]
-        private unowned Gtk.ListStore liststore;
-        [GtkChild]
         private unowned Gtk.Overlay overlay;
         [GtkChild]
-        private unowned Gtk.TreeView request_list;
+        private unowned Gtk.Paned pane;
+        [GtkChild]
+        private unowned Gtk.ColumnView request_list;
         [GtkChild]
         private unowned Gtk.ScrolledWindow scrolled_window_requests;
 
@@ -27,6 +27,8 @@ namespace Pakiki {
         private bool exclude_resources;
         private Gee.Set<string> guid_set;
         private Gtk.Label label_overlay;
+        private GLib.ListStore liststore;
+        private Gtk.SelectionModel liststore_selection_model;
         private PlaceholderRequests placeholder_requests;
         private RequestCompare request_compare;
         private RequestDetails request_details;
@@ -48,21 +50,6 @@ namespace Pakiki {
             }
         }
         
-        enum Column {
-            GUID,
-            PROTOCOL,
-            TIME,
-            URL,
-            RESPONSE_CONTENT_LENGTH,
-            RESPONSE_CONTENT_TYPE,
-            DURATION,
-            VERB,
-            STATUS,
-            PAYLOADS,
-            ERROR,
-            NOTES
-        }
-
         private int COLUMN_COUNT = 12;
 
         public RequestList (ApplicationWindow application_window, bool initial_launch, string[] scan_ids = {}) {
@@ -78,207 +65,43 @@ namespace Pakiki {
             guid_set = new Gee.TreeSet<string> ();
             request_list.has_tooltip = true;
 
+            liststore = new GLib.ListStore (typeof (Request));
+            var model = new Gtk.SortListModel (liststore, request_list.sorter);
+            liststore_selection_model = new Gtk.MultiSelection (model);
+            liststore_selection_model.selection_changed.connect (on_selection_changed);
+            request_list.set_model (liststore_selection_model);
+
             this.placeholder_requests = new PlaceholderRequests (application_window);
             placeholder_requests.hide ();
-            this.box.add (placeholder_requests);
+            this.box.append (placeholder_requests);
 
             label_overlay = new Gtk.Label ("");
             label_overlay.name = "lbl_overlay";
             label_overlay.label = "Loading requests...";
             overlay.add_overlay (label_overlay);
 
-            var url_renderer = new Gtk.CellRendererText();
-            url_renderer.ellipsize = Pango.EllipsizeMode.END;
-            url_renderer.ellipsize_set = true;
+            box_request_details = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
+            
+            request_details = new RequestDetails (application_window);
+            request_details.hide ();
+            box_request_details.append (request_details);
 
-            var time_cell_renderer = new Gtk.CellRendererText();
-            time_cell_renderer.ellipsize = Pango.EllipsizeMode.MIDDLE;
-            time_cell_renderer.ellipsize_set = true;
+            request_compare = new RequestCompare (application_window);
+            request_compare.hide ();
+            box_request_details.append (request_compare);
 
-            var response_length_renderer = new Gtk.CellRendererText ();
-            var content_type_renderer    = new Gtk.CellRendererText ();
-            var duration_renderer        = new Gtk.CellRendererText ();
-            var status_renderer          = new Gtk.CellRendererText ();
+            box_request_details.hide ();
+            pane.set_end_child (box_request_details);
 
-            var payload_renderer = new Gtk.CellRendererText();
-            payload_renderer.ellipsize = Pango.EllipsizeMode.END;
-            payload_renderer.ellipsize_set = true;
-
-            var error_renderer = new Gtk.CellRendererText();
-            error_renderer.ellipsize = Pango.EllipsizeMode.END;
-            error_renderer.ellipsize_set = true;
-
-            var notes_renderer = new Gtk.CellRendererText();
-            notes_renderer.ellipsize = Pango.EllipsizeMode.END;
-            notes_renderer.ellipsize_set = true;
-            notes_renderer.editable = true;
-            notes_renderer.edited.connect(on_notes_updated);
-
-            /*columns*/
-            request_list.insert_column_with_attributes (get_col_pos ("GUID"),
-                                                    "GUID",
-                                                    new Gtk.CellRendererText(),
-                                                    "text", Column.GUID);
-
-            request_list.insert_column_with_attributes (get_col_pos ("Protocol"),
-                                                    "Protocol",
-                                                    new Gtk.CellRendererText(),
-                                                    "text", Column.PROTOCOL);
-
-            request_list.insert_column_with_attributes (get_col_pos ("Time"),
-                                                    "Time",
-                                                    time_cell_renderer,
-                                                    "text", Column.TIME);
-
-            request_list.insert_column_with_attributes (get_col_pos ("URL"),
-                                                    "URL",
-                                                    url_renderer,
-                                                    "text", Column.URL);
-
-            request_list.insert_column_with_attributes (get_col_pos ("Size"),
-                                                    "Size",
-                                                    response_length_renderer,
-                                                    "text", Column.RESPONSE_CONTENT_LENGTH);
-
-            request_list.insert_column_with_attributes (get_col_pos ("Content Type"),
-                                                    "Content Type",
-                                                    content_type_renderer,
-                                                    "text", Column.RESPONSE_CONTENT_TYPE);
-
-            request_list.insert_column_with_attributes (get_col_pos ("Duration"),
-                                                    "Duration",
-                                                    duration_renderer,
-                                                    "text", Column.DURATION);
-
-            request_list.insert_column_with_attributes (get_col_pos ("Verb"),
-                                                    "Verb",
-                                                    new Gtk.CellRendererText (),
-                                                    "text", Column.VERB);
-
-            request_list.insert_column_with_attributes (get_col_pos ("Status"),
-                                                    "Status",
-                                                    status_renderer,
-                                                    "text", Column.STATUS);
-
-            request_list.insert_column_with_attributes (get_col_pos ("Payloads"),
-                                                    "Payloads",
-                                                    payload_renderer,
-                                                    "text", Column.PAYLOADS);
-
-            request_list.insert_column_with_attributes (get_col_pos ("Error"),
-                                                    "Error",
-                                                    error_renderer,
-                                                    "text", Column.ERROR);
-
-            request_list.insert_column_with_attributes (get_col_pos ("Notes"),
-                                                    "Notes",
-                                                    notes_renderer,
-                                                    "text", Column.NOTES);
-
-                                                    
-            var guid_column = request_list.get_column ( get_col_pos ("GUID"));
-            if (guid_column != null) {
-                guid_column.visible = false;
-            }
-
-            var url_column = request_list.get_column (get_col_pos ("URL"));
-            url_column.expand = true;
-            url_column.min_width = 200;
-
-            var time_column = request_list.get_column (get_col_pos ("Time"));
-            time_column.set_cell_data_func(time_cell_renderer, (cell_layout, cell, tree_model, iter) => {
-                Value val;
-                tree_model.get_value(iter, Column.TIME, out val);
-                ((Gtk.CellRendererText)cell).text = response_time(new DateTime.from_unix_local(val.get_int()));
-                val.unset();
-            });
-            time_column.min_width = 100;
-
-            var response_size_column = request_list.get_column (get_col_pos ("Size"));
-            response_size_column.set_cell_data_func(response_length_renderer, (cell_layout, cell, tree_model, iter) => {
-                Value val;
-                tree_model.get_value(iter, Column.RESPONSE_CONTENT_LENGTH, out val);
-                ((Gtk.CellRendererText)cell).text = response_size_to_string(val.get_int64 ());
-                val.unset();
-            });
-
-            var response_type_column = request_list.get_column (get_col_pos ("Content Type"));
-            response_type_column.set_cell_data_func(content_type_renderer, (cell_layout, cell, tree_model, iter) => {
-                Value val;
-                tree_model.get_value(iter, Column.RESPONSE_CONTENT_TYPE, out val);
-                var col_text = val.get_string ();
-
-                if (col_text == "" || col_text == null) {
-                    ((Gtk.CellRendererText)cell).text = "";
-                } else {
-                    var components = col_text.split (";", 2);
-                    if (components.length >= 1) {
-                        ((Gtk.CellRendererText)cell).text = components[0];
-                    }
-                }
-
-                val.unset();
-            });
-
-            var duration_column = request_list.get_column (get_col_pos ("Duration"));
-            duration_column.set_cell_data_func(duration_renderer, (cell_layout, cell, tree_model, iter) => {
-                Value val;
-                tree_model.get_value(iter, Column.DURATION, out val);
-                ((Gtk.CellRendererText)cell).text = response_duration(val.get_int ());
-                val.unset();
-            });
-
-            var status_column = request_list.get_column (get_col_pos ("Status"));
-            status_column.set_cell_data_func(status_renderer, (cell_layout, cell, tree_model, iter) => {
-                Value val;
-                tree_model.get_value(iter, Column.STATUS, out val);
-
-                if (val.get_int() == 0) {
-                    ((Gtk.CellRendererText)cell).text = "";
-                } else {
-                    ((Gtk.CellRendererText)cell).text = val.get_int ().to_string ();
-                }
-                
-                val.unset();
-            });
-
-            var payload_column = request_list.get_column (get_col_pos ("Payloads"));
-            payload_column.set_cell_data_func(payload_renderer, (cell_layout, cell, tree_model, iter) => {
-                Value val;
-                tree_model.get_value(iter, Column.PAYLOADS, out val);
-                ((Gtk.CellRendererText)cell).text = payloads_to_string(val.get_string ());
-                val.unset();
-            });
-
-            // if it's a scan, then it'll have payloads to show
-            if (scan_ids.length == 0) {
-                payload_column.visible = false;
-            }
-
-            for (int i = 0; i < request_list.get_n_columns(); i++) {
-                request_list.get_column(i).resizable = true;
-                request_list.get_column(i).reorderable = true;
-            }
-
-            request_list.get_column (get_col_pos ("Time")).sort_column_id         = Column.TIME;
-            request_list.get_column (get_col_pos ("Protocol")).sort_column_id     = Column.PROTOCOL;
-            request_list.get_column (get_col_pos ("URL")).sort_column_id          = Column.URL;
-            request_list.get_column (get_col_pos ("Size")).sort_column_id         = Column.RESPONSE_CONTENT_LENGTH;
-            request_list.get_column (get_col_pos ("Content Type")).sort_column_id = Column.RESPONSE_CONTENT_TYPE;
-            request_list.get_column (get_col_pos ("Duration")).sort_column_id     = Column.DURATION;
-            request_list.get_column (get_col_pos ("Verb")).sort_column_id         = Column.VERB;
-            request_list.get_column (get_col_pos ("Status")).sort_column_id       = Column.STATUS;
-            request_list.get_column (get_col_pos ("Payloads")).sort_column_id     = Column.PAYLOADS;
-            request_list.get_column (get_col_pos ("Error")).sort_column_id        = Column.ERROR;
-            request_list.get_column (get_col_pos ("Notes")).sort_column_id        = Column.NOTES;
-
+            init_columns ();
+                     
             var visible_columns = this.visible_columns ();
-            foreach (var col in request_list.get_columns ()) {
-                if (col.title == "GUID") {
-                    continue;
-                }
-
-                if (col.title == "Payloads" && scan_ids.length == 0) {
+            var cols = request_list.get_columns ();
+            var col_count = cols.get_n_items ();
+            for (int i = 0; i < col_count; i++) {
+                var col = cols.get_item (i) as Gtk.ColumnViewColumn;
+                if (col == null) {
+                    stdout.printf ("Could not cast column to ColumnViewColumn\n");
                     continue;
                 }
 
@@ -286,29 +109,26 @@ namespace Pakiki {
                 col.visible = visible;
             }
 
-            box_request_details = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
-
-            request_details = new RequestDetails (application_window);
-            request_details.hide ();
-            box_request_details.add (request_details);
-
-            request_compare = new RequestCompare (application_window);
-            request_compare.hide ();
-            box_request_details.add (request_compare);
-
-            request_list.columns_changed.connect (save_column_settings);
-
-            this.add2 (box_request_details);
-            
-            scrolled_window_requests.hide ();
-
             if (scan_ids.length != 0 && !initial_launch) {
                 get_requests ();
             }
 
-            var selection = request_list.get_selection();
-            selection.mode = Gtk.SelectionMode.MULTIPLE;
-            selection.changed.connect(this.on_selection_changed);
+            var request_list_double_click_gesture = new Gtk.GestureClick ();
+            request_list_double_click_gesture.button = 1;
+            request_list_double_click_gesture.pressed.connect ( (n_press, x, y) => {
+                if (n_press >= 2) {
+                    on_request_list_doubleclick_event ( );
+                }
+            });
+            request_list.add_controller (request_list_double_click_gesture);
+
+            var request_list_right_click_gesture = new Gtk.GestureClick ();
+            request_list_right_click_gesture.button = 3;
+            request_list_right_click_gesture.released.connect ( (n_press, x, y) => {
+                on_request_list_right_click_event (x, y);
+            });
+            request_list.add_controller (request_list_right_click_gesture);
+            set_header_right_click_menus ();
         }
 
         private void add_request_to_table (Json.Object request) {
@@ -319,55 +139,15 @@ namespace Pakiki {
             }
 
             var guid = request.get_string_member ("GUID");
-
-            Gtk.TreeIter iter;
-            liststore.insert_with_values (out iter, -1,
-                Column.GUID,                    guid,
-                Column.PROTOCOL,                request.get_string_member ("Protocol"),
-                Column.TIME,                    request.get_int_member ("Time"),
-                Column.URL,                     request.get_string_member ("URL"),
-                Column.RESPONSE_CONTENT_LENGTH, request.get_int_member ("ResponseContentLength"),
-                Column.RESPONSE_CONTENT_TYPE, request.get_string_member ("ResponseContentType"),
-                Column.DURATION,                request.get_int_member ("ResponseTime"),
-                Column.VERB,                    request.get_string_member ("Verb"),
-                Column.STATUS,                  request.get_int_member ("ResponseStatusCode"),
-                Column.PAYLOADS,                request.get_string_member ("Payloads"),
-                Column.ERROR,                   request.get_string_member ("Error"),
-                Column.NOTES,                   request.get_string_member ("Notes")
-            );
-
             guid_set.add (guid);
+
+            // TODO: Maybe use splice for these?
+            var r = new Request (request, application_window);
+            liststore.append(r);
 
             if (label_no_requests.visible || placeholder_requests.visible) {
                 show_controls (1);
             }
-        }
-
-        private void display_header_right_click_menu (Gdk.EventButton event) {
-            var menu = new Gtk.Menu ();
-
-            request_list.get_columns ().foreach ((col) => {
-                if (col.title == "GUID") {
-                    return;
-                }
-
-                if (col.title == "Payloads" && scan_ids.length == 0) {
-                    return;
-                }
-                
-                var menu_item = new Gtk.CheckMenuItem.with_label (col.title);
-                menu_item.active = col.visible;
-                menu_item.show ();
-                menu_item.toggled.connect (() => {
-                    col.visible = menu_item.active;
-                    request_list.columns_autosize ();
-                    save_column_settings ();
-                });
-
-                menu.append (menu_item);
-            });
-            
-            menu.popup_at_pointer (event);
         }
 
         public bool find_activated () {
@@ -396,7 +176,7 @@ namespace Pakiki {
             this.updating = true;
             guid_set.clear ();
             request_details.reset_state ();
-            liststore.clear ();
+            liststore.remove_all ();
             this.updating = false;
 
             bool fetched_data = false;
@@ -539,30 +319,242 @@ namespace Pakiki {
             });
         }
 
-        private string[] get_selected_fields (Column col) {
-            var selection = request_list.get_selection ();
-            Gtk.TreeModel model;
-            string[] vals = {};
+        private Request[] get_selected_requests () {
+            var selected_rows = liststore_selection_model.get_selection ();
+            var selected_row_count = selected_rows.get_size ();
 
-            var selected_rows = selection.get_selected_rows (out model);
-            foreach (var path in selected_rows) {
-                Gtk.TreeIter iter;
+            Request[] requests = {};
 
-                if (!model.get_iter (out iter, path)) {
+            for (int i = 0; i < selected_row_count; i++) {
+                var selection = selected_rows.get_nth (i);
+                var req = (Request?)liststore.get_item (selection);
+                if (req == null) {
                     continue;
                 }
 
-                GLib.Value val;
-                model.get_value (iter, (int) col, out val);
-
-                vals += val.get_string ();
+                requests += req;
             }
 
-            return vals;
+
+            return requests;
         }
 
         private string[] get_selected_guids () {
-            return get_selected_fields (Column.GUID);
+            var guids = new string[]{};
+            var selected_requests = get_selected_requests ();
+            for (int i = 0; i < selected_requests.length; i++) {
+                guids += selected_requests[i].guid;
+            }
+            return guids;
+        }
+
+        private static bool guids_equal (GLib.Object a, GLib.Object b) {
+            var req_a = a as Request;
+            var req_b = b as Request;
+
+            if (req_a == null || req_b == null) {
+                return false;
+            }
+
+            return req_a.guid == req_b.guid;
+        }
+
+        private void init_columns () {
+            var protocol_column_factory = new Gtk.SignalListItemFactory ();
+            protocol_column_factory.setup.connect (on_setup_label_column);
+            protocol_column_factory.bind.connect (on_bind_column_protocol);
+
+            var time_column_factory = new Gtk.SignalListItemFactory ();
+            time_column_factory.setup.connect (on_setup_label_column_truncate_middle);
+            time_column_factory.bind.connect (on_bind_column_time);
+
+            var url_column_factory = new Gtk.SignalListItemFactory ();
+            url_column_factory.setup.connect (on_setup_label_column_truncate_end);
+            url_column_factory.bind.connect (on_bind_column_url);
+
+            var size_column_factory = new Gtk.SignalListItemFactory ();
+            size_column_factory.setup.connect (on_setup_label_column);
+            size_column_factory.bind.connect (on_bind_column_size);
+
+            var content_type_column_factory = new Gtk.SignalListItemFactory ();
+            content_type_column_factory.setup.connect (on_setup_label_column);
+            content_type_column_factory.bind.connect (on_bind_column_content_type);
+
+            var duration_column_factory = new Gtk.SignalListItemFactory ();
+            duration_column_factory.setup.connect (on_setup_label_column);
+            duration_column_factory.bind.connect (on_bind_column_duration);
+
+            var verb_column_factory = new Gtk.SignalListItemFactory ();
+            verb_column_factory.setup.connect (on_setup_label_column);
+            verb_column_factory.bind.connect (on_bind_column_verb);
+
+            var status_column_factory = new Gtk.SignalListItemFactory ();
+            status_column_factory.setup.connect (on_setup_label_column);
+            status_column_factory.bind.connect (on_bind_column_status);
+
+            var payload_column_factory = new Gtk.SignalListItemFactory ();
+            payload_column_factory.setup.connect (on_setup_label_column_truncate_end);
+            payload_column_factory.bind.connect (on_bind_column_payload);
+
+            var error_column_factory = new Gtk.SignalListItemFactory ();
+            error_column_factory.setup.connect (on_setup_label_column_truncate_end);
+            error_column_factory.bind.connect (on_bind_column_error);
+
+            var notes_column_factory = new Gtk.SignalListItemFactory ();
+            notes_column_factory.setup.connect (on_setup_editable_column);
+            notes_column_factory.bind.connect (on_bind_column_notes);
+
+            var protocol_column = new Gtk.ColumnViewColumn ("Protocol", protocol_column_factory);
+            protocol_column.resizable = true;
+            protocol_column.sorter = new Gtk.CustomSorter (on_sort_protocol);
+
+            var time_column = new Gtk.ColumnViewColumn ("Time", time_column_factory);
+            time_column.resizable = true;
+            time_column.fixed_width = 100;
+            time_column.sorter = new Gtk.CustomSorter (on_sort_time);
+
+            var url_column = new Gtk.ColumnViewColumn ("URL", url_column_factory);
+            url_column.resizable = true;
+            url_column.expand = true;
+            url_column.fixed_width = 200;
+            url_column.sorter = new Gtk.CustomSorter (on_sort_url);
+
+            var size_column = new Gtk.ColumnViewColumn ("Size", size_column_factory);
+            size_column.resizable = true;
+            size_column.sorter = new Gtk.CustomSorter (on_sort_size);
+
+            var content_type_column = new Gtk.ColumnViewColumn ("Content Type", content_type_column_factory);
+            content_type_column.resizable = true;
+            content_type_column.sorter = new Gtk.CustomSorter (on_sort_content_type);
+
+            var duration_column = new Gtk.ColumnViewColumn ("Duration", duration_column_factory);
+            duration_column.resizable = true;
+            duration_column.sorter = new Gtk.CustomSorter (on_sort_duration);
+
+            var verb_column = new Gtk.ColumnViewColumn ("Verb", verb_column_factory);
+            verb_column.resizable = true;
+            verb_column.sorter = new Gtk.CustomSorter (on_sort_verb);
+
+            var status_column = new Gtk.ColumnViewColumn ("Status", status_column_factory);
+            status_column.resizable = true;
+            status_column.sorter = new Gtk.CustomSorter (on_sort_status);
+
+            var payload_column = new Gtk.ColumnViewColumn ("Payloads", payload_column_factory);
+            payload_column.resizable = true;
+            payload_column.sorter = new Gtk.CustomSorter (on_sort_payload);
+            payload_column.visible = scan_ids.length != 0;
+
+            var error_column = new Gtk.ColumnViewColumn ("Error", error_column_factory);
+            error_column.resizable = true;
+            error_column.sorter = new Gtk.CustomSorter (on_sort_error);
+
+            var notes_column = new Gtk.ColumnViewColumn ("Notes", notes_column_factory);
+            notes_column.resizable = true;
+            notes_column.sorter = new Gtk.CustomSorter (on_sort_notes);
+
+            request_list.append_column (protocol_column);
+            request_list.append_column (time_column);
+            request_list.append_column (url_column);
+            request_list.append_column (size_column);
+            request_list.append_column (content_type_column);
+            request_list.append_column (duration_column);
+            request_list.append_column (verb_column);
+            request_list.append_column (status_column);
+            request_list.append_column (payload_column);
+            request_list.append_column (error_column);
+            request_list.append_column (notes_column);
+        }
+
+        private void on_bind_column_content_type (Gtk.SignalListItemFactory factory, GLib.Object list_item_obj) {
+            var list_item = (Gtk.ListItem) list_item_obj;
+            var item_data = (Request) list_item.item ;
+            var label = (Gtk.Label) list_item.child;
+            label.label = item_data.content_type ();
+            label.tooltip_text = item_data.content_type ();
+        }
+
+        private void on_bind_column_duration (Gtk.SignalListItemFactory factory, GLib.Object list_item_obj) {
+            var list_item = (Gtk.ListItem) list_item_obj;
+            var item_data = (Request) list_item.item ;
+            var label = (Gtk.Label) list_item.child;
+            label.label = item_data.response_duration ();
+            label.tooltip_text = item_data.response_duration ();
+        }
+
+        private void on_bind_column_error (Gtk.SignalListItemFactory factory, GLib.Object list_item_obj) {
+            var list_item = (Gtk.ListItem) list_item_obj;
+            var item_data = (Request) list_item.item ;
+            var label = (Gtk.Label) list_item.child;
+            label.label = item_data.error;
+            label.tooltip_text = item_data.error;
+        }
+
+        private void on_bind_column_notes (Gtk.SignalListItemFactory factory, GLib.Object list_item_obj) {
+            var list_item = (Gtk.ListItem) list_item_obj;
+            var item_data = (Request) list_item.item ;
+            var label = (Gtk.EditableLabel) list_item.child;
+            label.text = item_data.notes;
+            label.tooltip_text = item_data.notes;
+            label.bind_property ("text", item_data, "notes", GLib.BindingFlags.DEFAULT, null, null);
+        }
+
+        private void on_bind_column_payload (Gtk.SignalListItemFactory factory, GLib.Object list_item_obj) {
+            var list_item = (Gtk.ListItem) list_item_obj;
+            var item_data = (Request) list_item.item ;
+            var label = (Gtk.Label) list_item.child;
+            var payloads = item_data.payloads_to_string ();
+            label.label = payloads;
+            label.tooltip_text = payloads;
+        }
+
+        private void on_bind_column_protocol (Gtk.SignalListItemFactory factory, GLib.Object list_item_obj) {
+            var list_item = (Gtk.ListItem) list_item_obj;
+            var item_data = (Request) list_item.item ;
+            var label = (Gtk.Label) list_item.child;
+            label.label = item_data.protocol;
+            label.tooltip_text = item_data.protocol;
+        }
+
+        private void on_bind_column_size (Gtk.SignalListItemFactory factory, GLib.Object list_item_obj) {
+            var list_item = (Gtk.ListItem) list_item_obj;
+            var item_data = (Request) list_item.item ;
+            var label = (Gtk.Label) list_item.child;
+            label.label = item_data.response_size ();
+            label.tooltip_text = item_data.response_size ();
+        }
+
+        private void on_bind_column_status (Gtk.SignalListItemFactory factory, GLib.Object list_item_obj) {
+            var list_item = (Gtk.ListItem) list_item_obj;
+            var item_data = (Request) list_item.item ;
+            var label = (Gtk.Label) list_item.child;
+            var text = item_data.status.to_string ();
+            label.label = text;
+            label.tooltip_text = text;
+        }
+
+        private void on_bind_column_time (Gtk.SignalListItemFactory factory, GLib.Object list_item_obj) {
+            var list_item = (Gtk.ListItem) list_item_obj;
+            var item_data = (Request) list_item.item ;
+            var label = (Gtk.Label) list_item.child;
+            var text = response_time(new DateTime.from_unix_local (item_data.time));
+            label.label = text;
+            label.tooltip_text = text;
+        }
+
+        private void on_bind_column_url (Gtk.SignalListItemFactory factory, GLib.Object list_item_obj) {
+            var list_item = (Gtk.ListItem) list_item_obj;
+            var item_data = (Request) list_item.item ;
+            var label = (Gtk.Label) list_item.child;
+            label.label = item_data.url;
+            label.tooltip_text = item_data.url;
+        }
+
+        private void on_bind_column_verb (Gtk.SignalListItemFactory factory, GLib.Object list_item_obj) {
+            var list_item = (Gtk.ListItem) list_item_obj;
+            var item_data = (Request) list_item.item ;
+            var label = (Gtk.Label) list_item.child;
+            label.label = item_data.verb;
+            label.tooltip_text = item_data.verb;
         }
 
         private void on_websocket_message (int type, Bytes message) {
@@ -609,18 +601,14 @@ namespace Pakiki {
 
             if (action == "filtered") {
                 if (guid_set.contains (request_guid)) {
-                    liststore.@foreach ((model, path, iter) => {
-                        Value guid;
-                        model.get_value (iter, Column.GUID, out guid);
-
-                        if (request_guid == guid.get_string ()) {
-                            liststore.remove (ref iter);
+                    for (uint i = 0; i < liststore.get_n_items (); i++) {
+                        var req = liststore.get_item (i) as Request;
+                        if (request != null && req.guid == request_guid) {
+                            liststore.remove (i);
                             guid_set.remove (request_guid);
-                            return true;
+                            break;
                         }
-
-                        return false; // continue iterating
-                    });
+                    }
                 }
 
                 return;
@@ -629,28 +617,16 @@ namespace Pakiki {
             if (!guid_set.contains (request_guid)) {
                 add_request_to_table (request);
             } else {
-                // if it already exists in the table, update it
-                liststore.@foreach ((model, path, iter) => {
-                    Value guid;
-                    model.get_value (iter, Column.GUID, out guid);
+                var r = new Request (request, application_window);
+                uint position = 0;
+                var found = liststore.find_with_equal_func (r, guids_equal, out position);
 
-                    if (request_guid == guid.get_string ()) {
-                        liststore.set_value (iter, Column.TIME,          request.get_int_member("Time"));
-                        liststore.set_value (iter, Column.URL,           request.get_string_member("URL"));
-                        liststore.set_value (iter, Column.RESPONSE_CONTENT_LENGTH, request.get_int_member("ResponseContentLength"));
-                        liststore.set_value (iter, Column.RESPONSE_CONTENT_TYPE, request.get_string_member("ResponseContentType"));
-                        liststore.set_value (iter, Column.DURATION,      request.get_int_member("ResponseTime"));
-                        liststore.set_value (iter, Column.VERB,          request.get_string_member("Verb"));
-                        liststore.set_value (iter, Column.STATUS,        request.get_int_member("ResponseStatusCode"));
-                        liststore.set_value (iter, Column.PAYLOADS,      request.get_string_member("Payloads"));
-                        liststore.set_value (iter, Column.ERROR,         request.get_string_member("Error"));
-                        liststore.set_value (iter, Column.NOTES,         request.get_string_member("Notes"));
+                if (!found) {
+                    return;
+                }
 
-                        return true;
-                    }
-
-                    return false; // continue iterating
-                });
+                var request_as_array = new GLib.Object[]{r};
+                liststore.splice (position, 1, request_as_array);
             }
 
             // the currently highlighted request has been updated
@@ -669,156 +645,53 @@ namespace Pakiki {
             }
         }
 
-        private void on_notes_updated (string path, string newtext) {
-            Gtk.TreeIter iter;
-            liststore.get_iter (out iter, new Gtk.TreePath.from_string(path));
-
-            Value guid;
-            liststore.get_value (iter, Column.GUID, out guid);
-
-            var message = new Soup.Message ("PATCH", "http://" + application_window.core_address + "/requests/" + guid.get_string () + "/notes");
-
-            var parameters = "notes=" + GLib.Uri.escape_string (newtext, null);
-            message.set_request_body_from_bytes ("application/x-www-form-urlencoded", new Bytes(parameters.data));
+        public void on_request_list_doubleclick_event () {
+            var requests = get_selected_requests ();
+            if (requests.length != 1) {
+                return;
+            }
+            var request = requests[0];
             
-            application_window.http_session.send_async.begin (message, GLib.Priority.DEFAULT, null);
-
-            liststore.set_value (iter, Column.NOTES, newtext);
-            guid.unset ();
-        }
-
-        [GtkCallback]
-        public bool on_request_list_button_press_event (Gdk.EventButton event) {         
-            if (event.type == Gdk.EventType.@2BUTTON_PRESS) {
-                var guids = get_selected_guids ();
-                if (guids.length != 1) {
-                    return false;
-                }
-                var guid = guids[0];
-
-                var protocols = get_selected_fields (Column.PROTOCOL);
-                if (protocols.length != 1) {
-                    return false;
-                }
-
-                var is_http = protocols[0].contains("HTTP");
-                
-                this.request_double_clicked (guid);
-                
-                if (process_actions) {
-                    application_window.request_double_clicked (guid, is_http);
-                }
-            }
-
-            return false; // allow other event handlers to be processed as well
-        }
-         
-        [GtkCallback]
-        public bool on_request_list_button_release_event (Gdk.EventButton event) {
-            if (event.type != Gdk.EventType.BUTTON_RELEASE || event.button != 3) {
-                return false;
-            }
-
-            // if the event was on top of the header....
-            var first_column = request_list.get_column (1);
-            var is_header = false;
-            if (first_column != null) {
-                int x, y, w, h;
-                first_column.cell_get_size (null, out x, out y, out w, out h);
-
-                int widget_x, widget_y, window_x, window_y;
-
-                request_list.translate_coordinates (this.parent, 0, 0, out widget_x, out widget_y);
-                this.get_window ().get_origin (out window_x, out window_y);
-
-                if (event.y_root < (widget_y + h + window_y)) {
-                    is_header = true;
-                }
-            }
-
-            if (is_header) {
-                display_header_right_click_menu (event);
-                return false;
-            }
+            var is_http = request.protocol.contains("HTTP");
+            
+            this.request_double_clicked (request.guid);
             
             if (process_actions) {
+                application_window.request_double_clicked (request.guid, is_http);
+            }
+        }
+         
+        public bool on_request_list_right_click_event (double x, double y) {
+            if (process_actions) {
                 // right click
-                var menu = new Gtk.Menu ();
+
+                var reqs = get_selected_requests ();
 
                 var guid = "";
-                var guids = get_selected_fields (Column.GUID);
-                if (guids.length == 1 && guids[0] != "") {
-                    guid = guids[0];
+                var protocol = "";
+                var url = "";
+
+                if (reqs.length >= 1) {
+                    guid = reqs[0].guid;
+                    protocol = reqs[0].protocol;
+                    url = reqs[0].url;
                 }
 
                 if (guid == "") {
                     return false;
                 }
 
-                var protocol = "";
-                var protocols = get_selected_fields (Column.PROTOCOL);
-                if (protocols.length == 1) {
-                    protocol = protocols[0];
-                }
-
-                var url = "";
-                var urls = get_selected_fields (Column.URL);
-                if (urls.length == 1 && urls[0] != "") {
-                    url = urls[0];
-                }
-
-                RequestDetails.populate_send_to_menu (application_window, menu, guid, protocol, url);
-
-                menu.popup_at_pointer (event);
+                var menu = RequestDetails.populate_send_to_menu (application_window, guid, protocol, url);
+                
+                var popup = new Gtk.PopoverMenu.from_model (menu);
+                popup.set_parent (this);
+                var rect = Gdk.Rectangle () { x = (int)x, y = (int)y };
+                popup.set_pointing_to (rect);
+                popup.has_arrow = false;
+                popup.popup ();
             }
 
             return false; // allow other event handlers to also be run
-        }
-
-        [GtkCallback]
-        public bool on_request_list_query_tooltip (int x, int y, bool keyboard_tooltip, Gtk.Tooltip tooltip) {
-            Gtk.TreePath? path;
-            Gtk.TreeIter iter;
-            Gtk.TreeViewColumn? col;
-            int cell_x, cell_y;
-
-            int bin_x, bin_y;
-            request_list.convert_widget_to_bin_window_coords (x, y, out bin_x, out bin_y);
-
-            var row_present = request_list.get_path_at_pos (bin_x, bin_y, out path, out col, out cell_x, out cell_y);
-            if (!row_present || col == null || path == null) {
-                return false;
-            }
-
-            if (!request_list.model.get_iter (out iter, path)) {
-                return false;
-            }
-
-            if (col.sort_column_id == Column.PROTOCOL || col.sort_column_id == Column.VERB) {
-                return false;
-            }
-
-            if (col.sort_column_id == Column.TIME) {
-                Value time;
-                request_list.model.get_value (iter, Column.TIME, out time);
-                var datetime = new DateTime.from_unix_local (time.get_int ());
-   
-                tooltip.set_text (datetime.format ("%A %e %B %Y %T"));
-                return true;
-            }
-
-            GLib.Value val;
-            request_list.model.get_value (iter, col.sort_column_id , out val);
-
-            if (val.type () == GLib.Type.STRING) {
-                var str = val.get_string ();
-                if (str != "") {
-                    tooltip.set_text (val.get_string ());
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         public void on_search (string query, bool negative_filter, bool exclude_resources, string protocol = "") {
@@ -829,8 +702,8 @@ namespace Pakiki {
             get_requests ();
         }
 
-        private void on_selection_changed (Gtk.TreeSelection selection) {
-            if(updating) {
+        private void on_selection_changed (uint position, uint n_items) {
+            if (updating) {
                 return;
             }
 
@@ -843,9 +716,9 @@ namespace Pakiki {
             if (guids.length == 1 && guids[0] != "") {
                 var guid = guids[0];
 
-                var pos = this.position;
+                var pos = pane.position;
                 request_details.set_request (guid);
-                this.position = pos;
+                pane.position = pos;
                 
                 request_selected (guid);
                 request_details.show ();
@@ -860,75 +733,163 @@ namespace Pakiki {
             }
         }
 
-        private string payloads_to_string (string str) {
-            if (str == "") {
-                return "";
-            }
 
-            var parser = new Json.Parser ();
-            
-            try {
-                parser.load_from_data (str, -1);
-                var payload_str = "";
-
-                var payload_parts = parser.get_root ().get_object ();
-                payload_parts.foreach_member ((obj, name, val) => {
-                    var str_val = val.get_string ();
-                    if (str_val != null) {
-                        if (payload_str != "") {
-                            payload_str += ", ";
-                        }
-
-                        payload_str += name + ": " + str_val;
-                    }
-                });
-
-                return payload_str;
-            }
-            catch(Error e) {
-                stdout.printf ("Could not parse JSON payload data, error: %s\nData: %s\n", e.message, str);
-                return "";
-            }
+        private void on_setup_editable_column (Gtk.SignalListItemFactory factory, GLib.Object list_item_obj) {
+            var label = new Gtk.EditableLabel ("");
+            label.halign = Gtk.Align.START;
+            ((Gtk.ListItem) list_item_obj).child = label;
         }
 
-        private string response_duration (int64 duration) {
-            if (duration == 0) {
-                return "";
-            }
-
-            if (duration > 5000) {
-                return ((float)(duration/1000.0)).to_string ("%.2f s");
-            }
-            
-            return duration.to_string () + " ms";
+        private void on_setup_label_column (Gtk.SignalListItemFactory factory, GLib.Object list_item_obj) {
+            var label = new Gtk.Label ("");
+            label.halign = Gtk.Align.START;
+            ((Gtk.ListItem) list_item_obj).child = label;
         }
 
-        private string response_size_to_string (int64 response_size) {
-            if (response_size == 0) {
-                return "";
+        private void on_setup_label_column_truncate_middle (Gtk.SignalListItemFactory factory, GLib.Object list_item_obj) {
+            var label = new Gtk.Label ("");
+            label.halign = Gtk.Align.START;
+            label.ellipsize = Pango.EllipsizeMode.MIDDLE;
+            ((Gtk.ListItem) list_item_obj).child = label;
+        }
+
+        private void on_setup_label_column_truncate_end (Gtk.SignalListItemFactory factory, GLib.Object list_item_obj) {
+            var label = new Gtk.Label ("");
+            label.halign = Gtk.Align.START;
+            label.ellipsize = Pango.EllipsizeMode.END;
+            ((Gtk.ListItem) list_item_obj).child = label;
+        }
+
+        private static int on_sort_content_type (Request? req_a, Request? req_b) {
+            if (req_a == null || req_b == null || req_a.response_content_type == req_b.response_content_type) {
+                return 0;
             }
 
-            var bytes = (float)response_size;
-            if (bytes < 1024) {
-                return bytes.to_string() + " B";
+            if (req_a.response_content_type > req_b.response_content_type) {
+                return 1;
+            }
+            
+            return -1;
+        }
+
+        private static int on_sort_duration (Request? req_a, Request? req_b) {
+            if (req_a == null || req_b == null || req_a.duration == req_b.duration) {
+                return 0;
             }
 
-            bytes = bytes / (float)1024.0;
-            if (bytes < 1024) {
-                return bytes.to_string("%.2f KB");
+            if (req_a.duration > req_b.duration) {
+                return 1;
+            }
+            
+            return -1;
+        }
+
+        private static int on_sort_error (Request? req_a, Request? req_b) {
+            if (req_a == null || req_b == null || req_a.error == req_b.error) {
+                return 0;
             }
 
-            bytes = bytes / (float)1024.0;
-            if (bytes < 1024) {
-                return bytes.to_string("%.2f MB");
+            if (req_a.error > req_b.error) {
+                return 1;
+            }
+            
+            return -1;
+        }
+
+        private static int on_sort_notes (Request? req_a, Request? req_b) {
+            if (req_a == null || req_b == null || req_a.notes == req_b.notes) {
+                return 0;
             }
 
-            bytes = bytes / (float)1024.0;
-            if (bytes < 1024) {
-                return bytes.to_string("%.2f GB");
+            if (req_a.notes > req_b.notes) {
+                return 1;
+            }
+            
+            return -1;
+        }
+
+        private static int on_sort_payload (Request? req_a, Request? req_b) {
+            if (req_a == null || req_b == null || req_a.payloads_to_string () == req_b.payloads_to_string ()) {
+                return 0;
             }
 
-            return "";
+            if (req_a.payloads_to_string () > req_b.payloads_to_string ()) {
+                return 1;
+            }
+            
+            return -1;
+        }
+
+        private static int on_sort_protocol (Request? req_a, Request? req_b) {
+            if (req_a == null || req_b == null || req_a.protocol == req_b.protocol) {
+                return 0;
+            }
+
+            if (req_a.protocol > req_b.protocol) {
+                return 1;
+            }
+            
+            return -1;
+        }
+
+        private static int on_sort_size (Request? req_a, Request? req_b) {
+            if (req_a == null || req_b == null || req_a.response_content_length == req_b.response_content_length) {
+                return 0;
+            }
+
+            if (req_a.response_content_length > req_b.response_content_length) {
+                return 1;
+            }
+            
+            return -1;
+        }
+
+        private static int on_sort_status (Request? req_a, Request? req_b) {
+            if (req_a == null || req_b == null || req_a.status == req_b.status) {
+                return 0;
+            }
+
+            if (req_a.status > req_b.status) {
+                return 1;
+            }
+            
+            return -1;
+        }
+
+        private static int on_sort_time (Request? req_a, Request? req_b) {
+            if (req_a == null || req_b == null || req_a.time == req_b.time) {
+                return 0;
+            }
+
+            if (req_a.time > req_b.time) {
+                return 1;
+            }
+            
+            return -1;
+        }
+
+        private static int on_sort_url (Request? req_a, Request? req_b) {
+            if (req_a == null || req_b == null || req_a.url == req_b.url) {
+                return 0;
+            }
+
+            if (req_a.url > req_b.url) {
+                return 1;
+            }
+            
+            return -1;
+        }
+
+        private static int on_sort_verb (Request? req_a, Request? req_b) {
+            if (req_a == null || req_b == null || req_a.verb == req_b.verb) {
+                return 0;
+            }
+
+            if (req_a.verb > req_b.verb) {
+                return 1;
+            }
+            
+            return -1;
         }
 
         public static string response_time (DateTime time) {
@@ -954,22 +915,77 @@ namespace Pakiki {
         }
 
         private void save_column_settings () {
-            if (request_list.get_columns ().length () != COLUMN_COUNT) {
-                return;
-            }
+            var cols = request_list.get_columns ();
+            var col_count = cols.get_n_items ();
+
             var settings = "";
-            request_list.get_columns ().foreach ((col) => {
+            for (int i = 0; i < col_count; i++) {
+                var col = cols.get_item (i) as Gtk.ColumnViewColumn;
+                if (col == null) {
+                    stdout.printf ("Could not cast column to ColumnViewColumn\n");
+                    continue;
+                }
+
                 if (settings != "") {
                     settings += ";";
                 }
-                settings += col.title + ":" + (col.visible ? "1" : "0");
-            });
 
-            application_window.settings.set_string (scan_ids.length == 0 ? "grid-columns" : "scan-grid-columns", settings);
+                settings += col.title + ":" + (col.visible ? "1" : "0");
+            }
+
+            application_window.settings.set_string (scan_ids.length == 0 ? "grid-columns" : "scan-grid-columns", settings);            
         }
 
         private void scroll_to_bottom () {
             request_list.vadjustment.value = request_list.vadjustment.upper;
+        }
+
+        private void set_header_right_click_menus () {
+            var menu = new GLib.Menu ();
+
+            var cols = request_list.get_columns ();
+            var col_count = cols.get_n_items ();
+
+            var action_group = new GLib.SimpleActionGroup ();
+
+            // build the menu
+            for (int i = 0; i < col_count; i++) {
+                var col = cols.get_item (i) as Gtk.ColumnViewColumn;
+                if (col == null) {
+                    stdout.printf ("Could not cast column to ColumnViewColumn\n");
+                    continue;
+                }
+
+                if (col.title == "Payloads" && scan_ids.length == 0) {
+                    continue;
+                }
+
+                var action_name = col.title.replace(" ", "");
+                var action = new GLib.SimpleAction.stateful (action_name, null, new Variant.boolean (col.visible));
+                action.activate.connect ((parameter) => {
+                    col.visible = !col.visible;
+                    save_column_settings ();
+                    action_group.change_action_state (action_name, new Variant.boolean (col.visible));
+                });
+
+                action_group.add_action (action);
+
+                var name = col.title;
+                menu.append (name, "columntoggle." + action_name);
+            }
+
+            this.insert_action_group ("columntoggle", action_group);
+
+            // go back through each column and set it
+            for (int i = 0; i < col_count; i++) {
+                var col = cols.get_item (i) as Gtk.ColumnViewColumn;
+                if (col == null) {
+                    stdout.printf ("Could not cast column to ColumnViewColumn\n");
+                    continue;
+                }
+
+                col.header_menu = menu;
+            }
         }
 
         public void set_scan_ids (string[] guids, bool refresh_list = true) {

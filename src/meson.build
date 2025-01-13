@@ -42,6 +42,7 @@ sources += files(
     'models/inject-operation.vala',
     'models/intercepted-request.vala',
     'models/proxy-settings.vala',
+    'models/request.vala',
     'models/syntax-highlighter.vala'
 )
 

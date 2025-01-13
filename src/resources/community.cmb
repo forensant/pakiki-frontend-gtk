@@ -5,7 +5,8 @@
 	(1,23,"request-new.ui","request-new.ui",None,None,None,None,None,None,None),
 	(2,2,None,"request-details.ui",None,None,None,None,None,None,None),
 	(3,2,None,"text-search-bar.ui",None,None,None,None,None,None,None),
-	(4,1,None,"intercept.ui",None,None,None,None,None,None,None)
+	(4,1,None,"intercept.ui",None,None,None,None,None,None,None),
+	(5,1,None,"request-list.ui",None,None,None,None,None,None,None)
   </ui>
   <object>
 	(1,1,"GtkPaned","pane",23,None,None,None,0,None,None),
@@ -71,7 +72,14 @@
 	(4,20,"GtkScrolledWindow","scrolled_window_hex_request",17,None,None,None,1,None,None),
 	(4,21,"GtkScrolledWindow","scrolled_window_text_requestresponse",18,None,None,None,0,None,None),
 	(4,22,"GtkScrolledWindow","scrolled_window_hex_requestresponse",18,None,None,None,1,None,None),
-	(4,23,"GtkColumnView","list_requests",8,None,None,None,0,None,None)
+	(4,23,"GtkColumnView","list_requests",8,None,None,None,0,None,None),
+	(5,1,"GtkBox","PakikiRequestList",None,None,None,None,0,None,None),
+	(5,2,"GtkPaned","pane",1,None,None,None,0,None,None),
+	(5,3,"GtkBox","box",2,None,None,None,0,None,None),
+	(5,4,"GtkLabel","label_no_requests",3,None,None,None,0,None,None),
+	(5,5,"GtkOverlay","overlay",3,None,None,None,1,None,None),
+	(5,6,"GtkScrolledWindow","scrolled_window_requests",5,None,None,None,0,None,None),
+	(5,7,"GtkColumnView","request_list",6,None,None,None,0,None,None)
   </object>
   <object_property>
 	(1,1,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
@@ -232,7 +240,33 @@
 	(4,23,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
 	(4,23,"GtkWidget","hexpand-set","True",None,None,None,None,None,None,None,None,None),
 	(4,23,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
-	(4,23,"GtkWidget","vexpand-set","True",None,None,None,None,None,None,None,None,None)
+	(4,23,"GtkWidget","vexpand-set","True",None,None,None,None,None,None,None,None,None),
+	(5,2,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
+	(5,2,"GtkPaned","position","450",None,None,None,None,None,None,None,None,None),
+	(5,2,"GtkPaned","position-set","True",None,None,None,None,None,None,None,None,None),
+	(5,2,"GtkWidget","margin-bottom","18",None,None,None,None,None,None,None,None,None),
+	(5,2,"GtkWidget","margin-end","18",None,None,None,None,None,None,None,None,None),
+	(5,2,"GtkWidget","margin-start","18",None,None,None,None,None,None,None,None,None),
+	(5,2,"GtkWidget","margin-top","2",None,None,None,None,None,None,None,None,None),
+	(5,3,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
+	(5,4,"GtkLabel","label","No requests were found with the given criteria",None,None,None,None,None,None,None,None,None),
+	(5,4,"GtkWidget","margin-top","18",None,None,None,None,None,None,None,None,None),
+	(5,5,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
+	(5,5,"GtkWidget","hexpand-set","True",None,None,None,None,None,None,None,None,None),
+	(5,5,"GtkWidget","margin-top","12",None,None,None,None,None,None,None,None,None),
+	(5,5,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
+	(5,5,"GtkWidget","vexpand-set","True",None,None,None,None,None,None,None,None,None),
+	(5,6,"GtkScrolledWindow","has-frame","True",None,None,None,None,None,None,None,None,None),
+	(5,6,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
+	(5,6,"GtkWidget","hexpand-set","True",None,None,None,None,None,None,None,None,None),
+	(5,6,"GtkWidget","margin-bottom","6",None,None,None,None,None,None,None,None,None),
+	(5,6,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
+	(5,6,"GtkWidget","vexpand-set","True",None,None,None,None,None,None,None,None,None),
+	(5,7,"GtkColumnView","reorderable","False",None,None,None,None,None,None,None,None,None),
+	(5,7,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
+	(5,7,"GtkWidget","hexpand-set","True",None,None,None,None,None,None,None,None,None),
+	(5,7,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
+	(5,7,"GtkWidget","vexpand-set","True",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_layout_property>
 	(1,2,5,"GtkGridLayoutChild","column","0",None,None,None,None),
