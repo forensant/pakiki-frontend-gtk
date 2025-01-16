@@ -5,7 +5,7 @@ namespace Pakiki {
     [GtkTemplate (ui = "/com/forensant/pakiki/inject-point-selection-widget.ui")]
     class InjectPointSelectionWidget : Gtk.Box {
         [GtkChild]
-        private unowned Gtk.ComboBox combobox_protocol;
+        private unowned Gtk.DropDown dropdown_protocol;
         [GtkChild]
         private unowned Gtk.Entry entry_hostname;
         [GtkChild]
@@ -21,12 +21,6 @@ namespace Pakiki {
         
         private ApplicationWindow application_window;
         private RequestTextEditor text_view_request;
-
-        // for the find dialog
-        private Gtk.CheckButton checkbutton_exclude_resources;
-        private Gtk.CheckButton checkbutton_negative_filter;
-        private RequestsPane requests_pane;
-        private Gtk.SearchEntry search_entry;
 
         public string hostname {
             get {
@@ -46,7 +40,7 @@ namespace Pakiki {
 
         public bool ssl {
             get {
-                return combobox_protocol.active == 0;
+                return dropdown_protocol.selected == 0;
             }
         }
 
@@ -74,16 +68,14 @@ namespace Pakiki {
 
         public InjectPointSelectionWidget (ApplicationWindow application_window) {
             this.application_window = application_window;
-            var renderer_text = new Gtk.CellRendererText();
-            combobox_protocol.pack_start (renderer_text, true);
-            combobox_protocol.add_attribute (renderer_text, "text", 0);
-            combobox_protocol.set_active (0);
-
+            dropdown_protocol.selected = 0;
+            
             text_view_request = new RequestTextEditor (application_window);
-            scrolled_window_text_view_request.add (text_view_request);
+            scrolled_window_text_view_request.set_child (text_view_request);
 
-            var event_controller_key = new Gtk.EventControllerKey (text_view_request);
+            var event_controller_key = new Gtk.EventControllerKey ();
             event_controller_key.key_released.connect (on_text_view_request_key_release_event);
+            text_view_request.add_controller (event_controller_key);
 
             text_view_request.buffer.create_tag ("selection", "background", "yellow", "foreground", "black");
         }
@@ -136,7 +128,7 @@ namespace Pakiki {
         public void clone_inject_operation (InjectOperation operation) {
             entry_title.text = operation.title;
             entry_hostname.text = operation.host;
-            combobox_protocol.active = (operation.ssl ? 0 : 1);
+            dropdown_protocol.selected = (operation.ssl ? 0 : 1);
             host_error_visible = false;
             text_view_request.buffer.text = operation.request.replace ("\r\n", "\n");
             correct_separators_and_tag ();
@@ -271,7 +263,7 @@ namespace Pakiki {
                 }
 
                 text_view_request.buffer.insert_at_cursor (chrToInsert, -1);
-                text_view_request.has_focus = true;
+                text_view_request.focus(Gtk.DirectionType.LEFT);
             } else if (text_selected) {
                 // it's a range
 
@@ -374,103 +366,15 @@ namespace Pakiki {
             }
 
             correct_separators_and_tag ();
-            text_view_request.has_focus = true;
+            text_view_request.focus (Gtk.DirectionType.LEFT);
         }
 
         [GtkCallback]
         private void on_button_find_clicked() {
-            var dialog = new Gtk.Dialog.with_buttons ("Find Request", application_window, Gtk.DialogFlags.MODAL);
-            dialog.add_button ("Cancel", Gtk.ResponseType.CANCEL);
-            dialog.add_button ("OK", Gtk.ResponseType.OK);
-            var selected_guid = "";
-
-            var searchbar = new Gtk.SearchBar ();
-            searchbar.show_close_button = false;
-            var box_search = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 12);
-            if (search_entry == null) {
-                search_entry = new Gtk.SearchEntry ();
-            }
-            search_entry.placeholder_text = "Filter Requests";
-            box_search.pack_start (search_entry, false, false, 0);
-
-            if (checkbutton_negative_filter == null) {
-                checkbutton_negative_filter = new Gtk.CheckButton.with_mnemonic ("_Negative Filter");
-            }
-            checkbutton_negative_filter.active = false;
-            box_search.pack_start (checkbutton_negative_filter, false, false, 0);
-
-            if (checkbutton_exclude_resources == null) {
-                checkbutton_exclude_resources = new Gtk.CheckButton.with_mnemonic ("_Exclude Resources (Images, Stylesheets, etc)");
-            }
-            checkbutton_exclude_resources.active = true;
-            box_search.pack_start (checkbutton_exclude_resources, false, false, 0);
-
-            box_search.hexpand = true;
-            searchbar.visible = true;
-            searchbar.search_mode_enabled = true;
-            searchbar.show_close_button = true;
-            searchbar.add (box_search);
-            searchbar.connect_entry (search_entry);
-            dialog.get_content_area ().pack_start (searchbar, false, false, 0);
-            searchbar.show_all ();
-
-            if (requests_pane == null) {
-                requests_pane = new RequestsPane (application_window, false);
-            }
-            requests_pane.process_launch_successful (true);
-            requests_pane.reset_state ();
-            requests_pane.request_selected.connect ( (guid) => { selected_guid = guid; });
-            requests_pane.process_actions = false;
-            requests_pane.request_double_clicked.connect ( (guid) => {
-                selected_guid = guid;
-                dialog.response (Gtk.ResponseType.OK);
-            });
-            requests_pane.show ();
-            dialog.get_content_area ().pack_start (requests_pane, true, true, 0);
-            dialog.set_default_response (Gtk.ResponseType.OK);
-            dialog.set_default_size (application_window.default_width - 100, application_window.default_height - 150);
-
-            search_entry.search_changed.connect (() => {
-                set_find_filter ();
-            });
-
-            checkbutton_exclude_resources.toggled.connect (() => {
-                set_find_filter ();
-            });
-
-            checkbutton_negative_filter.toggled.connect (() => {
-                set_find_filter ();
-            });
-
-            set_find_filter ();
-
-            var separator = new Gtk.Separator (Gtk.Orientation.HORIZONTAL);
-            separator.hexpand = true;
-            dialog.get_content_area ().pack_start (separator, false, false, 0);
-
-            dialog.get_action_area ().margin_top = 12;
-            dialog.get_action_area ().margin_bottom = 12;
-            dialog.get_action_area ().margin_end = 18;
-
-            dialog.response.connect ( (response_id) => {
-                if (response_id == Gtk.ResponseType.OK) {
-                    this.populate_request (selected_guid);
-                }
-                
-
-                dialog.remove (checkbutton_negative_filter);
-                dialog.remove (checkbutton_exclude_resources);
-                dialog.remove (search_entry);
-                dialog.remove (requests_pane);
-
-                dialog.destroy ();
-                requests_pane = null;
-                checkbutton_negative_filter = null;
-                checkbutton_exclude_resources = null;
-            });
-
-            dialog.show ();
-            dialog.run ();
+            var find_window = new FindWindow (application_window);
+            find_window.set_default_size (application_window.default_width - 100, application_window.default_height - 150);
+            find_window.request_set.connect(populate_request);
+            find_window.show ();
         }
 
         private void on_text_view_request_key_release_event (uint keyval, uint keycode, Gdk.ModifierType state) {
@@ -496,7 +400,7 @@ namespace Pakiki {
 
                     reset_state ();
                     entry_hostname.text = root_obj.get_string_member ("Hostname");
-                    combobox_protocol.active = (root_obj.get_string_member ("Protocol") == "https://" ? 0 : 1);
+                    dropdown_protocol.selected = (root_obj.get_string_member ("Protocol") == "https://" ? 0 : 1);
 
                     var request_parts = root_obj.get_array_member ("SplitRequest");
 
@@ -530,16 +434,9 @@ namespace Pakiki {
         public void reset_state () {
             entry_title.text = "";
             entry_hostname.text = "";
-            combobox_protocol.active = 0;
+            dropdown_protocol.selected = 0;
             text_view_request.buffer.text = "";
             entry_hostname.secondary_icon_name = "";
-        }
-
-        private void set_find_filter () {
-            requests_pane.on_search (search_entry.get_text (),
-                checkbutton_negative_filter.get_active (),
-                checkbutton_exclude_resources.get_active (),
-                "HTTP");
         }
     }
 }

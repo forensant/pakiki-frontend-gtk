@@ -6,6 +6,7 @@ sources += files(
     'forms/actions.vala',
     'forms/application-preferences.vala',
     'forms/authentication-dialog.vala',
+    'forms/find-window.vala',
     'forms/inject-new.vala',
     'forms/inject-list-row.vala',
     'forms/inject-pane.vala',

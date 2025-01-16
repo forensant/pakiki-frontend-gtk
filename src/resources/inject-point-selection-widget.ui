@@ -1,283 +1,148 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.40.0 -->
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.94.1 -->
 <interface>
-  <requires lib="gtk+" version="3.20"/>
-  <object class="GtkListStore" id="liststore_protocols">
-    <columns>
-      <!-- column-name gchararray -->
-      <column type="gchararray"/>
-    </columns>
-    <data>
-      <row>
-        <col id="0">https://</col>
-      </row>
-      <row>
-        <col id="0">http://</col>
-      </row>
-    </data>
-  </object>
+  <requires lib="gtk" version="4.12"/>
   <template class="PakikiInjectPointSelectionWidget" parent="GtkBox">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="hexpand">True</property>
-    <property name="vexpand">True</property>
     <property name="orientation">vertical</property>
     <child>
-      <!-- n-columns=5 n-rows=3 -->
       <object class="GtkGrid">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <child>
           <object class="GtkLabel" id="label_title">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
+            <property name="label">_Title</property>
+            <property name="margin-bottom">12</property>
             <property name="margin-end">12</property>
-            <property name="margin-bottom">12</property>
-            <property name="label" translatable="yes">_Title</property>
             <property name="use-underline">True</property>
-            <property name="justify">right</property>
-            <property name="mnemonic-widget">entry_title</property>
-            <property name="single-line-mode">True</property>
-            <property name="xalign">1</property>
+            <property name="xalign">1.0</property>
+            <layout>
+              <property name="column">0</property>
+              <property name="column-span">1</property>
+              <property name="row">0</property>
+              <property name="row-span">1</property>
+            </layout>
           </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkEntry" id="entry_title">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="valign">start</property>
-            <property name="margin-bottom">12</property>
-            <property name="hexpand">True</property>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">0</property>
-            <property name="width">2</property>
-          </packing>
         </child>
         <child>
           <object class="GtkLabel" id="label_host">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
+            <property name="label">_Host</property>
             <property name="margin-end">12</property>
-            <property name="label" translatable="yes">_Host</property>
             <property name="use-underline">True</property>
-            <property name="mnemonic-widget">combobox_protocol</property>
-            <property name="xalign">1</property>
+            <property name="xalign">1.0</property>
+            <layout>
+              <property name="column">0</property>
+              <property name="column-span">1</property>
+              <property name="row">1</property>
+              <property name="row-span">1</property>
+            </layout>
           </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">1</property>
-          </packing>
         </child>
         <child>
-          <object class="GtkComboBox" id="combobox_protocol">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="valign">start</property>
-            <property name="margin-end">6</property>
-            <property name="model">liststore_protocols</property>
+          <object class="GtkEntry" id="entry_title">
+            <property name="hexpand">True</property>
+            <property name="hexpand-set">True</property>
+            <property name="margin-bottom">12</property>
+            <layout>
+              <property name="column">1</property>
+              <property name="column-span">2</property>
+              <property name="row">0</property>
+            </layout>
           </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">1</property>
-          </packing>
+        </child>
+        <child>
+          <object class="GtkDropDown" id="dropdown_protocol">
+            <property name="margin-end">6</property>
+            <property name="model">
+              <object class="GtkStringList">
+                <property name="strings">https://
+http://</property>
+              </object>
+            </property>
+            <layout>
+              <property name="column">1</property>
+              <property name="column-span">1</property>
+              <property name="row">1</property>
+              <property name="row-span">1</property>
+            </layout>
+          </object>
         </child>
         <child>
           <object class="GtkEntry" id="entry_hostname">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="valign">start</property>
             <property name="hexpand">True</property>
-            <property name="placeholder-text" translatable="yes">Hostname</property>
+            <property name="hexpand-set">True</property>
+            <property name="placeholder-text">Hostname</property>
+            <layout>
+              <property name="column">2</property>
+              <property name="column-span">1</property>
+              <property name="row">1</property>
+              <property name="row-span">1</property>
+            </layout>
           </object>
-          <packing>
-            <property name="left-attach">2</property>
-            <property name="top-attach">1</property>
-          </packing>
         </child>
         <child>
           <object class="GtkButton" id="button_find">
-            <property name="label" translatable="yes">_Find</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">True</property>
-            <property name="valign">start</property>
-            <property name="margin-start">6</property>
-            <property name="margin-bottom">6</property>
+            <property name="label">_Find</property>
+            <property name="margin-start">18</property>
             <property name="use-underline">True</property>
-            <signal name="clicked" handler="on_button_find_clicked" swapped="no"/>
+            <signal name="clicked" handler="on_button_find_clicked"/>
+            <layout>
+              <property name="column">3</property>
+              <property name="column-span">1</property>
+              <property name="row">1</property>
+              <property name="row-span">1</property>
+            </layout>
           </object>
-          <packing>
-            <property name="left-attach">4</property>
-            <property name="top-attach">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">0</property>
-            <property name="width">2</property>
-          </packing>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
         </child>
       </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">0</property>
-      </packing>
     </child>
     <child>
       <object class="GtkBox">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="margin-top">12</property>
         <child>
           <object class="GtkLabel" id="label_request">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="valign">end</property>
-            <property name="margin-bottom">6</property>
-            <property name="label" translatable="yes">Request _Body</property>
-            <property name="use-underline">True</property>
-            <property name="xalign">0</property>
-            <property name="yalign">0.5</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="hexpand">True</property>
-            <property name="yalign">0.5</property>
-            <attributes>
-              <attribute name="style" value="italic"/>
-            </attributes>
+            <property name="hexpand-set">True</property>
+            <property name="label">Request _Body</property>
+            <property name="margin-bottom">6</property>
+            <property name="use-underline">True</property>
+            <property name="xalign">0.0</property>
+            <property name="yalign">1.0</property>
           </object>
-          <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
         </child>
         <child>
           <object class="GtkButton" id="button_clear_separator">
-            <property name="label" translatable="yes">_Clear Separators</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">True</property>
-            <property name="margin-start">18</property>
-            <property name="margin-top">6</property>
-            <property name="use-underline">True</property>
-            <signal name="clicked" handler="on_button_clear_separator_clicked" swapped="no"/>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="button_add_separator">
-            <property name="label" translatable="yes">Add _Separator</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">True</property>
+            <property name="label">_Clear Separators</property>
             <property name="margin-start">6</property>
             <property name="margin-top">6</property>
             <property name="use-underline">True</property>
-            <signal name="clicked" handler="on_button_add_separator_clicked" swapped="no"/>
+            <signal name="clicked" handler="on_button_clear_separator_clicked"/>
           </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">3</property>
-          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="button_add_separator">
+            <property name="label">Add _Separator</property>
+            <property name="margin-start">6</property>
+            <property name="margin-top">6</property>
+            <property name="use-underline">True</property>
+            <signal name="clicked" handler="on_button_add_separator_clicked"/>
+          </object>
         </child>
       </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">1</property>
-      </packing>
     </child>
     <child>
       <object class="GtkScrolledWindow" id="scrolled_window_text_view_request">
-        <property name="visible">True</property>
-        <property name="can-focus">True</property>
+        <property name="has-frame">True</property>
+        <property name="hexpand">True</property>
+        <property name="hexpand-set">True</property>
         <property name="margin-top">6</property>
-        <property name="shadow-type">in</property>
         <property name="min-content-height">100</property>
-        <child>
-          <placeholder/>
-        </child>
+        <property name="vexpand">True</property>
+        <property name="vexpand-set">True</property>
       </object>
-      <packing>
-        <property name="expand">True</property>
-        <property name="fill">True</property>
-        <property name="position">2</property>
-      </packing>
     </child>
     <child>
       <object class="GtkLabel" id="label_error">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="margin-top">6</property>
-        <property name="xalign">0</property>
+        <property name="xalign">0.0</property>
       </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">3</property>
-      </packing>
     </child>
   </template>
-  <object class="GtkListStore" id="liststore_versions">
-    <columns>
-      <!-- column-name version -->
-      <column type="gchararray"/>
-    </columns>
-    <data>
-      <row>
-        <col id="0">HTTP/1.1</col>
-      </row>
-    </data>
-  </object>
 </interface>
