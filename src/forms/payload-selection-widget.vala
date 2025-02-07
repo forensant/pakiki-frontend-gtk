@@ -1,33 +1,34 @@
 using Soup;
 
 namespace Pakiki {
-    
+
     [GtkTemplate (ui = "/com/forensant/pakiki/payload-selection-widget.ui")]
     class PayloadSelectionWidget : Gtk.Box {
 
         [GtkChild]
-        private unowned Gtk.Entry entry_from;
+        private unowned Gtk.SpinButton entry_from;
         [GtkChild]
-        private unowned Gtk.Entry entry_fuzzdb_search;
+        private unowned Gtk.SearchEntry entry_fuzzdb_search;
         [GtkChild]
-        private unowned Gtk.Entry entry_to;
+        private unowned Gtk.SpinButton entry_to;
         [GtkChild]
         private unowned Gtk.Label label_payload_selection_count;
         [GtkChild]
-        private unowned Gtk.ListStore liststore_custom_files;
+        private unowned Gtk.ListView listview_custom_files;
         [GtkChild]
-        private unowned Gtk.TreeStore treestore_fuzzdb;
+        private unowned Gtk.ListView listview_fuzzdb;
         [GtkChild]
         private unowned Gtk.Notebook notebook;
-        [GtkChild]
-        private unowned Gtk.TreeView treeview_custom_files;
-        [GtkChild]
-        private unowned Gtk.TreeView treeview_fuzzdb;
 
         private ApplicationWindow application_window;
+        private GLib.ListStore liststore_fuzzdb_root;
         private string path_to_set;
         private bool populating_fuzzdb;
-        private Gtk.TreeModelFilter treeview_model_filter;
+        private Gtk.SelectionModel selection_model_custom_files;
+        private Gtk.SelectionModel selection_model_fuzzdb;
+        private Gtk.StringList stringlist_custom_files;
+        private Gtk.TreeListModel treelist_fuzzdb;
+        private Gtk.Filter filter_fuzzdb;
 
         public int iterate_from {
             get { return int.parse (entry_from.text); }
@@ -65,132 +66,58 @@ namespace Pakiki {
             path_to_set = "";
             populate_payloads ();
 
+            stringlist_custom_files = new Gtk.StringList (null);
+            selection_model_custom_files = new Gtk.MultiSelection (stringlist_custom_files);
+            listview_custom_files.set_model (selection_model_custom_files);
+
+            var customfile_column_factory = new Gtk.SignalListItemFactory ();
+            customfile_column_factory.setup.connect (on_setup_label_column);
+            customfile_column_factory.bind.connect (on_bind_column_custom_file);
+            listview_custom_files.set_factory (customfile_column_factory);
+
             if (show_iterator == false) {
                 notebook.remove_page (2);
             }
 
-            treeview_model_filter = new Gtk.TreeModelFilter (treestore_fuzzdb, null);
-            treeview_model_filter.set_visible_func (should_fuzzdb_row_be_visible);
-            treeview_fuzzdb.model = treeview_model_filter;
-
-            var fuzzdb_toggle_renderer = new Gtk.CellRendererToggle ();
-            fuzzdb_toggle_renderer.set_activatable (true);
-            fuzzdb_toggle_renderer.toggled.connect (on_fuzzdb_toggled);
-
-            var filename_renderer = new Gtk.CellRendererText();
-            filename_renderer.ellipsize = Pango.EllipsizeMode.START;
-            filename_renderer.ellipsize_set = true;
-
-            treeview_custom_files.insert_column_with_attributes (-1, "Filename", filename_renderer, "text", 0);
-            var filename_column = treeview_custom_files.get_column(0);
-            filename_column.set_cell_data_func(filename_renderer, (cell_layout, cell, tree_model, iter) => {
-                Value val;
-                tree_model.get_value(iter, 0, out val);
-                try {
-                    var file = File.new_for_path (val.get_string ());
-                    var file_info = file.query_info ("standard::*", GLib.FileQueryInfoFlags.NONE, null);
-                    ((Gtk.CellRendererText)cell).text = file_info.get_display_name ();
-                } catch (Error e) {
-                    stdout.printf("Could not get filename: %s\n", e.message);
-                }
-                val.unset();
-            });
-
-            int toggle_column = treeview_fuzzdb.insert_column_with_attributes (-1, "Checked",
-                fuzzdb_toggle_renderer);
-
-            treeview_fuzzdb.insert_column_with_attributes (-1, "Title",
-                new Gtk.CellRendererText(), "text",
-                Column.TITLE);
-
-            treeview_fuzzdb.get_column (toggle_column).set_cell_data_func (fuzzdb_toggle_renderer, (cell_layout, cell, tree_model, iter) => {
-                Value field_val;
-                tree_model.get_value (iter, Column.CHECKED, out field_val);
-
-                var checked_status = field_val.get_string ();
-
-                cell.set_property ("inconsistent", checked_status == "Inconsistent");
-                cell.set_property ("active", checked_status == "Checked");
-
-            });
-        }
-
-        private void add_to_fuzzdb_tree (Json.Array filetree_children, Gtk.TreeIter? parent = null) {
-            foreach (var element in filetree_children.get_elements ()) {
-                Json.Object payload = element.get_object ();
-                Gtk.TreeIter iter;
-
-                var payloads = "";
-
-                var sample_payloads = payload.get_array_member ("SamplePayloads");
-                if (sample_payloads != null) {
-                    foreach (var sample_payload in sample_payloads.get_elements ()) {
-                        payloads += sample_payload.get_string () + "\n";
-                    }
-
-                    if(payloads != "") {
-                        payloads = "<b>Sample Payloads:</b>\n" + payloads.replace ("&", "&amp;").replace ("<", "&gt;").replace (">", "&lt;");
-                    }
-                }
-
-                treestore_fuzzdb.append (out iter, parent);
-
-                treestore_fuzzdb.set (iter, 
-                    Column.CHECKED, false,
-                    Column.TITLE, payload.get_string_member ("Title"),
-                    Column.FILENAME, payload.get_string_member ("ResourcePath"),
-                    Column.PAYLOADS, payloads,
-                    Column.PAYLOAD_COUNT, payload.get_int_member ("PayloadCount"));
-
-                var sub_entries = payload.get_array_member ("SubEntries");
-                if (sub_entries != null) {
-                    add_to_fuzzdb_tree (sub_entries, iter);
-                }
-            }
-        }
-
-        private bool string_array_contains(string[] array, string value) {
-            foreach (var element in array) {
-                if (element.down () == value.down ()) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public void clone_inject_operation (InjectOperation operation) {
-            liststore_custom_files.clear ();
-            for (int i = 0; i < operation.custom_filenames.length; i++) {
-                Gtk.TreeIter iter;
-                liststore_custom_files.insert_with_values (out iter, -1,
-                    0, operation.custom_filenames[i]
-                );
-            }
-
-            treestore_fuzzdb.@foreach ((model, path, iter) => {
-                treestore_fuzzdb.set_value (iter, Column.CHECKED, "Unchecked");
-                return false;
-            });
-
-            treestore_fuzzdb.@foreach ((model, path, iter) => {
-                // if iter has children
-                if (model.iter_n_children (iter) != 0) {
+            filter_fuzzdb = new Gtk.CustomFilter((obj) => {
+                var file = obj as FuzzDBFile;
+                if (file == null) {
                     return false;
                 }
 
-                Value filename;
-                model.get_value (iter, Column.FILENAME, out filename);
-
-                var checked = string_array_contains (operation.fuzzdb, filename.get_string ());
-
-                if (checked) {
-                    treeview_fuzzdb.expand_to_path (path);
-                    on_fuzzdb_toggled (path.to_string ());
-                }
-
-                return false; // iterate until the end
+                return file.search_matches (entry_fuzzdb_search.text);
             });
+
+            liststore_fuzzdb_root = new GLib.ListStore (typeof (FuzzDBFile));
+            treelist_fuzzdb = new Gtk.TreeListModel (liststore_fuzzdb_root, true, false, fuzzdb_create_model_func);
+            var filter_model = new Gtk.FilterListModel (treelist_fuzzdb, filter_fuzzdb);
+            selection_model_fuzzdb = new Gtk.NoSelection (filter_model);
+            listview_fuzzdb.set_model (selection_model_fuzzdb);
+
+            var fuzzdb_column_factory = new Gtk.SignalListItemFactory ();
+            fuzzdb_column_factory.setup.connect (on_setup_tree);
+            fuzzdb_column_factory.bind.connect (on_bind_column_fuzzdb);
+            fuzzdb_column_factory.unbind.connect (on_unbind_column_fuzzdb);
+            listview_fuzzdb.set_factory (fuzzdb_column_factory);
+        }
+
+        private void clear_custom_files () {
+            while (stringlist_custom_files.get_n_items() != 0) {
+                stringlist_custom_files.remove (0);
+            }
+        }
+
+        public void clone_inject_operation (InjectOperation operation) {
+            clear_custom_files ();
+            for (int i = 0; i < operation.custom_filenames.length; i++) {
+                stringlist_custom_files.append (operation.custom_filenames[i]);
+            }
+
+            reset_fuzzdb_tree ();
+
+            foreach (var path in operation.fuzzdb) {
+                set_fuzzdb_path (path.to_string ());
+            }
 
             iterate_from = operation.iterate_from;
             iterate_to = operation.iterate_to;
@@ -198,31 +125,23 @@ namespace Pakiki {
 
         private string[] get_custom_filenames_internal () {
             var custom_files = new Gee.ArrayList<string> ();
-            liststore_custom_files.@foreach ((model, path, iter) => {
-                Value path_value;
-                model.get_value (iter, 0, out path_value);
-                var file_path = path_value.get_string ();
-                custom_files.add (file_path);
-
-                return false;
-            });
-
+            for (int i = 0; i < stringlist_custom_files.get_n_items (); i++) {
+                custom_files.add (stringlist_custom_files.get_string (i));
+            }
             return custom_files.to_array ();
         }
 
         private string[] get_custom_file_payloads_internal () {
             var custom_file_payloads = new Gee.ArrayList<string> ();
 
-            liststore_custom_files.@foreach ((model, path, iter) => {
-                Value path_value;
-                model.get_value (iter, 0, out path_value);
-                var file_path = path_value.get_string ();
+            for (int i = 0; i < stringlist_custom_files.get_n_items (); i++) {
+                var file_path = stringlist_custom_files.get_string (i);
 
                 var file = File.new_for_path (file_path);
 
                 if (!file.query_exists ()) {
                     stderr.printf ("File '%s' doesn't exist.\n", file_path);
-                    return false;
+                    continue;
                 }
 
                 try {
@@ -234,9 +153,7 @@ namespace Pakiki {
                 } catch (Error e) {
                     error ("%s", e.message);
                 }
-
-                return false; // iterate until the end
-            });
+            };
 
             return custom_file_payloads.to_array ();
         }
@@ -244,20 +161,81 @@ namespace Pakiki {
         private string[] get_fuzzdb_files_internal () {
             var fuzzdb_files = new Gee.ArrayList<string> ();
 
-            treeview_fuzzdb.model.@foreach ((model, path, iter) => {
-                Value is_checked;
-                model.get_value (iter, Column.CHECKED, out is_checked);
-
-                if (is_checked.get_string () == "Checked" && model.iter_n_children (iter) == 0) {
-                    Value filename;
-                    model.get_value (iter, Column.FILENAME, out filename);
-                    fuzzdb_files.add (filename.get_string ());
+            for (var i = 0; i < liststore_fuzzdb_root.get_n_items (); i++) {
+                var file = liststore_fuzzdb_root.get_item (i) as FuzzDBFile;
+                if (file == null) {
+                    continue;
                 }
 
-                return false; // iterate until the end
-            });
+                fuzzdb_files.add_all (file.get_checked_files ());
+            }
 
             return fuzzdb_files.to_array ();
+        }
+
+        private void on_bind_column_custom_file (Gtk.SignalListItemFactory factory, GLib.Object list_item_obj) {
+            var list_item = (Gtk.ListItem) list_item_obj;
+            var path = (string) list_item.item ;
+            var label = (Gtk.Label) list_item.child;
+
+            try {
+                var file = File.new_for_path (path);
+                var file_info = file.query_info ("standard::*", GLib.FileQueryInfoFlags.NONE, null);
+                label.label = file_info.get_display_name ();
+            } catch (Error e) {
+                label.label = path;
+                stdout.printf("Could not get filename: %s\n", e.message);
+            }
+
+            label.tooltip_text = path;
+        }
+
+        private static ListModel? fuzzdb_create_model_func (Object item) {
+            var file = (FuzzDBFile) item;
+            if (file.children.size == 0) {
+                return null;
+            }
+            var model = new ListStore (typeof (FuzzDBFile));
+            for (var i = 0; i < file.children.size; i++) {
+                model.append (file.children.@get (i));
+            }
+            return model;
+        }
+
+        private void on_bind_column_fuzzdb (Gtk.SignalListItemFactory factory, GLib.Object list_item_obj) {
+            var list_item = list_item_obj as Gtk.ListItem;
+            if (list_item == null) {
+                stdout.printf("list_item is null\n");
+                return;
+            }
+
+            var item_data = (FuzzDBFile) list_item.item ;
+
+            var expander = list_item.child as Gtk.TreeExpander;
+            if (expander != null) {
+                var checkbox = expander.child as Gtk.CheckButton;
+                if (checkbox != null) {
+                    checkbox.label = item_data.title;
+                    checkbox.active = item_data.checked;
+                    checkbox.set_inconsistent (item_data.inconsistent);
+                    checkbox.set_data ("file", item_data);
+                    checkbox.tooltip_markup = item_data.payloads;
+
+                    var id = item_data.notify.connect((pobj) => {
+                        if (pobj.name != "checked" && pobj.name != "inconsistent") {
+                            return;
+                        }
+
+                        checkbox.active = item_data.checked;
+                        checkbox.set_inconsistent (item_data.inconsistent);
+                    });
+        
+                    item_data.signal_id = id;
+                }
+            }
+
+            var child_row = treelist_fuzzdb.get_row (list_item.position);
+            expander.set_list_row (child_row);
         }
 
         [GtkCallback]
@@ -269,78 +247,76 @@ namespace Pakiki {
                 "_Cancel");
 
             dialog.transient_for = application_window;
-            dialog.local_only = false; //allow for uri
             dialog.set_modal (true);
 
-            var res = dialog.run ();
-            
-            if (res == Gtk.ResponseType.ACCEPT) {
-                var file = dialog.get_file();
-                var filename = file.get_path ();
+            dialog.response.connect ((response) => {
+                if (response == Gtk.ResponseType.ACCEPT) {
+                    var file = dialog.get_file();
+                    var filename = file.get_path ();
 
-                Gtk.TreeIter iter;
-                liststore_custom_files.insert_with_values (out iter, -1,
-                    0, filename
-                );
-            }
-            
-            dialog.destroy ();
+                    stringlist_custom_files.append (filename);
+                }
+                dialog.destroy ();
+                update_payload_count ();
+            });
 
-            update_payload_count ();
+            dialog.show ();
         }
 
         [GtkCallback]
         private void on_button_remove_custom_file_clicked () {
-            var selection = treeview_custom_files.get_selection ();
+            var selected_items = selection_model_custom_files.get_selection();
 
-            Gtk.TreeIter iter;
-            Gtk.TreeModel model;
-            if (selection.get_selected (out model, out iter)) {
-                liststore_custom_files.remove (ref iter);
+            for (var i = selected_items.get_size(); i > 0; i--) {
+                var idx = selected_items.get_nth ((uint)i);
+                stringlist_custom_files.remove (idx);
             }
 
+            update_payload_count ();
+        }
+
+        private void on_fuzzdb_checkbox_toggled (Gtk.CheckButton checkbox, FuzzDBFile file) {
+            file.toggle_active (checkbox.active);
+            file.set_parent_inconsistent ();
             update_payload_count ();
         }
 
         [GtkCallback]
         private void on_entry_fuzzdb_search_search_changed () {
-            treeview_model_filter.refilter ();
-
-            if (entry_fuzzdb_search.text == "") {
-                return;
-            }
-
-            treeview_model_filter.@foreach ((model, path, iter) => {
-                if (!treeview_model_filter.iter_has_child (iter) && treeview_model_filter.visible (model, iter)) {
-                    treeview_fuzzdb.expand_to_path (path);
-                }
-
-                return false;
-            });
+            filter_fuzzdb.changed (Gtk.FilterChange.DIFFERENT);
         }
 
-        private void on_fuzzdb_toggled (string path) {
-            Gtk.TreeIter iter;
-            treeview_model_filter.get_iter(out iter, new Gtk.TreePath.from_string(path));
+        private void on_setup_label_column (Gtk.SignalListItemFactory factory, GLib.Object list_item_obj) {
+            var label = new Gtk.Label ("");
+            label.halign = Gtk.Align.START;
+            label.ellipsize = Pango.EllipsizeMode.MIDDLE;
+            ((Gtk.ListItem) list_item_obj).child = label;
+        }
 
-            Value is_checked;
-            treeview_model_filter.get_value(iter, Column.CHECKED, out is_checked);
+        private void on_setup_tree (Gtk.SignalListItemFactory factory, GLib.Object list_item_obj) {
+            var checkbox = new Gtk.CheckButton ();
+            checkbox.halign = Gtk.Align.START;
 
-            var value_to_set = "Checked";
-            if (is_checked.get_string () == "Checked") {
-                value_to_set = "Unchecked";   
+            checkbox.toggled.connect (() => {
+                var file = checkbox.get_data<FuzzDBFile> ("file");
+                if (file == null) {
+                    return;
+                }
+                on_fuzzdb_checkbox_toggled(checkbox, file);
+            });
+            
+            var expander = new Gtk.TreeExpander ();
+            expander.child = checkbox;
+            ((Gtk.ListItem) list_item_obj).child = expander;
+        }
+
+        private void on_unbind_column_fuzzdb (Gtk.SignalListItemFactory factory, GLib.Object list_item_obj) {
+            var list_item = (Gtk.ListItem) list_item_obj;
+            var fuzzdb_file = list_item.item as FuzzDBFile;
+            if (fuzzdb_file != null && fuzzdb_file.signal_id != null) {
+                fuzzdb_file.disconnect(fuzzdb_file.signal_id);
+                fuzzdb_file.signal_id = null;
             }
-
-            Gtk.TreeIter child_iter;
-            treeview_model_filter.convert_iter_to_child_iter (out child_iter, iter);
-            treestore_fuzzdb.set_value(child_iter, Column.CHECKED, value_to_set);
-
-            set_fuzzdb_parent_status (iter);
-            set_fuzzdb_child_status (iter, value_to_set);
-
-            is_checked.unset();
-
-            update_payload_count ();
         }
 
         private void populate_payloads () {
@@ -348,7 +324,7 @@ namespace Pakiki {
                 return;
             }
             var url = "http://" + application_window.core_address + "/inject_operations/payloads";
-            
+
             var message = new Soup.Message ("GET", url);
 
             application_window.http_session.send_and_read_async.begin (message, GLib.Priority.HIGH, null, (obj, res) => {
@@ -356,7 +332,7 @@ namespace Pakiki {
                     return;
                 }
 
-                treestore_fuzzdb.clear ();
+                liststore_fuzzdb_root.remove_all ();
 
                 try {
                     var bytes = application_window.http_session.send_and_read_async.end (res);
@@ -367,15 +343,18 @@ namespace Pakiki {
                     var root_obj = parser.get_root().get_object();
                     populating_fuzzdb = true;
                     var children = root_obj.get_array_member ("SubEntries");
-                    if (children != null) {
-                        add_to_fuzzdb_tree (children);
+                    var fuzzdb_files = FuzzDBFile.children_from_json_array (children);
+                    for (var i = 0; i < fuzzdb_files.size; i++) {
+                        var f = fuzzdb_files[i];
+                        f.set_parents ();
+                        liststore_fuzzdb_root.append (f);
                     }
                 } catch (Error err) {
                     stdout.printf("Error occurred while retrieving payloads: %s\n", err.message);
                 }
 
                 populating_fuzzdb = false;
-                treeview_model_filter.refilter ();
+                entry_fuzzdb_search.text = "";
 
                 if (path_to_set != "") {
                     set_fuzzdb_path (path_to_set);
@@ -385,122 +364,36 @@ namespace Pakiki {
 
         }
 
+        private void reset_fuzzdb_tree () {
+            for (var i = 0; i < liststore_fuzzdb_root.get_n_items(); i++) {
+                var file = liststore_fuzzdb_root.get_item (i) as FuzzDBFile;
+                if (file == null) {
+                    continue;
+                }
+                file.uncheck ();
+            }
+        }
+
         public void reset_state () {
             entry_fuzzdb_search.text = "";
-            treeview_model_filter.refilter ();
-            treestore_fuzzdb.@foreach ((model, path, iter) => {
-                treestore_fuzzdb.set_value (iter, Column.CHECKED, "Unchecked");
-                return false; // iterate until the end
-            });
-            
-            treeview_fuzzdb.collapse_all ();
-            treeview_fuzzdb.get_selection ().unselect_all ();
-            liststore_custom_files.clear ();
+            reset_fuzzdb_tree ();
+            selection_model_fuzzdb.unselect_all ();
+            clear_custom_files ();
             entry_from.text = "0";
             entry_to.text = "0";
             populate_payloads ();
             update_payload_count ();
         }
 
-        private void set_fuzzdb_child_status (Gtk.TreeIter iter, string value_to_set) {
-            var child_count = treeview_model_filter.iter_n_children (iter);
-            for (int i = 0; i < child_count; i++) {
-                Gtk.TreeIter child_iter;
-                if (!treeview_model_filter.iter_nth_child (out child_iter, iter, i)) {
-                    continue;
-                }
-
-                Gtk.TreeIter child_model_iter;
-                treeview_model_filter.convert_iter_to_child_iter (out child_model_iter, child_iter);
-                treestore_fuzzdb.set_value(child_model_iter, Column.CHECKED, value_to_set);
-                set_fuzzdb_child_status (child_iter, value_to_set);
-            }
-        }
-
-        private void set_fuzzdb_parent_status (Gtk.TreeIter current_child) {
-            Gtk.TreeIter parent;
-            bool has_parent = treeview_model_filter.iter_parent (out parent, current_child);
-
-            if (!has_parent) {
-                return;
-            }
-
-            var false_found = false;
-            var true_found = false;
-            var inconsistent_found = false;
-
-            var child_count = treeview_model_filter.iter_n_children (parent);
-            for (int i = 0; i < child_count; i++) {
-                Gtk.TreeIter child_iter;
-                if (!treeview_model_filter.iter_nth_child (out child_iter, parent, i)) {
-                    continue;
-                }
-
-                Value is_checked;
-                treeview_model_filter.get_value(child_iter, Column.CHECKED, out is_checked);
-
-                var is_checked_str = is_checked.get_string ();
-                if (is_checked_str == "Inconsistent") {
-                    inconsistent_found = true;
-                } else if (is_checked_str == "Checked") {
-                    true_found = true;
-                } else {
-                    false_found = true;
-                }
-            }
-
-            var checked_val = "Unchecked";
-
-            if (inconsistent_found || true_found && false_found) {
-                checked_val = "Inconsistent";
-            } else if (true_found) {
-                checked_val = "Checked";
-            }
-
-            Gtk.TreeIter parent_model_iter;
-            treeview_model_filter.convert_iter_to_child_iter (out parent_model_iter, parent);
-            treestore_fuzzdb.set_value (parent_model_iter, Column.CHECKED, checked_val);
-            set_fuzzdb_parent_status (parent);
-        }
-
         public void set_fuzzdb_path (string path) {
-            Gtk.TreeIter iter;
-            var assigned = treestore_fuzzdb.get_iter_first (out iter);
-
-            if (populating_fuzzdb || !assigned) {
-                path_to_set = path;
-                return;
-            }
-
-            var path_components = path.split ("/");
-            
-            for (int i = 0; i < path_components.length; i++) {
-                var part = path_components[i];
-
-                while (true) {
-                    Value title;
-                    treestore_fuzzdb.get_value (iter, Column.TITLE, out title);
-                    if (title.get_string () == part) {
-                        treeview_fuzzdb.expand_to_path (new Gtk.TreePath.from_string (treestore_fuzzdb.get_string_from_iter (iter)));
-                        treeview_fuzzdb.set_cursor (new Gtk.TreePath.from_string (treestore_fuzzdb.get_string_from_iter (iter)), null, false);
-
-                        var prev_iter = iter;
-                        if (!treestore_fuzzdb.iter_children (out iter, iter)) {
-                            if (i == path_components.length - 1) {
-                                treestore_fuzzdb.set_value(prev_iter, Column.CHECKED, "Checked");
-                            }
-                            update_payload_count ();
-                            return;
-                        }
-                        break;
-                    }
-
-                    if (!treestore_fuzzdb.iter_next (ref iter)) {
-                        update_payload_count ();
-                        return;
-                    }
+            for (var i = 0; i < liststore_fuzzdb_root.get_n_items (); i++) {
+                var file = liststore_fuzzdb_root.get_item (i) as FuzzDBFile;
+                if (file == null) {
+                    continue;
                 }
+                file.set_checked_path (path);
             }
+
             update_payload_count ();
         }
 
@@ -511,7 +404,7 @@ namespace Pakiki {
 
             Value val_title;
             Value val_path;
-            
+
             model.get_value (iter, Column.TITLE, out val_title);
             model.get_value (iter, Column.FILENAME, out val_path);
 
@@ -539,27 +432,35 @@ namespace Pakiki {
                     return true;
                 }
             }
-            
+
             return false;
+        }
+
+        private int get_fuzzdb_payload_count (FuzzDBFile file) {
+            var payload_count = 0;
+
+            for (var i = 0; i < file.children.size; i++) {
+                payload_count += get_fuzzdb_payload_count (file.children.@get (i));
+            }
+
+            if (file.checked && file.children.size == 0) {
+                payload_count += file.payload_count;
+            }
+            return payload_count;
         }
 
         [GtkCallback]
         private void update_payload_count() {
             var fuzzdb_payload_count = 0;
 
-            treeview_fuzzdb.model.@foreach ((model, path, iter) => {
-                Value is_checked;
-                model.get_value (iter, Column.CHECKED, out is_checked);
-
-                if (is_checked.get_string () == "Checked" && model.iter_n_children (iter) == 0) {
-                    Value payload_count;
-                    model.get_value (iter, Column.PAYLOAD_COUNT, out payload_count);
-                    fuzzdb_payload_count += payload_count.get_int ();
+            for (var i = 0; i < liststore_fuzzdb_root.get_n_items (); i++) {
+                var file = liststore_fuzzdb_root.get_item (i) as FuzzDBFile;
+                if (file == null) {
+                    continue;
                 }
-
-                return false; // iterate until the end
-            });
-
+                fuzzdb_payload_count += get_fuzzdb_payload_count (file);
+            }
+            
             var payload_count = get_custom_file_payloads_internal ().length + (iterate_to - iterate_from).abs () + fuzzdb_payload_count;
 
             if (payload_count == 0) {
