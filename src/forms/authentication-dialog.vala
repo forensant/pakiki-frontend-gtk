@@ -1,6 +1,7 @@
 namespace Pakiki {
     
-    class AuthenticationDialog : Gtk.Dialog {
+    class AuthenticationDialog : Gtk.Window {
+        public signal void response (Gtk.ResponseType response_id);
 
         private Gtk.Entry entry_api_key;
 
@@ -21,20 +22,41 @@ namespace Pakiki {
                 response (Gtk.ResponseType.OK);
             });
 
-            add_button ("Cancel", Gtk.ResponseType.CANCEL);
-            add_button ("OK", Gtk.ResponseType.OK);
-
-            var box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 6);
-            get_content_area ().add (box);
+            var api_key_box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 6);
 
             entry_api_key.width_request = 300;
 
-            box.pack_start (label, false, false);
-            box.pack_start (entry_api_key);
+            api_key_box.append (label);
+            api_key_box.append (entry_api_key);
 
-            box.margin = 18;
+            var container_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 12);
+            container_box.margin_start = 18;
+            container_box.margin_end = 18;
+            container_box.margin_top = 18;
+            container_box.margin_bottom = 18;
 
-            this.show_all ();
+            var button_ok = new Gtk.Button.with_mnemonic ("_OK");
+            button_ok.clicked.connect (() => {
+                response (Gtk.ResponseType.OK);
+            });
+
+            var button_cancel = new Gtk.Button.with_mnemonic ("_Cancel");
+            button_cancel.clicked.connect (() => {
+                response (Gtk.ResponseType.CANCEL);
+            });
+
+            var spacer = new Gtk.Label ("");
+            spacer.hexpand = true;
+
+            var button_box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 6);
+            button_box.append (spacer);
+            button_box.append (button_cancel);
+            button_box.append (button_ok);
+            
+            container_box.append (api_key_box);
+            container_box.append (button_box);
+
+            this.set_child (container_box);
         }
 
     }

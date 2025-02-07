@@ -207,21 +207,23 @@ namespace Pakiki {
 
             authentication_displayed = true;
             var auth_dlg = new AuthenticationDialog ();
+            auth_dlg.transient_for = this;
             set_window_icon (auth_dlg);
-            var response = auth_dlg.run ();
-            auth_dlg.close ();
 
-            if (response != Gtk.ResponseType.OK) {
-                // if we can't authenticate, then there's not much more we can do
-                application.quit ();
-                return;
-            }
-            else if (response == Gtk.ResponseType.OK) {
+            auth_dlg.response.connect ((response) => {
+                if (response == Gtk.ResponseType.OK) {
                 authentication_displayed = false;
                 api_key = auth_dlg.api_key;
                 label_overlay.hide ();
                 on_core_started (core_address);
             }
+                else {
+                    application.quit ();
+                }
+                auth_dlg.close ();
+            });
+
+            auth_dlg.show ();
         }
 
         public InputStream banner_logo_svg () {
