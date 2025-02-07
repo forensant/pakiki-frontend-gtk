@@ -215,9 +215,10 @@ namespace Pakiki {
 
                     if (child_pid != 0) {
                         saving_dialog = new SavingDialog ();
-                        saving_dialog.show_all ();
+                        saving_dialog.transient_for = application_window;
+                        saving_dialog.show ();
                         to_open = filename;
-                        quit (this.on_open_project_quit_successful);
+                        this.quit (this.on_open_project_quit_successful);
                     }
                     
                     break;
