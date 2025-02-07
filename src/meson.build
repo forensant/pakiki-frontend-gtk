@@ -40,6 +40,7 @@ sources += files(
     'forms/widgets/text-search-bar.vala',
 
     'models/core-process.vala',
+    'models/fuzzdb_file.vala',
     'models/inject-operation.vala',
     'models/intercepted-request.vala',
     'models/proxy-settings.vala',
