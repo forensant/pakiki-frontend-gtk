@@ -132,25 +132,27 @@ namespace Pakiki {
 
             dialog.set_current_name ("certificate.pem");
             dialog.transient_for = parent;
-            dialog.local_only = false; //allow for uri
             dialog.set_modal (true);
-            dialog.set_do_overwrite_confirmation (true);
 
-            var response_id = dialog.run ();
 
-            if (response_id == Gtk.ResponseType.ACCEPT) {
-                var file = dialog.get_file();
-                    
-                try {
-                    file.replace_contents (certificate.data, null, false,
-                                           GLib.FileCreateFlags.NONE, null, null);
+            dialog.response.connect ((response_id) => {
+                if (response_id == Gtk.ResponseType.ACCEPT) {
+                    var file = dialog.get_file();
+                        
+                    try {
+                        file.replace_contents (certificate.data, null, false,
+                                               GLib.FileCreateFlags.NONE, null, null);
+                    }
+                    catch (GLib.Error err) {
+                        stderr.printf ("%s\n", err.message);
+                    }
                 }
-                catch (GLib.Error err) {
-                    error ("%s\n", err.message);
-                }
-            }
 
-            dialog.destroy ();
+                dialog.destroy ();
+                
+            });
+            
+            dialog.show ();
             
         }
 
