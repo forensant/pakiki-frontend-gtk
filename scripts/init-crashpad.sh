@@ -2,7 +2,7 @@
 
 # This script is used to build the crashpad handler for the current platform.
 
-export PATH=$PATH:/usr/lib/sdk/llvm16/bin
+export PATH=$PWD/subprojects/depot_tools:$PATH:/usr/lib/sdk/llvm16/bin
 echo $PATH
 
 mkdir -p builddir
@@ -16,8 +16,8 @@ cd crashpad
 echo "Fetching crashpad"
 echo $PWD
 ls -lah ../depot_tools
-../depot_tools/fetch crashpad
-echo $PATH
+fetch crashpad
+echo $PAT
 cd crashpad
 
 echo "Generating build files"

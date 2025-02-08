@@ -24,12 +24,11 @@ namespace Pakiki {
             this.margin_bottom = 18;
 
             inject_point_selection_widget = new InjectPointSelectionWidget (application_window);
-            this.pack_start(inject_point_selection_widget, true, true, 0);
+            this.append (inject_point_selection_widget);
 
             payload_selection_widget = new PayloadSelectionWidget (application_window, true);
             payload_selection_widget.margin_top = 12;
-            this.pack_start (payload_selection_widget, true, true, 0);
-            this.reorder_child (payload_selection_widget, 4);
+            this.append (payload_selection_widget);
             payload_selection_widget.show ();
 
             button_run = new Gtk.Button ();
@@ -40,16 +39,7 @@ namespace Pakiki {
 
             label_error = new Gtk.Label ("");
             label_error.halign = Gtk.Align.START;
-
-            var accel_group = new Gtk.AccelGroup ();
-            accel_group.connect ('r', Gdk.ModifierType.CONTROL_MASK, 0, (group, accel, keyval, modifier) => {
-                if (application_window.selected_pane_name () != "Inject" || this.visible == false) {
-                    return false;
-                }
-                on_run_clicked ();
-                return true;
-            });
-            application_window.add_accel_group (accel_group);
+            label_error.hexpand = true;
 
             spinner = new Gtk.Spinner ();
             spinner.margin_end = 12;
@@ -57,12 +47,13 @@ namespace Pakiki {
             
             var box_bottom = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 0);
             box_bottom.margin_top = 12;
-            box_bottom.pack_start (label_error, true, true, 0);
-            box_bottom.pack_end (button_run, false, false, 0);
-            box_bottom.pack_end (spinner, false, false, 0);
+            box_bottom.append (label_error);
+            box_bottom.append (spinner);
+            box_bottom.append (button_run);
+            
             box_bottom.show ();
 
-            this.pack_start (box_bottom, false);
+            this.append (box_bottom);
         }
 
         public void clone_inject_operation (InjectOperation operation) {
@@ -100,7 +91,7 @@ namespace Pakiki {
             builder.end_array ();
         }
 
-        private void on_run_clicked () {
+        public void on_run_clicked () {
             if (inject_point_selection_widget.hostname == "") {
                 inject_point_selection_widget.host_error_visible = true;
                 return;
@@ -112,7 +103,7 @@ namespace Pakiki {
             var message = new Soup.Message ("POST", "http://" + application_window.core_address + "/inject_operations/run");
 
             button_run.sensitive = false;
-            spinner.active = true;
+            spinner.spinning = true;
 
             Json.Builder builder = new Json.Builder ();
             builder.begin_object ();
@@ -149,7 +140,7 @@ namespace Pakiki {
                         label_error.label = "Error: " + response_data;
                         label_error.visible = true;
                         button_run.sensitive = true;
-                        spinner.active = false;
+                        spinner.spinning = false;
                         return;
                     } else {
                         label_error.visible = false;
@@ -170,7 +161,7 @@ namespace Pakiki {
                 }
 
                 button_run.sensitive = true;
-                spinner.active = false;
+                spinner.spinning = false;
             });
 
         }
@@ -180,7 +171,7 @@ namespace Pakiki {
         }
 
         public void reset_state () {
-            spinner.active = false;
+            spinner.spinning = false;
             button_run.sensitive = true;
             inject_point_selection_widget.reset_state ();
             payload_selection_widget.reset_state ();
