@@ -6,11 +6,7 @@ namespace Pakiki {
         private ApplicationWindow window;
 
         public Application () {
-            application_id = "com.forensant.pakiki";
-            flags |= GLib.ApplicationFlags.HANDLES_COMMAND_LINE;
-            GLib.Environment.set_application_name ("Pākiki Proxy");
-            GLib.Environment.set_prgname("Pakiki Proxy");
-
+            Object (application_id: "com.forensant.pakiki", flags: GLib.ApplicationFlags.HANDLES_COMMAND_LINE);
             set_temp_environment_var ();
         }
 
@@ -50,7 +46,7 @@ namespace Pakiki {
 
             Gtk.CssProvider css_provider = new Gtk.CssProvider ();
             css_provider.load_from_resource ("/com/forensant/pakiki/style.css");
-            Gtk.StyleContext.add_provider_for_screen (Gdk.Screen.get_default (), css_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
+            Gtk.StyleContext.add_provider_for_display (Gdk.Display.get_default (), css_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
     
             var action = new SimpleAction("new", null);
             action.activate.connect (window.on_new_project);
@@ -163,6 +159,9 @@ namespace Pakiki {
 
         public override void startup () {
             base.startup ();
+
+            GLib.Environment.set_prgname("Pakiki Proxy");
+            GLib.Environment.set_application_name ("Pākiki Proxy");
 
             var action = new SimpleAction("about", null);
             action.activate.connect (about);

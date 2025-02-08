@@ -14,6 +14,8 @@ mkdir crashpad
 cd crashpad
 
 echo "Fetching crashpad"
+echo $PWD
+ls -lah ../depot_tools
 ../depot_tools/fetch crashpad
 cd crashpad
 
