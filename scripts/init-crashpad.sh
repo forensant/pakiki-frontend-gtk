@@ -4,6 +4,7 @@
 
 export PATH=$PWD/subprojects/depot_tools:$PATH:/usr/lib/sdk/llvm16/bin
 echo $PATH
+export DEPOT_TOOLS_UPDATE=0
 
 mkdir -p builddir
 

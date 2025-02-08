@@ -132,6 +132,7 @@ namespace Pakiki {
             host_error_visible = false;
             text_view_request.buffer.text = operation.request.replace ("\r\n", "\n");
             correct_separators_and_tag ();
+            text_view_request.on_text_changed (true);
         }
 
         private void correct_separators_and_tag () {
@@ -381,6 +382,12 @@ namespace Pakiki {
             if (keyval == Gdk.Key.KP_Enter || keyval == Gdk.Key.Return || state != 0) {
                 correct_separators_and_tag ();
             }
+        }
+
+        public void populate_example_request () {
+            reset_state ();
+            entry_hostname.text = "livefirerange.pakikiproxy.com";
+            text_view_request.buffer.text = "GET / HTTP/1.1\nHost: livefirerange.pakikiproxy.com\n\n";
         }
 
         public void populate_request (string guid) {

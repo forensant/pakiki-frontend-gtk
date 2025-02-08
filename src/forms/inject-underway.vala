@@ -38,11 +38,12 @@ namespace Pakiki {
             search_negative_filter = false;
             string[] scan_ids = {"-"};
             request_list_full = new RequestList (application_window, false, scan_ids);
+            request_list_full.set_side_margin (0);
             this.attach (request_list_full, 0, 4, 2, 1);
-
+    
             text_view_request = new RequestTextEditor (application_window);
             text_view_request.editable = false;
-            scrollwindow_request.add (text_view_request);
+            scrollwindow_request.set_child (text_view_request);
 
             label_title.set_text_with_mnemonic ("_Title");
             label_title.mnemonic_widget = entry_title;

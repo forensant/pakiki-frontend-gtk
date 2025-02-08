@@ -138,12 +138,11 @@ namespace Pakiki {
                     
                     if (message.status_code != 200) {
                         label_error.label = "Error: " + response_data;
-                        label_error.visible = true;
                         button_run.sensitive = true;
                         spinner.spinning = false;
                         return;
                     } else {
-                        label_error.visible = false;
+                        label_error.label = "";
                     }
     
                     var parser = new Json.Parser ();
@@ -164,6 +163,10 @@ namespace Pakiki {
                 spinner.spinning = false;
             });
 
+        }
+
+        public void populate_example_request () {
+            inject_point_selection_widget.populate_example_request ();
         }
 
         public void populate_request (string guid) {

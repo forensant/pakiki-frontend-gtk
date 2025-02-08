@@ -995,6 +995,11 @@ namespace Pakiki {
             }
         }
 
+        public void set_side_margin (int margin) {
+            pane.margin_start = margin;
+            pane.margin_end = margin;
+        }
+
         public void set_url_filter (string url) {
             if (this.url_filter != url) {
                 this.url_filter = url;

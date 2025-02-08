@@ -12,7 +12,8 @@
 	(8,1,None,"inject-point-selection-widget.ui",None,None,None,None,None,None,None),
 	(9,1,None,"find-window.ui",None,None,None,None,None,None,None),
 	(10,1,None,"payload-selection-widget.ui",None,None,None,None,None,None,None),
-	(11,1,None,"prefs.ui",None,None,None,None,None,None,None)
+	(11,1,None,"prefs.ui",None,None,None,None,None,None,None),
+	(12,1,None,"inject-underway.ui",None,None,None,None,None,None,None)
   </ui>
   <object>
 	(1,1,"GtkPaned","pane",23,None,None,None,0,None,None),
@@ -178,7 +179,24 @@
 	(11,22,"GtkCheckButton","checkbutton_crash_reports",2,None,None,None,16,None,None),
 	(11,23,"GtkBox",None,2,None,None,None,17,None,None),
 	(11,24,"GtkButton","button_crash",23,None,None,None,0,None,None),
-	(11,25,"GtkButton","button_force_crash_core",23,None,None,None,1,None,None)
+	(11,25,"GtkButton","button_force_crash_core",23,None,None,None,1,None,None),
+	(12,1,"GtkGrid","PakikiInjectUnderway",None,None,None,None,0,None,None),
+	(12,2,"GtkLabel","label_title",1,None,None,None,0,None,None),
+	(12,3,"GtkEntry","entry_title",1,None,None,None,1,None,None),
+	(12,4,"GtkBox",None,1,None,None,None,2,None,None),
+	(12,5,"GtkLabel",None,4,None,None,None,0,None,None),
+	(12,6,"GtkScrolledWindow","scrollwindow_request",4,None,None,None,1,None,None),
+	(12,7,"GtkBox",None,1,None,None,None,3,None,None),
+	(12,8,"GtkProgressBar","progress_bar",7,None,None,None,1,None,None),
+	(12,9,"GtkBox",None,7,None,None,None,0,None,None),
+	(12,10,"GtkButton","button_action",9,None,None,None,2,None,None),
+	(12,11,"GtkButton","button_clone",9,None,None,None,1,None,None),
+	(12,12,"GtkSeparator",None,1,None,None,None,4,None,None),
+	(12,13,"GtkBox",None,1,None,None,None,5,None,None),
+	(12,14,"GtkLabel",None,13,None,None,None,0,None,None),
+	(12,15,"GtkLabel","label_injection_parameters",13,None,None,None,1,None,None),
+	(12,16,"GtkLabel","label_error_title",13,None,None,None,2,None,None),
+	(12,17,"GtkLabel","label_error",13,None,None,None,3,None,None)
   </object>
   <object_property>
 	(1,1,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
@@ -536,6 +554,7 @@
 	(10,18,"GtkButton","use-underline","True",None,None,None,None,None,None,None,None,None),
 	(10,19,"GtkButton","label","_Remove",None,None,None,None,None,None,None,None,None),
 	(10,19,"GtkButton","use-underline","True",None,None,None,None,None,None,None,None,None),
+	(10,20,"GtkGrid","column-spacing","6",None,None,None,None,None,None,None,None,None),
 	(10,20,"GtkGrid","row-spacing","12",None,None,None,None,None,None,None,None,None),
 	(10,20,"GtkWidget","margin-bottom","18",None,None,None,None,None,None,None,None,None),
 	(10,20,"GtkWidget","margin-end","18",None,None,None,None,None,None,None,None,None),
@@ -544,9 +563,9 @@
 	(10,21,"GtkLabel","label","_Iterate",None,None,None,None,None,None,None,None,None),
 	(10,21,"GtkLabel","use-underline","True",None,None,None,None,None,None,None,None,None),
 	(10,22,"GtkLabel","label","From",None,None,None,None,None,None,None,None,None),
-	(10,22,"GtkLabel","xalign","0.0",None,None,None,None,None,None,None,None,None),
+	(10,22,"GtkLabel","xalign","1.0",None,None,None,None,None,None,None,None,None),
 	(10,23,"GtkLabel","label","To",None,None,None,None,None,None,None,None,None),
-	(10,23,"GtkLabel","xalign","0.0",None,None,None,None,None,None,None,None,None),
+	(10,23,"GtkLabel","xalign","1.0",None,None,None,None,None,None,None,None,None),
 	(10,24,"GtkSpinButton","adjustment",None,None,None,None,None,25,None,None,None,None),
 	(10,25,"GtkAdjustment","lower","-10000000000.0",None,None,None,None,None,None,None,None,None),
 	(10,25,"GtkAdjustment","page-increment","10.0",None,None,None,None,None,None,None,None,None),
@@ -590,7 +609,51 @@
 	(11,23,"GtkBox","spacing","6",None,None,None,None,None,None,None,None,None),
 	(11,23,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
 	(11,24,"GtkButton","label","Force crash UI",None,None,None,None,None,None,None,None,None),
-	(11,25,"GtkButton","label","Force crash core",None,None,None,None,None,None,None,None,None)
+	(11,25,"GtkButton","label","Force crash core",None,None,None,None,None,None,None,None,None),
+	(12,1,"GtkGrid","column-spacing","9",None,None,None,None,None,None,None,None,None),
+	(12,1,"GtkGrid","row-spacing","6",None,None,None,None,None,None,None,None,None),
+	(12,1,"GtkWidget","margin-bottom","18",None,None,None,None,None,None,None,None,None),
+	(12,1,"GtkWidget","margin-end","18",None,None,None,None,None,None,None,None,None),
+	(12,1,"GtkWidget","margin-start","18",None,None,None,None,None,None,None,None,None),
+	(12,1,"GtkWidget","margin-top","18",None,None,None,None,None,None,None,None,None),
+	(12,2,"GtkLabel","label","Title",None,None,None,None,None,None,None,None,None),
+	(12,2,"GtkLabel","xalign","0.0",None,None,None,None,None,None,None,None,None),
+	(12,4,"GtkBox","spacing","6",None,None,None,None,None,None,None,None,None),
+	(12,4,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
+	(12,4,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
+	(12,4,"GtkWidget","hexpand-set","True",None,None,None,None,None,None,None,None,None),
+	(12,4,"GtkWidget","margin-top","6",None,None,None,None,None,None,None,None,None),
+	(12,5,"GtkLabel","label","Original Request",None,None,None,None,None,None,None,None,None),
+	(12,5,"GtkLabel","xalign","0.0",None,None,None,None,None,None,None,None,None),
+	(12,6,"GtkScrolledWindow","has-frame","True",None,None,None,None,None,None,None,None,None),
+	(12,6,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
+	(12,6,"GtkWidget","hexpand-set","True",None,None,None,None,None,None,None,None,None),
+	(12,6,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
+	(12,6,"GtkWidget","vexpand-set","True",None,None,None,None,None,None,None,None,None),
+	(12,7,"GtkBox","spacing","18",None,None,None,None,None,None,None,None,None),
+	(12,7,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
+	(12,7,"GtkWidget","width-request","150",None,None,None,None,None,None,None,None,None),
+	(12,8,"GtkProgressBar","fraction","0.2",None,None,None,None,None,None,None,None,None),
+	(12,9,"GtkBox","baseline-position","top",None,None,None,None,None,None,None,None,None),
+	(12,9,"GtkBox","spacing","6",None,None,None,None,None,None,None,None,None),
+	(12,9,"GtkWidget","halign","end",None,None,None,None,None,None,None,None,None),
+	(12,10,"GtkButton","label","Cancel",None,None,None,None,None,None,None,None,None),
+	(12,10,"GtkButton","use-underline","True",None,None,None,None,None,None,None,None,None),
+	(12,11,"GtkButton","label","C_lone",None,None,None,None,None,None,None,None,None),
+	(12,11,"GtkButton","use-underline","True",None,None,None,None,None,None,None,None,None),
+	(12,12,"GtkWidget","margin-top","12",None,None,None,None,None,None,None,None,None),
+	(12,13,"GtkBox","spacing","6",None,None,None,None,None,None,None,None,None),
+	(12,13,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
+	(12,13,"GtkWidget","margin-top","6",None,None,None,None,None,None,None,None,None),
+	(12,14,"GtkLabel","label","Injection Parameters",None,None,None,None,None,None,None,None,None),
+	(12,14,"GtkLabel","xalign","0.0",None,None,None,None,None,None,None,None,None),
+	(12,15,"GtkLabel","xalign","0.0",None,None,None,None,None,None,None,None,None),
+	(12,15,"GtkLabel","yalign","0.0",None,None,None,None,None,None,None,None,None),
+	(12,16,"GtkLabel","label","Error",None,None,None,None,None,None,None,None,None),
+	(12,16,"GtkLabel","xalign","0.0",None,None,None,None,None,None,None,None,None),
+	(12,16,"GtkWidget","margin-top","6",None,None,None,None,None,None,None,None,None),
+	(12,17,"GtkLabel","xalign","0.0",None,None,None,None,None,None,None,None,None),
+	(12,17,"GtkLabel","yalign","0.0",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_layout_property>
 	(1,2,5,"GtkGridLayoutChild","column","0",None,None,None,None),
@@ -764,7 +827,34 @@
 	(11,2,23,"GtkGridLayoutChild","column","1",None,None,None,None),
 	(11,2,23,"GtkGridLayoutChild","column-span","1",None,None,None,None),
 	(11,2,23,"GtkGridLayoutChild","row","11",None,None,None,None),
-	(11,2,23,"GtkGridLayoutChild","row-span","1",None,None,None,None)
+	(11,2,23,"GtkGridLayoutChild","row-span","1",None,None,None,None),
+	(12,1,2,"GtkGridLayoutChild","column","0",None,None,None,None),
+	(12,1,2,"GtkGridLayoutChild","column-span","1",None,None,None,None),
+	(12,1,2,"GtkGridLayoutChild","row","0",None,None,None,None),
+	(12,1,2,"GtkGridLayoutChild","row-span","1",None,None,None,None),
+	(12,1,3,"GtkGridLayoutChild","column","0",None,None,None,None),
+	(12,1,3,"GtkGridLayoutChild","column-span","1",None,None,None,None),
+	(12,1,3,"GtkGridLayoutChild","row","1",None,None,None,None),
+	(12,1,3,"GtkGridLayoutChild","row-span","1",None,None,None,None),
+	(12,1,4,"GtkGridLayoutChild","column","0",None,None,None,None),
+	(12,1,4,"GtkGridLayoutChild","column-span","1",None,None,None,None),
+	(12,1,4,"GtkGridLayoutChild","row","2",None,None,None,None),
+	(12,1,4,"GtkGridLayoutChild","row-span","1",None,None,None,None),
+	(12,1,7,"GtkGridLayoutChild","column","1",None,None,None,None),
+	(12,1,7,"GtkGridLayoutChild","row","0",None,None,None,None),
+	(12,1,7,"GtkGridLayoutChild","row-span","2",None,None,None,None),
+	(12,1,8,"GtkGridLayoutChild","column","1",None,None,None,None),
+	(12,1,8,"GtkGridLayoutChild","column-span","1",None,None,None,None),
+	(12,1,8,"GtkGridLayoutChild","row","1",None,None,None,None),
+	(12,1,8,"GtkGridLayoutChild","row-span","1",None,None,None,None),
+	(12,1,12,"GtkGridLayoutChild","column","0",None,None,None,None),
+	(12,1,12,"GtkGridLayoutChild","column-span","2",None,None,None,None),
+	(12,1,12,"GtkGridLayoutChild","row","3",None,None,None,None),
+	(12,1,12,"GtkGridLayoutChild","row-span","1",None,None,None,None),
+	(12,1,13,"GtkGridLayoutChild","column","1",None,None,None,None),
+	(12,1,13,"GtkGridLayoutChild","column-span","1",None,None,None,None),
+	(12,1,13,"GtkGridLayoutChild","row","2",None,None,None,None),
+	(12,1,13,"GtkGridLayoutChild","row-span","1",None,None,None,None)
   </object_layout_property>
   <object_signal>
 	(1,1,19,"GtkButton","clicked","on_button_reset_clicked",None,0,0,0,None),
@@ -801,7 +891,10 @@
 	(32,11,19,"GtkButton","clicked","on_button_certificate_save_clicked",None,0,0,0,None),
 	(33,11,22,"GtkCheckButton","toggled","on_checkbutton_crash_reports_toggled",None,0,0,0,None),
 	(34,11,24,"GtkButton","clicked","on_button_crash_clicked",None,0,0,0,None),
-	(35,11,25,"GtkButton","clicked","on_button_force_crash_core_clicked",None,0,0,0,None)
+	(35,11,25,"GtkButton","clicked","on_button_force_crash_core_clicked",None,0,0,0,None),
+	(36,12,3,"GtkEditable","changed","on_title_changed",None,0,0,0,None),
+	(37,12,11,"GtkButton","clicked","on_button_clone_clicked",None,0,0,0,None),
+	(38,12,10,"GtkButton","clicked","on_action_clicked",None,0,0,0,None)
   </object_signal>
   <object_data>
 	(7,5,"GtkLabel",1,1,None,None,None,None,None,None),
@@ -812,7 +905,14 @@
 	(7,9,"GtkLabel",1,1,None,None,None,None,None,None),
 	(7,9,"GtkLabel",2,2,None,1,None,None,None,None),
 	(10,3,"GtkLabel",1,1,None,None,None,None,None,None),
-	(10,3,"GtkLabel",2,2,None,1,None,None,None,None)
+	(10,3,"GtkLabel",2,2,None,1,None,None,None,None),
+	(12,5,"GtkLabel",1,1,None,None,None,None,None,None),
+	(12,5,"GtkLabel",2,2,None,1,None,None,None,None),
+	(12,5,"GtkWidget",1,1,None,None,None,None,None,None),
+	(12,14,"GtkLabel",1,1,None,None,None,None,None,None),
+	(12,14,"GtkLabel",2,2,None,1,None,None,None,None),
+	(12,16,"GtkLabel",1,1,None,None,None,None,None,None),
+	(12,16,"GtkLabel",2,2,None,1,None,None,None,None)
   </object_data>
   <object_data_arg>
 	(7,5,"GtkLabel",2,2,"name","weight"),
@@ -824,6 +924,12 @@
 	(7,9,"GtkLabel",2,2,"name","weight"),
 	(7,9,"GtkLabel",2,2,"value","bold"),
 	(10,3,"GtkLabel",2,2,"name","style"),
-	(10,3,"GtkLabel",2,2,"value","italic")
+	(10,3,"GtkLabel",2,2,"value","italic"),
+	(12,5,"GtkLabel",2,2,"name","weight"),
+	(12,5,"GtkLabel",2,2,"value","bold"),
+	(12,14,"GtkLabel",2,2,"name","weight"),
+	(12,14,"GtkLabel",2,2,"value","bold"),
+	(12,16,"GtkLabel",2,2,"name","weight"),
+	(12,16,"GtkLabel",2,2,"value","bold")
   </object_data_arg>
 </cambalache-project>
