@@ -72,6 +72,8 @@ jobs:
       - name: Build golang executable
         working-directory: pakiki-core
         run: |
+          go get github.com/swaggo/swag/gen@v1.8.5
+          go get github.com/swaggo/swag/cmd/swag@v1.8.5
           go install github.com/swaggo/swag/cmd/swag
           ./scripts/build.sh
 

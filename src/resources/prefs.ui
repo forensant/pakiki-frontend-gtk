@@ -1,279 +1,239 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.94.1 -->
 <interface>
-  <requires lib="gtk" version="4.0"/>
-  <template class="PakikiApplicationPreferences" parent="GtkDialog">
-    <property name="title" translatable="1">Preferences</property>
-    <property name="resizable">0</property>
-    <property name="modal">1</property>
-    <child internal-child="content_area">
-      <object class="GtkBox" id="vbox">
-        <property name="margin-start">18</property>
-        <property name="margin-end">18</property>
-        <property name="margin-top">18</property>
+  <requires lib="gtk" version="4.12"/>
+  <template class="PakikiApplicationPreferences" parent="GtkWindow">
+    <property name="modal">True</property>
+    <property name="resizable">False</property>
+    <property name="title">Preferences</property>
+    <child>
+      <object class="GtkGrid">
+        <property name="column-spacing">12</property>
         <property name="margin-bottom">18</property>
+        <property name="margin-end">18</property>
+        <property name="margin-start">18</property>
+        <property name="margin-top">18</property>
+        <property name="row-spacing">12</property>
         <child>
-          <object class="GtkGrid" id="grid">
-            <property name="row-spacing">12</property>
-            <property name="column-spacing">6</property>
-            <child>
-              <object class="GtkLabel" id="label_doubleclick">
-                <property name="label">Request _double-click behavior:</property>
-                <property name="use-underline">1</property>
-                <property name="xalign">1</property>
-                <!--accessibility>
-                  <relation type="label-for" target="combobox_request_doubleclick"/>
-                </accessibility-->
-                <layout>
-                  <property name="column">0</property>
-                  <property name="row">0</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="GtkComboBoxText" id="combobox_request_doubleclick">
-                <items>
-                  <item id="new-window" translatable="yes">Open in new window</item>
-                  <item id="inject" translatable="yes">Inject</item>
-                  <item id="new-request" translatable="yes">New Request</item>
-                </items>
-                <layout>
-                  <property name="column">1</property>
-                  <property name="row">0</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="GtkEntry" id="entry_proxy_address">
-                <property name="focusable">1</property>
-                <signal name="changed" handler="on_proxy_address_changed" swapped="no"/>
-                <layout>
-                  <property name="column">1</property>
-                  <property name="row">4</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="label" translatable="1">HTTP/1.1 proxy _address:</property>
-                <property name="use-underline">1</property>
-                <property name="xalign">1</property>
-                <layout>
-                  <property name="column">0</property>
-                  <property name="row">4</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="GtkSeparator">
-                <layout>
-                  <property name="column">0</property>
-                  <property name="row">3</property>
-                  <property name="column-span">2</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="GtkLabel" id="label_request_colour_scheme">
-                <property name="label">Request _colour scheme:</property>
-                <property name="use-underline">1</property>
-                <property name="xalign">1</property>
-                <layout>
-                  <property name="column">0</property>
-                  <property name="row">2</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="GtkComboBoxText" id="combobox_colour_scheme">
-                <layout>
-                  <property name="column">1</property>
-                  <property name="row">2</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="label" translatable="1">Max connections per host:</property>
-                <property name="xalign">1</property>
-                <layout>
-                  <property name="column">0</property>
-                  <property name="row">1</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="GtkEntry" id="entry_connections_per_host">
-                <property name="focusable">1</property>
-                <property name="input-purpose">number</property>
-                <signal name="changed" handler="on_entry_connections_per_host_changed" swapped="no"/>
-                <layout>
-                  <property name="column">1</property>
-                  <property name="row">1</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="label" translatable="1">_Upstream proxy:</property>
-                <property name="use-underline">1</property>
-                <property name="xalign">1</property>
-                <layout>
-                  <property name="column">0</property>
-                  <property name="row">5</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="GtkEntry" id="entry_upstream_proxy">
-                <property name="focusable">1</property>
-                <signal name="changed" handler="on_upstream_proxy_changed" swapped="no"/>
-                <layout>
-                  <property name="column">1</property>
-                  <property name="row">5</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="GtkSeparator">
-                <layout>
-                  <property name="column">0</property>
-                  <property name="row">6</property>
-                  <property name="column-span">2</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="label" translatable="1">Certificate:</property>
-                <property name="xalign">1</property>
-                <layout>
-                  <property name="column">0</property>
-                  <property name="row">7</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="GtkButton" id="button_certificate_save">
-                <property name="label" translatable="1">_Save</property>
-                <property name="focusable">1</property>
-                <property name="receives-default">1</property>
-                <property name="use-underline">1</property>
-                <signal name="clicked" handler="on_button_certificate_save_clicked" swapped="no"/>
-                <layout>
-                  <property name="column">1</property>
-                  <property name="row">7</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="GtkLabel" id="label_error">
-                <property name="visible">0</property>
-                <property name="wrap">1</property>
-                <property name="width-chars">0</property>
-                <property name="max-width-chars">40</property>
-                <property name="xalign">0</property>
-                <layout>
-                  <property name="column">0</property>
-                  <property name="row">8</property>
-                  <property name="column-span">2</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="GtkSeparator">
-                <layout>
-                  <property name="column">0</property>
-                  <property name="row">9</property>
-                  <property name="column-span">2</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="GtkCheckButton" id="checkbutton_crash_reports">
-                <property name="label" translatable="1">Send Crash Reports</property>
-                <property name="focusable">1</property>
-                <signal name="toggled" handler="on_checkbutton_crash_reports_toggled" swapped="no"/>
-                <layout>
-                  <property name="column">1</property>
-                  <property name="row">10</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="GtkBox">
-                <child>
-                  <object class="GtkButton" id="button_crash">
-                    <property name="label" translatable="1">Force crash UI</property>
-                    <property name="focusable">1</property>
-                    <property name="receives-default">1</property>
-                    <signal name="clicked" handler="on_button_crash_clicked" swapped="no"/>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkButton" id="button_force_crash_core">
-                    <property name="label" translatable="1">Force crash core</property>
-                    <property name="focusable">1</property>
-                    <property name="receives-default">1</property>
-                    <property name="margin-start">6</property>
-                    <signal name="clicked" handler="on_button_force_crash_core_clicked" swapped="no"/>
-                  </object>
-                </child>
-                <layout>
-                  <property name="column">1</property>
-                  <property name="row">11</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
+          <object class="GtkLabel" id="label_doubleclick">
+            <property name="label">Request _double-click behavior:</property>
+            <property name="use-underline">True</property>
+            <property name="xalign">1.0</property>
+            <layout>
+              <property name="column">0</property>
+              <property name="column-span">1</property>
+              <property name="row">0</property>
+              <property name="row-span">1</property>
+            </layout>
           </object>
         </child>
-      </object>
-    </child>
-    <child internal-child="action_area">
-      <object class="GtkBox">
-        <property name="halign">center</property>
-        <property name="can-focus">False</property>
+        <child>
+          <object class="GtkLabel">
+            <property name="label">Max connections per host:</property>
+            <property name="xalign">1.0</property>
+            <layout>
+              <property name="column">0</property>
+              <property name="column-span">1</property>
+              <property name="row">1</property>
+              <property name="row-span">1</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="label_request_colour_scheme">
+            <property name="label">Request _colour scheme:</property>
+            <property name="use-underline">True</property>
+            <property name="xalign">1.0</property>
+            <layout>
+              <property name="column">0</property>
+              <property name="column-span">1</property>
+              <property name="row">2</property>
+              <property name="row-span">1</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="GtkSeparator">
+            <layout>
+              <property name="column">0</property>
+              <property name="column-span">2</property>
+              <property name="row">3</property>
+              <property name="row-span">1</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="label">HTTP/1.1 proxy _address:</property>
+            <property name="use-underline">True</property>
+            <property name="xalign">1.0</property>
+            <layout>
+              <property name="column">0</property>
+              <property name="column-span">1</property>
+              <property name="row">4</property>
+              <property name="row-span">1</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="label">_Upstream proxy:</property>
+            <property name="use-underline">True</property>
+            <property name="xalign">1.0</property>
+            <layout>
+              <property name="column">0</property>
+              <property name="column-span">1</property>
+              <property name="row">5</property>
+              <property name="row-span">1</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="label">Certificate:</property>
+            <property name="xalign">1.0</property>
+            <layout>
+              <property name="column">0</property>
+              <property name="column-span">1</property>
+              <property name="row">7</property>
+              <property name="row-span">1</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="GtkSeparator">
+            <layout>
+              <property name="column">0</property>
+              <property name="column-span">2</property>
+              <property name="row">6</property>
+              <property name="row-span">1</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="GtkDropDown" id="dropdown_request_doubleclick">
+            <layout>
+              <property name="column">1</property>
+              <property name="column-span">1</property>
+              <property name="row">0</property>
+              <property name="row-span">1</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="GtkEntry" id="entry_connections_per_host">
+            <property name="input-purpose">number</property>
+            <signal name="changed" handler="on_entry_connections_per_host_changed"/>
+            <layout>
+              <property name="column">1</property>
+              <property name="column-span">1</property>
+              <property name="row">1</property>
+              <property name="row-span">1</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="GtkDropDown" id="dropdown_colour_scheme">
+            <layout>
+              <property name="column">1</property>
+              <property name="column-span">1</property>
+              <property name="row">2</property>
+              <property name="row-span">1</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="GtkEntry" id="entry_proxy_address">
+            <signal name="changed" handler="on_proxy_address_changed"/>
+            <layout>
+              <property name="column">1</property>
+              <property name="column-span">1</property>
+              <property name="row">4</property>
+              <property name="row-span">1</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="GtkEntry" id="entry_upstream_proxy">
+            <signal name="changed" handler="on_upstream_proxy_changed"/>
+            <layout>
+              <property name="column">1</property>
+              <property name="column-span">1</property>
+              <property name="row">5</property>
+              <property name="row-span">1</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="button_certificate_save">
+            <property name="label">_Save</property>
+            <property name="use-underline">True</property>
+            <signal name="clicked" handler="on_button_certificate_save_clicked"/>
+            <layout>
+              <property name="column">1</property>
+              <property name="column-span">1</property>
+              <property name="row">7</property>
+              <property name="row-span">1</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="label_error">
+            <property name="visible">False</property>
+            <layout>
+              <property name="column">0</property>
+              <property name="column-span">2</property>
+              <property name="row">8</property>
+              <property name="row-span">1</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="GtkSeparator">
+            <layout>
+              <property name="column">0</property>
+              <property name="column-span">2</property>
+              <property name="row">9</property>
+              <property name="row-span">1</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="checkbutton_crash_reports">
+            <property name="label">Send Crash Reports</property>
+            <signal name="toggled" handler="on_checkbutton_crash_reports_toggled"/>
+            <layout>
+              <property name="column">1</property>
+              <property name="column-span">1</property>
+              <property name="row">10</property>
+              <property name="row-span">1</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="hexpand">True</property>
+            <property name="spacing">6</property>
+            <child>
+              <object class="GtkButton" id="button_crash">
+                <property name="label">Force crash UI</property>
+                <signal name="clicked" handler="on_button_crash_clicked"/>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="button_force_crash_core">
+                <property name="label">Force crash core</property>
+                <signal name="clicked" handler="on_button_force_crash_core_clicked"/>
+              </object>
+            </child>
+            <layout>
+              <property name="column">1</property>
+              <property name="column-span">1</property>
+              <property name="row">11</property>
+              <property name="row-span">1</property>
+            </layout>
+          </object>
+        </child>
       </object>
     </child>
   </template>

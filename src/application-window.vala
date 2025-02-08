@@ -187,7 +187,7 @@ namespace Pakiki {
             this.close_request.connect (() => {
                 if (core_process != null) {
                     saving_dialog = new SavingDialog();
-                    saving_dialog.set_transient_for(this);
+                    saving_dialog.set_transient_for (this);
                     this.hide ();
                     saving_dialog.show ();
 
@@ -592,6 +592,7 @@ namespace Pakiki {
 
         private void on_show_preferences () {
             var prefs = new ApplicationPreferences (this);
+            prefs.set_transient_for (this);
             prefs.settings_changed.connect (() => {
                 settings_changed (); 
             });
