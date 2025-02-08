@@ -1,5 +1,5 @@
 namespace Pakiki {
-    class RequestDiff : Gtk.SourceView {
+    class RequestDiff : GtkSource.View {
         public RequestDiff () {
             this.editable = false;
             this.monospace = true;
