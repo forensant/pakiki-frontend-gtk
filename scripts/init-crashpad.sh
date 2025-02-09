@@ -2,52 +2,26 @@
 
 # This script is used to build the crashpad handler for the current platform.
 
-export PATH=$PWD/subprojects/depot_tools:$PATH:/usr/lib/sdk/llvm16/bin
-echo $PATH
-export DEPOT_TOOLS_UPDATE=0
+# modified from https://stackoverflow.com/questions/59895/how-do-i-get-the-directory-where-a-bash-script-is-located-from-within-the-script
+PROJECT_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")/../")
 
-mkdir -p builddir
+echo "Cloning depot_tools"
+git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git $PROJECT_ROOT/subprojects/depot_tools
 
-echo "Checking out submodules"
-git submodule update --init --recursive
-cd subprojects
-mkdir crashpad
-cd crashpad
+PATH=$PROJECT_ROOT/subprojects/depot_tools:$PATH
 
-echo "Fetching crashpad"
-echo $PWD
-ls -lah ../depot_tools
+echo "Initial checkout of crashpad"
+mkdir -p $PROJECT_ROOT/subprojects/crashpad
+cd $PROJECT_ROOT/subprojects/crashpad
 fetch crashpad
-echo $PAT
-cd crashpad
 
 echo "Generating build files"
-../../depot_tools/gn gen out/Default
+cd $PROJECT_ROOT/subprojects/crashpad/crashpad
+gn gen out/Default
 
-echo "Modifying the build files"
-if ! grep -q "include <stdint.h>" "third_party/mini_chromium/mini_chromium/base/logging.h"; then
-    echo "Updating logging.h"
-    sed -i '10 a #include <stdint.h>' third_party/mini_chromium/mini_chromium/base/logging.h
-fi
-
-if ! grep -q "include <stdint.h>" "third_party/mini_chromium/mini_chromium/base/strings/utf_string_conversion_utils.h"; then
-    echo "Updating utf_string_conversion_utils.h"
-    sed -i '10 a #include <stdint.h>' third_party/mini_chromium/mini_chromium/base/strings/utf_string_conversion_utils.h
-fi
-
-if ! grep -q "include <stdint.h>" "third_party/mini_chromium/mini_chromium/base/third_party/icu/icu_utf.h"; then
-    echo "Updating icu_utf.h"
-    sed -i '10 a #include <stdint.h>' third_party/mini_chromium/mini_chromium/base/third_party/icu/icu_utf.h
-fi
-
-if ! grep -q "typedef unsigned char uint8_t" "third_party/mini_chromium/mini_chromium/base/third_party/icu/icu_utf.h"; then
-    echo "Updating icu_utf.h 2"
-    sed -i '10 a typedef unsigned char uint8_t;' third_party/mini_chromium/mini_chromium/base/third_party/icu/icu_utf.h
-fi
-
-echo "Starting build"
-../../depot_tools/ninja -C out/Default
-cd ../../..
+echo "Building"
+ninja -C out/Default
 
 echo "Copying output"
-cp subprojects/crashpad/crashpad/out/Default/crashpad_handler ./builddir/pakiki_crashpad_handler
+mkdir -p $PROJECT_ROOT/builddir
+cp $PROJECT_ROOT/subprojects/crashpad/crashpad/out/Default/crashpad_handler $PROJECT_ROOT/builddir/pakiki_crashpad_handler
