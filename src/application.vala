@@ -16,6 +16,7 @@ namespace Pakiki {
             dialog.set_transient_for (window);
             dialog.set_modal (true);
             dialog.set_title ("About Pākiki Proxy");
+            dialog.titlebar = null;
 
             dialog.program_name = "Pākiki Community Edition";
             dialog.comments = "Intercepting proxy";
@@ -28,8 +29,9 @@ namespace Pakiki {
             dialog.website_label = "pakikiproxy.com";
 
             try {
-                var logo = new Gdk.Pixbuf.from_resource ("/com/forensant/pakiki/Logo256.png");
-                dialog.logo = Gdk.Texture.for_pixbuf (logo);
+                var logo = new Gdk.Pixbuf.from_stream_at_scale (window.banner_logo_svg (), 350, 64, true, null);
+                var texture = Gdk.Texture.for_pixbuf (logo);
+                dialog.logo = texture;
             } catch (Error err) {
                 stdout.printf ("Could not create logo for the about page");
             }

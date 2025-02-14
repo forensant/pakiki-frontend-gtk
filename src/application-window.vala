@@ -15,17 +15,15 @@ namespace Pakiki {
         [GtkChild]
         private unowned Gtk.Button button_new;
         [GtkChild]
-        private unowned Gtk.ToggleButton button_filter;
+        private unowned Gtk.MenuButton button_filter;
         [GtkChild]
         private unowned Gtk.CheckButton check_button_exclude_resources;
         [GtkChild]
         private unowned Gtk.CheckButton check_button_negative_filter;
         [GtkChild]
-        private unowned Gtk.ComboBoxText combobox_search_protocols;
+        private unowned Gtk.DropDown dropdown_search_protocols;
         [GtkChild]
         private unowned Gtk.MenuButton gears;
-        [GtkChild]
-        private unowned Gtk.Image image_filter_icon;
         [GtkChild]
         private unowned Gtk.InfoBar info_bar_bind_error;
         [GtkChild]
@@ -53,6 +51,7 @@ namespace Pakiki {
         public GLib.Settings settings;
 
         private bool authentication_displayed;
+        private List<MainApplicationPane> child_panes = new List<MainApplicationPane> ();
         private bool controls_hidden;
         private CoreProcess core_process;
         private InjectPane inject_pane;
@@ -81,7 +80,6 @@ namespace Pakiki {
             this.preview_proxy_address = preview_proxy_address;
             timeout_started = false;
 
-            set_window_icon (this);
             create_http_session ();
 
             var process_launched = true;
@@ -97,6 +95,7 @@ namespace Pakiki {
 
             label_overlay = new Gtk.Label ("");
             label_overlay.name = "lbl_overlay";
+            label_overlay.visible = false;
             overlay.add_overlay (label_overlay);
 
             settings = new GLib.Settings ("com.forensant.pakiki");
@@ -117,8 +116,30 @@ namespace Pakiki {
             app.add_action (find_action);
             app.set_accels_for_action ("app.find-shortcut", new string[] {"<Ctrl>F"});
             
+            var s_shortcut = new SimpleAction ("app.s-shortcut", null);
+            s_shortcut.activate.connect (() => {
+                if (selected_pane_name () == "NewRequest") {
+                    new_request.on_send_clicked ();
+                    return;
+                }
             });
-            add_accel_group (accel_group);
+            add_action (s_shortcut);
+
+            var run_action = new SimpleAction ("app.run-shortcut", null);
+            run_action.activate.connect (() => {
+                if (selected_pane_name () == "Inject") {
+                    inject_pane.on_run_clicked ();
+                    return;
+                }
+            });
+            add_action (run_action);
+
+            var shortcuts = new Gtk.ShortcutController();
+
+            var send_shortcut = new Gtk.Shortcut (Gtk.ShortcutTrigger.parse_string("<Ctrl>S"), Gtk.ShortcutAction.parse_string("app.s-shortcut"));
+            var run_shortcut = new Gtk.Shortcut (Gtk.ShortcutTrigger.parse_string("<Ctrl>R"), Gtk.ShortcutAction.parse_string("app.run-shortcut"));
+            shortcuts.add_shortcut (send_shortcut);
+            shortcuts.add_shortcut (run_shortcut);
 
             var builder = new Gtk.Builder.from_resource ("/com/forensant/pakiki/app-menu.ui");
             var menu_model = (GLib.Menu) builder.get_object ("menu");
@@ -135,24 +156,25 @@ namespace Pakiki {
 
             Notify.init ("com.forensant.pakiki");
 
-            set_filter_icon ();
-
             requests_pane = new RequestsPane (this, true);
             requests_pane.pane_changed.connect(on_pane_changed);
             stack.add_titled (requests_pane, "RequestList", "Requests");
-            requests_pane.show ();
+            child_panes.append(requests_pane);
 
             inject_pane = new InjectPane (this);
             inject_pane.pane_changed.connect(on_pane_changed);
             stack.add_titled (inject_pane, "Inject", "Inject");
+            child_panes.append(inject_pane);
 
             new_request = new RequestNew (this);
             new_request.pane_changed.connect(on_pane_changed);
             stack.add_named (new_request, "NewRequest");    
+            child_panes.append(new_request);
 
             intercept = new Intercept (this);
             intercept.pane_changed.connect(on_pane_changed);
             stack.add_named (intercept, "Intercept");
+            child_panes.append(intercept);
 
             if (core_address != "") {
                 on_core_started (core_address);
@@ -208,7 +230,6 @@ namespace Pakiki {
             authentication_displayed = true;
             var auth_dlg = new AuthenticationDialog ();
             auth_dlg.transient_for = this;
-            set_window_icon (auth_dlg);
 
             auth_dlg.response.connect ((response) => {
                 if (response == Gtk.ResponseType.OK) {
@@ -257,7 +278,7 @@ namespace Pakiki {
         }
 
         public void display_notification (string title, string message, MainApplicationPane pane, string guid) {
-            if (has_toplevel_focus && selected_pane () == pane) {
+            if (has_focus && selected_pane () == pane) {
                 return;
             }
 
@@ -322,7 +343,7 @@ namespace Pakiki {
             }
 
             var style_context = this.get_style_context ();
-            var text_color = style_context.get_color (Gtk.StateFlags.NORMAL);
+            var text_color = style_context.get_color();
 
             contents = contents.replace ("#000000", text_color.to_string ());
             return new GLib.MemoryInputStream.from_data (contents.data);
@@ -372,6 +393,8 @@ namespace Pakiki {
                         label_overlay.label = "Connection to Pākiki Core lost. Retrying...\n\nOnce the connection is re-established, the data will be reloaded.";
                         label_overlay.show ();
                     }
+
+                    application.remove_action("preferences");
                 }
             });
 
@@ -403,24 +426,14 @@ namespace Pakiki {
         }
 
         [GtkCallback]
-        public void on_button_filter_toggled () {
-            combobox_search_protocols.visible = selected_pane ().can_filter_protocols ();
-            if (!button_filter.active) { // state we're changing from
-                popover_filter.popdown ();
-            } else {
-                popover_filter.popup ();
-                searchentry.grab_focus ();
-            }
-        }
-
-        [GtkCallback]
-        public void on_popover_filter_closed () {
-            button_filter.active = false;
+        public void on_popover_filter_show () {
+            dropdown_search_protocols.visible = selected_pane ().can_filter_protocols ();
+            searchentry.grab_focus ();
         }
 
         [GtkCallback]
         public void on_searchentry_stop_search () {
-            button_filter.active = false;
+            popover_filter.hide ();
         }
 
         [GtkCallback]
@@ -452,13 +465,12 @@ namespace Pakiki {
             var browser_path = this.browser_path ();
 
             if (browser_path == "") {
-                var msgbox = new Gtk.MessageDialog (this,
-                    Gtk.DialogFlags.MODAL,
-                    Gtk.MessageType.WARNING,
-                    Gtk.ButtonsType.CLOSE,
-                    "Chromium could not be found.\nOn Kali can be installed with `sudo apt install chromium`");
-                msgbox.run ();
-                msgbox.destroy ();
+                var alert = new Gtk.AlertDialog ("");
+                alert.message = "Chromium could not be found.";
+                alert.detail = "On Kali, Ubuntu, Debian, etc, it can be installed with `sudo apt install chromium`";
+
+                alert.show (this);
+
                 return;
             }
 
@@ -539,18 +551,18 @@ namespace Pakiki {
 
             url += path;
 
-            var doc_window = new Gtk.Window (Gtk.WindowType.TOPLEVEL);
+            var doc_window = new Gtk.Window ();
             doc_window.set_default_size (1280, 768);
             doc_window.set_title ("Pākiki Proxy Help");
             
             var web_view = new WebKit.WebView ();
-            var data_manager = web_view.get_website_data_manager ();
-            data_manager.set_network_proxy_settings (WebKit.NetworkProxyMode.NO_PROXY, null);
+            var network_session = web_view.network_session;
+            network_session.set_proxy_settings (WebKit.NetworkProxyMode.NO_PROXY, null);
 
             web_view.load_uri (url);
-            doc_window.add (web_view);
+            doc_window.set_child (web_view);
 
-            doc_window.show_all ();
+            doc_window.show ();
         }
 
         public void on_open_project () {
@@ -570,7 +582,7 @@ namespace Pakiki {
 
             var can_search = pane.can_search ();
             button_filter.sensitive = can_search;
-            combobox_search_protocols.visible = selected_pane ().can_filter_protocols ();
+            dropdown_search_protocols.visible = selected_pane ().can_filter_protocols ();
 
             if (popover_filter.visible && !can_search) {
                 button_filter.active = false;
@@ -654,19 +666,35 @@ namespace Pakiki {
                 }
             }
             else {
-                var msgbox = new Gtk.MessageDialog (this, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "Error: Could not open the file.");
-                msgbox.run ();
-                core_process.open (null);
+                var alertbox = new Gtk.AlertDialog ("Could not open the file.");
+                alertbox.choose.begin (this, null, (obj, response) => {
+                    core_process.open (null);
+                });
             }
         }
 
         [GtkCallback]
         public void search_text_changed () {
+            var protocol = "";
+            switch (dropdown_search_protocols.selected) {
+            case 0:
+                protocol = "all";
+                break;
+            case 1:
+                protocol = "HTTP";
+                break;
+            case 2:
+                protocol = "Websocket";
+                break;
+            case 3:
+                protocol = "Out of Band";
+                break;
+            }
+
             selected_pane ().on_search (searchentry.get_text (),
                 check_button_negative_filter.get_active (),
                 check_button_exclude_resources.get_active (),
-                combobox_search_protocols.get_active_id ()
-            );
+                protocol);
         }
 
         private MainApplicationPane selected_pane () {
@@ -698,15 +726,6 @@ namespace Pakiki {
             this.http_session.send_async.begin (message, GLib.Priority.DEFAULT, null);
         }
 
-        private void set_filter_icon () {
-            var image_src = this.get_coloured_svg ("resource:///com/forensant/pakiki/funnel-outline-symbolic.svg");
-            try {
-                image_filter_icon.pixbuf = new Gdk.Pixbuf.from_stream (image_src);
-            } catch (Error e) {
-                stdout.printf ("Error setting filter icon: %s\n", e.message);
-            }
-        }
-
         public void set_intercepted_request_count(int count) {
             if (count > 0) {
                 label_intercept.label = "<b>_Intercept (" + count.to_string () + ")</b>";
@@ -714,23 +733,6 @@ namespace Pakiki {
             else {
                 label_intercept.label = "_Intercept";
             }
-        }
-
-        private void set_window_icon (Gtk.Window window) {
-            var icons = new List<Gdk.Pixbuf> ();
-            try {
-                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/pakiki/Logo256.png"));
-                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/pakiki/Logo128.png"));
-                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/pakiki/Logo64.png"));
-                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/pakiki/Logo48.png"));
-                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/pakiki/Logo32.png"));
-                icons.append (new Gdk.Pixbuf.from_resource ("/com/forensant/pakiki/Logo16.png"));
-            } catch (Error err) {
-                stdout.printf ("Could not create icon pack");
-                return;
-            }
-
-            window.set_icon_list (icons);
         }
 
         private string writeBrowserConfig() {

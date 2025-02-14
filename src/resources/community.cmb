@@ -13,7 +13,8 @@
 	(9,1,None,"find-window.ui",None,None,None,None,None,None,None),
 	(10,1,None,"payload-selection-widget.ui",None,None,None,None,None,None,None),
 	(11,1,None,"prefs.ui",None,None,None,None,None,None,None),
-	(12,1,None,"inject-underway.ui",None,None,None,None,None,None,None)
+	(12,1,None,"inject-underway.ui",None,None,None,None,None,None,None),
+	(13,27,None,"window.ui",None,None,None,None,None,None,None)
   </ui>
   <object>
 	(1,1,"GtkPaned","pane",23,None,None,None,0,None,None),
@@ -196,7 +197,29 @@
 	(12,14,"GtkLabel",None,13,None,None,None,0,None,None),
 	(12,15,"GtkLabel","label_injection_parameters",13,None,None,None,1,None,None),
 	(12,16,"GtkLabel","label_error_title",13,None,None,None,2,None,None),
-	(12,17,"GtkLabel","label_error",13,None,None,None,3,None,None)
+	(12,17,"GtkLabel","label_error",13,None,None,None,3,None,None),
+	(13,2,"GtkHeaderBar","header",27,None,"titlebar",None,0,None,None),
+	(13,3,"GtkStackSwitcher","stack_switcher_tabs",2,None,"title",None,0,None,None),
+	(13,5,"GtkButton","button_back",2,None,"start",None,1,None,None),
+	(13,7,"GtkButton","button_new",2,None,"start",None,2,None,None),
+	(13,8,"GtkButton","button_intercept",2,None,"start",None,3,None,None),
+	(13,11,"GtkMenuButton","gears",2,None,"end",None,4,None,None),
+	(13,12,"GtkOverlay","overlay",27,None,None,None,1,None,None),
+	(13,13,"GtkBox","box_inner_contents",12,None,None,None,0,None,None),
+	(13,14,"GtkInfoBar","info_bar_bind_error",13,None,None,None,0,None,None),
+	(13,15,"GtkLabel","label_proxy_bind_error",14,None,None,None,0,None,None),
+	(13,16,"GtkStack","stack",13,None,None,None,1,None,None),
+	(13,18,"GtkMenuButton","button_filter",2,None,"end",None,5,None,None),
+	(13,19,"GtkBox","box_filter",28,None,None,None,0,None,None),
+	(13,20,"GtkSearchEntry","searchentry",19,None,None,None,0,None,None),
+	(13,21,"GtkCheckButton","check_button_negative_filter",19,None,None,None,1,None,None),
+	(13,22,"GtkSeparator",None,19,None,None,None,2,None,None),
+	(13,23,"GtkCheckButton","check_button_exclude_resources",19,None,None,None,3,None,None),
+	(13,24,"GtkDropDown","dropdown_search_protocols",19,None,None,None,4,None,None),
+	(13,25,"GtkStringList",None,24,None,None,None,0,None,None),
+	(13,26,"GtkLabel","label_intercept",8,None,None,None,0,None,None),
+	(13,27,"GtkApplicationWindow","PakikiApplicationWindow",None,None,None,None,2,None,None),
+	(13,28,"GtkPopover","popover_filter",18,None,None,None,0,None,None)
   </object>
   <object_property>
 	(1,1,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
@@ -653,7 +676,38 @@
 	(12,16,"GtkLabel","xalign","0.0",None,None,None,None,None,None,None,None,None),
 	(12,16,"GtkWidget","margin-top","6",None,None,None,None,None,None,None,None,None),
 	(12,17,"GtkLabel","xalign","0.0",None,None,None,None,None,None,None,None,None),
-	(12,17,"GtkLabel","yalign","0.0",None,None,None,None,None,None,None,None,None)
+	(12,17,"GtkLabel","yalign","0.0",None,None,None,None,None,None,None,None,None),
+	(13,5,"GtkButton","icon-name","pan-start-symbolic",None,None,None,None,None,None,None,None,None),
+	(13,5,"GtkWidget","tooltip-text","Back",None,None,None,None,None,None,None,None,None),
+	(13,7,"GtkButton","label","_New",None,None,None,None,None,None,None,None,None),
+	(13,7,"GtkButton","use-underline","True",None,None,None,None,None,None,None,None,None),
+	(13,8,"GtkButton","use-underline","True",None,None,None,None,None,None,None,None,None),
+	(13,8,"GtkWidget","tooltip-text","Intercept Requests and Responses",None,None,None,None,None,None,None,None,None),
+	(13,11,"GtkMenuButton","icon-name","open-menu-symbolic",None,None,None,None,None,None,None,None,None),
+	(13,13,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
+	(13,14,"GtkInfoBar","message-type","warning",None,None,None,None,None,None,None,None,None),
+	(13,14,"GtkInfoBar","revealed","False",None,None,None,None,None,None,None,None,None),
+	(13,14,"GtkInfoBar","show-close-button","True",None,None,None,None,None,None,None,None,None),
+	(13,15,"GtkLabel","label","Proxy could not be started on XYZ, requests are not being intercepted.",None,None,None,None,None,None,None,None,None),
+	(13,15,"GtkLabel","use-markup","True",None,None,None,None,None,None,None,None,None),
+	(13,18,"GtkMenuButton","icon-name","search-symbolic",None,None,None,None,None,None,None,None,None),
+	(13,18,"GtkMenuButton","popover",None,None,None,None,None,28,None,None,None,None),
+	(13,19,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
+	(13,20,"GtkSearchEntry","placeholder-text","Filter Requests",None,None,None,None,None,None,None,None,None),
+	(13,21,"GtkCheckButton","label","_Negative Filter",None,None,None,None,None,None,None,None,None),
+	(13,21,"GtkCheckButton","use-underline","True",None,None,None,None,None,None,None,None,None),
+	(13,23,"GtkCheckButton","active","True",None,None,None,None,None,None,None,None,None),
+	(13,23,"GtkCheckButton","label","_Exclude Resources (Images, Stylesheets, etc)",None,None,None,None,None,None,None,None,None),
+	(13,23,"GtkCheckButton","use-underline","True",None,None,None,None,None,None,None,None,None),
+	(13,24,"GtkDropDown","model",None,None,None,None,None,25,None,None,None,None),
+	(13,25,"GtkStringList","strings","All protocols\nHTTP\nWebsockets\nOut of Band",None,None,None,None,None,None,None,None,None),
+	(13,26,"GtkLabel","label","_Intercept",None,None,None,None,None,None,None,None,None),
+	(13,26,"GtkLabel","use-markup","True",None,None,None,None,None,None,None,None,None),
+	(13,26,"GtkLabel","use-underline","True",None,None,None,None,None,None,None,None,None),
+	(13,27,"GtkWindow","default-height","768",None,None,None,None,None,None,None,None,None),
+	(13,27,"GtkWindow","default-width","1280",None,None,None,None,None,None,None,None,None),
+	(13,27,"GtkWindow","title","Pākiki Proxy",None,None,None,None,None,None,None,None,None),
+	(13,27,"GtkWindow","titlebar","2",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_layout_property>
 	(1,2,5,"GtkGridLayoutChild","column","0",None,None,None,None),
@@ -894,7 +948,17 @@
 	(35,11,25,"GtkButton","clicked","on_button_force_crash_core_clicked",None,0,0,0,None),
 	(36,12,3,"GtkEditable","changed","on_title_changed",None,0,0,0,None),
 	(37,12,11,"GtkButton","clicked","on_button_clone_clicked",None,0,0,0,None),
-	(38,12,10,"GtkButton","clicked","on_action_clicked",None,0,0,0,None)
+	(38,12,10,"GtkButton","clicked","on_action_clicked",None,0,0,0,None),
+	(39,13,5,"GtkButton","clicked","on_back_clicked",None,0,0,0,None),
+	(40,13,8,"GtkButton","clicked","on_intercept_clicked",None,0,0,0,None),
+	(42,13,20,"GtkSearchEntry","search-changed","search_text_changed",None,0,0,0,None),
+	(43,13,20,"GtkSearchEntry","stop-search","on_searchentry_stop_search",None,0,0,0,None),
+	(44,13,21,"GtkCheckButton","toggled","search_text_changed",None,0,0,0,None),
+	(45,13,23,"GtkCheckButton","toggled","search_text_changed",None,0,0,0,None),
+	(47,13,14,"GtkInfoBar","close","on_info_bar_bind_error_close",None,0,0,0,None),
+	(48,13,14,"GtkInfoBar","response","on_info_bar_bind_error_response",None,0,0,0,None),
+	(49,13,7,"GtkButton","clicked","on_new_clicked",None,0,0,0,None),
+	(50,13,28,"GtkWidget","show","on_popover_filter_show",None,0,0,0,None)
   </object_signal>
   <object_data>
 	(7,5,"GtkLabel",1,1,None,None,None,None,None,None),
@@ -912,7 +976,8 @@
 	(12,14,"GtkLabel",1,1,None,None,None,None,None,None),
 	(12,14,"GtkLabel",2,2,None,1,None,None,None,None),
 	(12,16,"GtkLabel",1,1,None,None,None,None,None,None),
-	(12,16,"GtkLabel",2,2,None,1,None,None,None,None)
+	(12,16,"GtkLabel",2,2,None,1,None,None,None,None),
+	(13,25,"GtkStringList",1,1,None,None,None,None,None,None)
   </object_data>
   <object_data_arg>
 	(7,5,"GtkLabel",2,2,"name","weight"),
