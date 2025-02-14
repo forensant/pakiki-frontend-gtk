@@ -130,22 +130,20 @@ namespace Pakiki {
 
         private void insert_into_position (InjectListRow row_to_insert) {
             var i = 0;
-            var inserted = false;
-            list_box_injection_scans.@foreach ( (widget) => {
-                if (inserted) {
-                    return;
+            while (true) {
+                var row = list_box_injection_scans.get_row_at_index (i);
+                if (row == null) {
+                    break;
                 }
 
-                var row = (InjectListRow)widget;
-
-                if (row.row_type == InjectListRow.Type.LABEL && row.status == row_to_insert.status) {
+                var inject_row = (InjectListRow)row;
+                if (inject_row.row_type == InjectListRow.Type.LABEL && inject_row.status == row_to_insert.status) {
                     list_box_injection_scans.insert (row_to_insert, i + 1);
-                    inserted = true;
-                    row_to_insert.show_all ();
+                    break;
                 }
 
                 i++;
-            });
+            }
         }
 
         public string new_tooltip_text () {
@@ -166,6 +164,8 @@ namespace Pakiki {
             inject_new_form.show ();
             if (guid != null) {
                 inject_new_form.populate_request (guid);
+            } else {
+                inject_new_form.populate_example_request ();
             }
             list_box_injection_scans.unselect_all ();
             pane_changed ();
@@ -182,6 +182,12 @@ namespace Pakiki {
             inject_underway_form.show ();
             inject_underway_form.set_inject_operation (row.inject_operation);
             pane_changed ();
+        }
+
+        public void on_run_clicked () {
+            if (inject_new_form.visible) {
+                inject_new_form.on_run_clicked ();
+            }
         }
 
         public void on_search (string query, bool negative_filter, bool exclude_resources, string protocol) {
@@ -220,34 +226,41 @@ namespace Pakiki {
 
             var currently_selected = (inject_underway_form.operation != null && inject_underway_form.operation.guid == guid);
 
-            list_box_injection_scans.@foreach ( (widget) => {
-                var row = (InjectListRow)widget;
+            var i = 0;
+            while (true) {
+                var row = list_box_injection_scans.get_row_at_index (i);
+                if (row == null) {
+                    break;
+                }
 
-                if (row.inject_operation != null && row.inject_operation.guid == guid) {
+                var inject_row = (InjectListRow)row;
+                if (inject_row.inject_operation != null && inject_row.inject_operation.guid == guid) {
                     exists = true;
 
-                    if (row.inject_operation.get_status () == InjectOperation.Status.UNDERWAY && inject_operation.get_status () == InjectOperation.Status.COMPLETED) {
+                    if (inject_row.inject_operation.get_status () == InjectOperation.Status.UNDERWAY && inject_operation.get_status () == InjectOperation.Status.COMPLETED) {
                         var message = "Pākiki has finished an inject scan.";
 
-                        if (row.inject_operation.title != "") {
-                            message = "Pākiki has finished the following scan: " + row.inject_operation.title;
+                        if (inject_row.inject_operation.title != "") {
+                            message = "Pākiki has finished the following scan: " + inject_row.inject_operation.title;
                         }
 
                         application_window.display_notification ("Inject scan completed",
                                 message,
                                 this,
-                                row.inject_operation.guid);
+                                inject_row.inject_operation.guid);
                     }
 
-                    if (row.inject_operation.get_status () == inject_operation.get_status ()) {
-                        row.update_inject_operation (inject_operation);
+                    if (inject_row.inject_operation.get_status () == inject_operation.get_status ()) {
+                        inject_row.update_inject_operation (inject_operation);
                     }
                     else {
                         to_reinsert = true;
-                        list_box_injection_scans.remove (row);
+                        list_box_injection_scans.remove (inject_row);
                     }
                 }
-            });
+
+                i++;
+            }
 
             // ensure the ongoing scan is updated if it's currently selected
             if (exists && currently_selected) {
@@ -281,18 +294,23 @@ namespace Pakiki {
         public void select_when_received (string guid) {
             var found = false;
 
-            list_box_injection_scans.@foreach ( (widget) => {
-                var row = (InjectListRow)widget;
+            var i = 0;
+            while (true) {
+                var row = list_box_injection_scans.get_row_at_index (i);
+                if (row == null) {
+                    break;
+                }
 
-                if (row.row_type == InjectListRow.Type.INJECT_SCAN && row.inject_operation.guid == guid) {
+                var inject_row = (InjectListRow)row;
+                if (inject_row.row_type == InjectListRow.Type.INJECT_SCAN && inject_row.inject_operation.guid == guid) {
                     found = true;
                     select_guid_when_received = null;
                     
-                    list_box_injection_scans.select_row (row);
+                    list_box_injection_scans.select_row (inject_row);
                 }
-            });
 
-            select_guid_when_received = guid;
+                i++;
+            }
         }
 
         public void set_selected_guid (string guid) {
@@ -302,47 +320,61 @@ namespace Pakiki {
         private void show_appropriate_labels() {
             var completed_present = false, underway_present = false, archived_present = false;
 
-            list_box_injection_scans.@foreach ( (widget) => {
-                var row = (InjectListRow)widget;
-
-                if (row.row_type == InjectListRow.Type.INJECT_SCAN ) {
-                    if (row.status == InjectOperation.Status.COMPLETED) { completed_present = true; }
-                    if (row.status == InjectOperation.Status.UNDERWAY)  { underway_present  = true; }
-                    if (row.status == InjectOperation.Status.ARCHIVED)  { archived_present  = true; }
+            var i = 0;
+            while (true) {
+                var row = list_box_injection_scans.get_row_at_index (i);
+                if (row == null) {
+                    break;
                 }
-            });
 
-            list_box_injection_scans.@foreach ( (widget) => {
-                var row = (InjectListRow)widget;
+                var inject_row = (InjectListRow)row;
+                if (inject_row.row_type == InjectListRow.Type.INJECT_SCAN ) {
+                    if (inject_row.status == InjectOperation.Status.COMPLETED) { completed_present = true; }
+                    if (inject_row.status == InjectOperation.Status.UNDERWAY)  { underway_present  = true; }
+                    if (inject_row.status == InjectOperation.Status.ARCHIVED)  { archived_present  = true; }
+                }
 
-                if (row.row_type == InjectListRow.Type.LABEL) {
+                i++;
+            }
+
+            i = 0;
+            while (true) {
+                var row = list_box_injection_scans.get_row_at_index (i);
+                if (row == null) {
+                    break;
+                }
+    
+                var inject_row = (InjectListRow)row;
+                if (inject_row.row_type == InjectListRow.Type.LABEL) {
                     var show = false;
 
-                    if (row.status == InjectOperation.Status.COMPLETED && completed_present) {
+                    if (inject_row.status == InjectOperation.Status.COMPLETED && completed_present) {
                         show = true;
-                        row.first = true;
+                        inject_row.first = true;
                     }
 
-                    if (row.status == InjectOperation.Status.UNDERWAY  && underway_present)  {
+                    if (inject_row.status == InjectOperation.Status.UNDERWAY  && underway_present)  {
                         show = true;
-                        row.first = (completed_present == false);
+                        inject_row.first = (completed_present == false);
                     }
 
-                    if (row.status == InjectOperation.Status.ARCHIVED  && archived_present)  {
+                    if (inject_row.status == InjectOperation.Status.ARCHIVED  && archived_present)  {
                         show = true;
-                        row.first = (completed_present == false && underway_present == false);
+                        inject_row.first = (completed_present == false && underway_present == false);
                     }
                     
                     if (show) {
-                        row.show_all ();
+                        inject_row.show ();
                     } else {
-                        row.hide ();
+                        inject_row.hide ();
                     }
                 }
-            });
+    
+                i++;
+            }
 
             if (completed_present == false && underway_present == false && archived_present == false) {
-                inject_list_placeholder_row.show_all ();
+                inject_list_placeholder_row.show ();
             } else {
                 inject_list_placeholder_row.hide ();
             }

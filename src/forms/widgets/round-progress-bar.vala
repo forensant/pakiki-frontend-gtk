@@ -11,26 +11,29 @@ namespace Pakiki {
         }
 
         public RoundProgressBar () {
+            set_draw_func (draw);
         }
 
-        public override bool draw (Cairo.Context cr) {
+        private void draw (Gtk.DrawingArea drawing_area, Cairo.Context cr, int width, int height) {
             var rectangle = Gdk.Rectangle () {
                 x = 0,
                 y = 0,
-                width = get_allocated_width (),
-                height = get_allocated_height ()
+                width = width,
+                height = height
             };
             var selected = ((this.get_state_flags () & Gtk.StateFlags.SELECTED) == Gtk.StateFlags.SELECTED);
-            return render (cr, rectangle, this.get_style_context (), selected);
+            render (cr, rectangle, this.get_style_context (), selected);
         }
 
         public override Gtk.SizeRequestMode get_request_mode () {
             return Gtk.SizeRequestMode.WIDTH_FOR_HEIGHT;
         }
-    
-        public override void get_preferred_width_for_height (int height, out int minimum, out int natural) {
-            minimum = height;
-            natural = height;
+
+        public override void measure (Gtk.Orientation orientation, int for_size, out int minimum, out int natural, out int minimum_baseline, out int natural_baseline) {
+            minimum = for_size;
+            natural = for_size;
+            minimum_baseline = -1;
+            natural_baseline = -1;
         }
 
         public bool render (Cairo.Context cr, Gdk.Rectangle area, Gtk.StyleContext style_context, bool selected) {
@@ -46,8 +49,8 @@ namespace Pakiki {
 
             cr.set_line_cap (Cairo.LineCap.BUTT);
 
-            var state = selected ? Gtk.StateFlags.SELECTED : Gtk.StateFlags.NORMAL;
-            var colour = style_context.get_color (state);
+            //var state = selected ? Gtk.StateFlags.SELECTED : Gtk.StateFlags.NORMAL;
+            var colour = style_context.get_color ();
 
             cr.set_line_width (2);
 

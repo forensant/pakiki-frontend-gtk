@@ -677,6 +677,7 @@
 	(12,16,"GtkWidget","margin-top","6",None,None,None,None,None,None,None,None,None),
 	(12,17,"GtkLabel","xalign","0.0",None,None,None,None,None,None,None,None,None),
 	(12,17,"GtkLabel","yalign","0.0",None,None,None,None,None,None,None,None,None),
+	(13,3,"GtkStackSwitcher","stack","16",None,None,None,None,None,None,None,None,None),
 	(13,5,"GtkButton","icon-name","pan-start-symbolic",None,None,None,None,None,None,None,None,None),
 	(13,5,"GtkWidget","tooltip-text","Back",None,None,None,None,None,None,None,None,None),
 	(13,7,"GtkButton","label","_New",None,None,None,None,None,None,None,None,None),

@@ -30,6 +30,7 @@ namespace Pakiki {
         private bool search_negative_filter;
         private string search_query;
         private RequestTextEditor text_view_request;
+        private bool updating_title = false;
 
         public InjectUnderway (ApplicationWindow application_window, InjectPane inject_pane) {
             this.application_window = application_window;
@@ -59,9 +60,17 @@ namespace Pakiki {
             var different_operation = this.operation == null || operation.guid != this.operation.guid;
             
             this.operation = operation;
+
+            var entry_has_focus = false;
+            var focus_child = entry_title.get_focus_child ();
+            if (focus_child != null) {
+                entry_has_focus = focus_child.is_focus ();
+            }
             
-            if (different_operation || entry_title.has_focus == false) {
+            if (different_operation || !entry_has_focus) {
+                updating_title = true;
                 entry_title.set_text (operation.title);
+                updating_title = false;
             }
 
             if (different_operation) {
@@ -157,7 +166,7 @@ namespace Pakiki {
 
         [GtkCallback]
         public void on_title_changed () {
-            if (entry_title.text == operation.title) {
+            if (updating_title || entry_title.text == operation.title) {
                 return;
             }
             

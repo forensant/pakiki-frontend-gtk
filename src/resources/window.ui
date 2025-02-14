@@ -10,7 +10,9 @@
     <child type="titlebar">
       <object class="GtkHeaderBar" id="header">
         <child type="title">
-          <object class="GtkStackSwitcher" id="stack_switcher_tabs"/>
+          <object class="GtkStackSwitcher" id="stack_switcher_tabs">
+            <property name="stack">stack</property>
+          </object>
         </child>
         <child type="start">
           <object class="GtkButton" id="button_back">
