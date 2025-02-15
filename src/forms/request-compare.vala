@@ -1,8 +1,9 @@
 namespace Pakiki {
-    class RequestCompare : Gtk.Notebook {
+    class RequestCompare : Gtk.Box {
         private ApplicationWindow application_window;
 
         private Gtk.Label label_error;
+        private Gtk.Notebook notebook;
         private RequestDiff request_diff_1;
         private RequestDiff request_diff_2;
         private RequestPreview request_preview_1;
@@ -12,56 +13,59 @@ namespace Pakiki {
 
         public RequestCompare(ApplicationWindow application_window) {
             this.application_window = application_window;
+
+            notebook = new Gtk.Notebook ();
+            this.append (notebook);
             
             request_diff_1 = new RequestDiff ();
             request_diff_2 = new RequestDiff ();
 
+            request_diff_1.hexpand = true;
+            request_diff_2.hexpand = true;
+
             request_diff_1.show ();
             request_diff_2.show ();
 
-            scrolled_window_request_differences = new Gtk.ScrolledWindow (null, null);
+            scrolled_window_request_differences = new Gtk.ScrolledWindow ();
             scrolled_window_request_differences.show ();
 
             var separator_diff = new Gtk.Separator (Gtk.Orientation.VERTICAL);
             separator_diff.show ();
 
             var box_diff = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 0);
-            box_diff.pack_start (request_diff_1, true, true, 0);
-            box_diff.pack_start (separator_diff, false, false, 0);
-            box_diff.pack_start (request_diff_2, true, true, 0);
-            box_diff.expand = true;
+            box_diff.append (request_diff_1);
+            box_diff.append (separator_diff);
+            box_diff.append (request_diff_2);
+            box_diff.set_hexpand (true);
             box_diff.show ();
 
-            scrolled_window_request_differences.add (box_diff);
+            scrolled_window_request_differences.set_child (box_diff);
 
-            this.append_page (scrolled_window_request_differences, new Gtk.Label ("Text"));
+            notebook.append_page (scrolled_window_request_differences, new Gtk.Label ("Text"));
 
             request_preview_1 = new RequestPreview (application_window);
             request_preview_2 = new RequestPreview (application_window);
 
-            request_preview_1.show ();
-            request_preview_2.show ();
-
-            scrolled_window_request_preview = new Gtk.ScrolledWindow (null, null);
+            scrolled_window_request_preview = new Gtk.ScrolledWindow ();
 
             var separator_prev = new Gtk.Separator (Gtk.Orientation.VERTICAL);
             separator_prev.show ();
 
             var box_prev = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 0);
-            box_prev.pack_start (request_preview_1, true, true, 0);
-            box_prev.pack_start (separator_prev, false, false, 0);
-            box_prev.pack_start (request_preview_2, true, true, 0);
-            box_prev.expand = true;
+            box_prev.append (request_preview_1);
+            box_prev.append (separator_prev);
+            box_prev.append (request_preview_2);
+            box_prev.set_vexpand (true);
             box_prev.show ();
             
-            scrolled_window_request_preview.add (box_prev);
+            scrolled_window_request_preview.set_child (box_prev);
             scrolled_window_request_preview.show ();
 
-            this.append_page (scrolled_window_request_preview, new Gtk.Label ("Preview"));
+            notebook.append_page (scrolled_window_request_preview, new Gtk.Label ("Preview"));
             
             label_error = new Gtk.Label ("");
-            label_error.expand = true;
-            this.append_page (label_error, new Gtk.Label ("Text"));
+            label_error.set_hexpand (true);
+            notebook.append_page (label_error, new Gtk.Label ("Text"));
         }
 
         public void compare_requests (string base_guid, string compare_guid) {
